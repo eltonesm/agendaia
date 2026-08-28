@@ -94,6 +94,18 @@ Na tela pública o cliente escolhe primeiro o `Service` (nome amigável) e depoi
 o profissional; a `ServiceOffering` é resolvida da combinação dos dois, e é dela
 que saem o preço e a duração exibidos.
 
+Consequência de UX, resolvida na tela e não no modelo:
+
+- **Estabelecimento com um profissional** — o passo de escolha é pulado, a
+  oferta é resolvida direto e o preço aparece já no primeiro passo.
+- **Com vários** — o primeiro passo mostra faixa (`Corte · a partir de R$ 30`) e
+  o valor exato aparece depois da escolha do profissional.
+
+Todo estabelecimento tem **ao menos um `Professional`**, mesmo quando é uma
+pessoa só: o dono se cadastra como profissional. Sem isso não haveria
+`WorkSchedule`, nem `ServiceOffering`, nem sobre o que a exclusion constraint
+discriminaria — o caso especial custaria mais que o cadastro.
+
 ### 4. "Horário" é usado para três coisas
 
 - `BusinessOperatingHours` — quando a empresa abre.
