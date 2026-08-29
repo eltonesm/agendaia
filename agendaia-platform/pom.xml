@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.agendaia</groupId>
+		<artifactId>agendaia</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>agendaia-platform</artifactId>
+	<name>AgendaIA :: Platform</name>
+	<description>Infraestrutura técnica transversal: contexto de tenant, erro, segurança</description>
+
+	<!--
+		Infraestrutura que todos os contextos consomem, e nenhuma regra de
+		negócio. Se aparecer aqui uma classe que um analista de negócio
+		reconheceria pelo nome, ela está no módulo errado.
+
+		As dependências de web, segurança e persistência entram nos commits que
+		as usam pela primeira vez, não antes.
+	-->
+	<dependencies>
+		<dependency>
+			<groupId>com.agendaia</groupId>
+			<artifactId>agendaia-shared-kernel</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>
