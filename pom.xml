@@ -55,6 +55,31 @@
 	<build>
 		<!-- Herdado por todos os módulos filhos. -->
 		<plugins>
+			<!--
+				Seleciona um JDK 21 para compilar e rodar testes, independente do
+				JAVA_HOME da máquina.
+
+				Existe para que quem mantém JAVA_HOME apontando para outro JDK
+				(por causa de outros projetos) consiga rodar ./mvnw aqui sem
+				trocar variável de ambiente. A descoberta é automática: o plugin
+				varre JAVA_HOME, os diretórios usuais de instalação e o
+				~/.m2/toolchains.xml, se existir.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-toolchains-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>select-jdk-toolchain</goal>
+						</goals>
+						<configuration>
+							<version>[21,22)</version>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
