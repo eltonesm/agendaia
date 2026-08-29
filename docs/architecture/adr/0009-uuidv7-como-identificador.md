@@ -23,9 +23,22 @@ dados com janela de indisponibilidade.
 
 Nós vamos usar **UUIDv7** como identificador de todas as raízes de agregado.
 
-A geração fica na aplicação, para não depender da versão do PostgreSQL da
-imagem — `uuidv7()` nativo existe apenas a partir do Postgres 18. A versão
-exata da imagem deve ser confirmada durante a Fase 0.
+A geração fica **na aplicação**, não no banco.
+
+> **Confirmado na Fase 0 (2026-08-28):** a imagem `postgres:18-alpine` é a
+> 18.6 e tem `uuidv7()` nativo, verificado por consulta direta. O item que este
+> ADR deixou em aberto está fechado — e a decisão de gerar na aplicação
+> **permanece**, por uma razão melhor que a original.
+
+A razão original era defensiva: não depender de uma versão de PostgreSQL que
+ainda não havia sido confirmada. A razão real é arquitetural: **o agregado
+precisa ter identidade no instante em que nasce no domínio**, antes de qualquer
+repositório vê-lo. Identidade gerada no `INSERT` obrigaria a ida ao banco para
+saber quem o objeto é, fazendo a identidade do agregado depender da
+persistência — exatamente a inversão que o ADR 0002 existe para evitar no core.
+
+`uuidv7()` do banco continua útil onde não há agregado envolvido: migrations,
+scripts de carga e dados de teste.
 
 ## Consequências
 
@@ -40,6 +53,6 @@ data de criação de um agendamento não é informação sensível.
 
 ## Gatilho de reavaliação
 
-Se a geração na aplicação se mostrar um incômodo e a imagem do Postgres for
-atualizada para 18 ou superior, migrar a geração para o banco — mudança de
-implementação, não de decisão.
+Nenhum previsto. A razão é arquitetural, não circunstancial: mesmo com
+`uuidv7()` disponível no banco, gerar no `INSERT` continuaria acoplando a
+identidade do agregado à persistência.

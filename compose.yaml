@@ -23,14 +23,20 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-agendaia}
       POSTGRES_USER: ${POSTGRES_USER:-agendaia}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agendaia}
-      # Locale pt_BR para que ordenação e comparação de texto se comportem
-      # como em produção desde o desenvolvimento.
-      LANG: pt_BR.UTF-8
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=pt-BR"
+      # Collation ICU pt-BR para que ordenação e comparação de texto se
+      # comportem como em produção desde o desenvolvimento. A imagem é Alpine
+      # (musl), que não tem o locale pt_BR do sistema — daí o LC_* em C.UTF-8 e
+      # a ordenação vindo do ICU, que não depende do locale do sistema.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8 --locale-provider=icu --icu-locale=pt-BR"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # Postgres 18+ mudou o ponto de montagem: a imagem espera o volume em
+      # /var/lib/postgresql e cria a subpasta por versão dentro dele, para que
+      # "pg_upgrade --link" funcione sem cruzar fronteira de mount. Montar em
+      # /var/lib/postgresql/data — como era o padrão até a 17 — faz o container
+      # entrar em crash loop.
+      - postgres-data:/var/lib/postgresql
     healthcheck:
       # A app e os testes esperam por este healthcheck antes de conectar.
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agendaia} -d ${POSTGRES_DB:-agendaia}"]
