@@ -21,22 +21,6 @@ architecture:
 > entidade JPA separada, mapeamento explícito) só em `scheduling`. Nos contextos
 > de suporte, a entidade JPA é o modelo.
 
-## Quality Gates
-
-```yaml
-coverage:
-  min_coverage: 90
-```
-
-> Decisão do time, acima do default de 80.
->
-> Atenção ao efeito colateral: 90% global, somado ao rigor assimétrico do ADR
-> 0002, empurra na direção de escrever teste sem valor para CRUD só para atingir
-> o número. A regra de como gastar essa cobertura está em `PATTERNS.md` —
-> resumidamente: cobertura em `scheduling` vem de teste de regra; nos contextos
-> de suporte, vem de teste de caso de uso e de integração, nunca de teste de
-> getter ou de construtor.
-
 ## Language
 
 ```yaml
@@ -52,6 +36,7 @@ language:
 
 | Propriedade | Default | Por quê |
 |---|---|---|
+| `coverage.min_coverage` | `80` | Piso do build, não meta. Exigir 90% global, somado ao rigor assimétrico do ADR 0002, empurraria para escrever teste de getter em CRUD só para bater o número. A regra de **onde** a cobertura deve vir está em `PATTERNS.md`. |
 | `testing.ratio_unit_integration` | `4:1` | O domínio de `scheduling` é Java puro e gera muito teste unitário barato; os de integração são poucos e caros (Testcontainers com Postgres real). |
 | `pr.max_lines` | `400` | Sem motivo para divergir. |
 
