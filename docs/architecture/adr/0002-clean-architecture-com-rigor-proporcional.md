@@ -6,7 +6,7 @@
 ## Contexto
 
 A proposta inicial aplicava Clean Architecture de forma idêntica em todos os
-módulos: modelo de domínio puro, entidade JPA separada e mapeamento explícito
+contextos: modelo de domínio puro, entidade JPA separada e mapeamento explícito
 entre os dois, em cada contexto.
 
 Feita a conta sobre o MVP real, isso significava dez arquivos para cadastrar um
@@ -44,16 +44,16 @@ Módulos de suporte ficam acoplados ao JPA: mudar de ORM neles seria reescrita.
 Aceitamos isso conscientemente — o custo de trocar de ORM num CRUD é baixo, e a
 probabilidade de fazê-lo é menor ainda.
 
-A promoção de um módulo de suporte para o regime completo é **local**: acontece
-dentro de um módulo, sem refactor global.
+A promoção de um contexto de suporte para o regime completo é **local**: acontece
+dentro de um pacote, sem refactor global.
 
 **Risco real:** a assimetria precisa estar escrita e vigiada, ou o rigor vaza
-para os módulos errados (excesso de cerimônia) ou some do `scheduling`
+para os contextos errados (excesso de cerimônia) ou some do `scheduling`
 (entidade JPA anotada virando modelo de domínio). É por isso que a regra mora
 no `PATTERNS.md` e é verificada por ArchUnit.
 
 ## Gatilho de reavaliação
 
-Quando um módulo de suporte acumular a terceira regra de negócio de verdade —
+Quando um contexto de suporte acumular a terceira regra de negócio de verdade —
 não validação de formato, mas regra que se queira testar isoladamente — ele é
 promovido ao regime completo.

@@ -14,7 +14,7 @@ biblioteca de documentos em várias fontes da verdade concorrentes.
 | Documento | O que governa |
 |---|---|
 | [`docs/domain/glossary.md`](domain/glossary.md) | Nomes. Todo identificador do código sai daqui. |
-| `sdd/PROJECT.md` | O que o projeto é: stack, comandos, módulos, definition of done. |
+| `sdd/PROJECT.md` | O que o projeto é: stack, comandos, contextos, definition of done. |
 | `sdd/PATTERNS.md` | Como o código se parece: camadas, sufixos, transação, erro. |
 
 **Contexto** — registra o raciocínio de um momento. Não é fonte da verdade e
@@ -44,11 +44,17 @@ fonte, sempre. Mantido à mão, mente já na terceira alteração.
 Uma pasta vazia é um convite para preencher com documento que ninguém pediu.
 Crie a pasta no commit em que o primeiro arquivo dela nasce.
 
-### 5. ADR não se edita
+### 5. ADR não se edita — depois que a arquitetura congela
 
 Um ADR aceito nunca é alterado. Ele é substituído por outro, que referencia o
 anterior. O histórico das decisões — inclusive das que se mostraram erradas — é
 o valor.
+
+**A regra passa a valer quando a Fase 0 fecha.** Enquanto a arquitetura está em
+análise e não existe código de negócio, ADR é rascunho: reescrever é mais
+honesto que empilhar substituições sobre decisões que ninguém chegou a executar.
+O ADR 0001 foi reescrito assim, e a seção "Correção de rota" dele registra o que
+mudou e por quê.
 
 ## Estrutura
 

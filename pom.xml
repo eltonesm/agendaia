@@ -13,47 +13,76 @@
 	<groupId>com.agendaia</groupId>
 	<artifactId>agendaia</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
 
 	<name>AgendaIA</name>
 	<description>SaaS de agendamento para barbearias, salões e profissionais que atendem por horário</description>
 
 	<!--
-		Modular Monolith: um módulo por contexto delimitado (ver ADR 0001).
+		Modular Monolith em um único módulo Maven: os contextos delimitados são
+		pacotes sob com.agendaia, e as fronteiras entre eles são garantidas por
+		ArchUnit, não pelo build (ver ADR 0001).
 
-		A ordem abaixo é a ordem de dependência, das fundações para a composição.
-		O Maven recalcula a ordem real a partir das dependências declaradas; esta
-		listagem existe para quem lê.
+		com.agendaia
+		├── shared        tipos puros compartilhados
+		├── platform      infraestrutura transversal
+		├── organization  empresa, usuário, profissional, jornada
+		├── catalog       serviços e ofertas
+		├── scheduling    core domain
+		└── customer      cliente atendido
 	-->
-	<modules>
-		<module>agendaia-shared-kernel</module>
-		<module>agendaia-platform</module>
-		<module>agendaia-organization</module>
-		<module>agendaia-catalog</module>
-		<module>agendaia-scheduling</module>
-		<module>agendaia-customer</module>
-		<module>agendaia-bootstrap</module>
-	</modules>
 
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!--
 			Lombok é processamento em tempo de compilação, não framework: pode
 			existir até no domínio puro sem violar a regra de dependência.
-			Optional para não vazar como dependência transitiva do jar.
 		-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<!-- Herdado por todos os módulos filhos. -->
 		<plugins>
 			<!--
 				Seleciona um JDK 21 para compilar e rodar testes, independente do
@@ -80,6 +109,12 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
