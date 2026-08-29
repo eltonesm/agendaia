@@ -1,0 +1,44 @@
+# Dependências de desenvolvimento local.
+#
+# Sobe apenas o banco. A aplicação roda pela IDE ou por ./mvnw spring-boot:run,
+# que é o que dá hot reload de template e recompilação rápida — colocar a app
+# num container aqui só serviria para tornar o ciclo de desenvolvimento pior.
+#
+# O compose de produção (app + banco + proxy com TLS) é outro arquivo e nasce
+# junto com o deploy na VPS.
+#
+#   docker compose up -d
+#   docker compose logs -f postgres
+#   docker compose down          (mantém os dados)
+#   docker compose down -v       (apaga o volume — recomeça do zero)
+
+name: agendaia
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: agendaia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agendaia}
+      POSTGRES_USER: ${POSTGRES_USER:-agendaia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agendaia}
+      # Locale pt_BR para que ordenação e comparação de texto se comportem
+      # como em produção desde o desenvolvimento.
+      LANG: pt_BR.UTF-8
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=pt-BR"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # A app e os testes esperam por este healthcheck antes de conectar.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agendaia} -d ${POSTGRES_DB:-agendaia}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres-data:
+    name: agendaia-postgres-data
