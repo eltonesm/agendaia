@@ -1,0 +1,17 @@
+# SDD Kit User Profile
+# Generated: 2026-08-30
+#
+# To update these settings:
+#   /sdd.project profile        -> View current settings
+#   /sdd.project profile --edit -> Interactive update
+#   Delete this file            -> Re-select from scratch
+
+profile: technical  # technical | non-technical
+
+# Plan Mode settings (technical profile only)
+plan_mode:
+  fix_complex_bugs: false
+  spec_technical_brownfield: true   # explorar codigo antes de decidir arquitetura
+  build_complex_tasks: false
+  build_layer_transitions: false
+  build_fury_test_recovery: false

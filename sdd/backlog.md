@@ -33,7 +33,7 @@ passa por `/sdd.start`.
 
 ### TODO-001: Cadastro de estabelecimento e login
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
 - **Origin**: revisão arquitetural
 - **Context**: Estabelece o tenant — sem ele nada mais tem onde morar. Exercita `TenantContext`, Spring Security e a primeira migration de verdade. Inclui a escolha do slug, com lista de palavras reservadas.
