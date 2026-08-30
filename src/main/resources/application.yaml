@@ -1,3 +1,53 @@
 spring:
   application:
     name: AgendaIA
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:agendaia}
+    username: ${POSTGRES_USER:agendaia}
+    password: ${POSTGRES_PASSWORD:agendaia}
+
+  jpa:
+    hibernate:
+      # Flyway é o dono do schema. O Hibernate apenas confere se o mapeamento
+      # bate com o que existe — nunca cria nem altera tabela.
+      ddl-auto: validate
+    # Padrão do Spring é true, e é uma armadilha num projeto Thymeleaf: manteria
+    # a sessão aberta durante a renderização, fazendo lazy loading funcionar por
+    # acidente no template e escondendo N+1 até virar problema em produção.
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        # Falha o build se uma consulta paginada exigir paginação em memória,
+        # em vez de degradar silenciosamente.
+        query:
+          fail_on_pagination_over_collection_fetch: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # Nunca em produção: exigimos que o histórico de migration seja íntegro.
+    clean-disabled: true
+
+  threads:
+    # Deliberadamente desligado. Virtual threads ajudariam throughput com JDBC
+    # bloqueante, mas o TenantContext usa ThreadLocal e não há volume que
+    # justifique a mudança. Ver docs/architecture/architecture-haiku.md.
+    virtual:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    org.flywaydb: INFO
