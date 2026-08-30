@@ -63,8 +63,9 @@ que muda de sentido ao cruzar a fronteira?
 | Usuário | `User` | Entidade de `Business` | Quem autentica em `/admin`. No MVP, o dono. |
 | Profissional | `Professional` | Raiz de agregado | Quem executa o atendimento. Pode ou não ter um `User` associado. |
 | Horário de funcionamento | `BusinessOperatingHours` | Entidade de `Business` | Quando a empresa **pode** abrir. Limite externo da disponibilidade. |
-| Jornada | `WorkSchedule` | Raiz de agregado | Jornada recorrente semanal do profissional. Dado declarado, não calculado. |
-| Bloqueio, folga, almoço | `TimeOff` | Entidade de `WorkSchedule` | Indisponibilidade **excepcional** e datada. Feriado é um `TimeOff` de dia inteiro. |
+| Jornada | `WorkSchedule` | Raiz de agregado | Jornada recorrente semanal do profissional, em faixas. Dado declarado, não calculado. **Almoço recorrente são duas faixas no mesmo dia** — o vão entre elas é o almoço. |
+| Bloqueio, folga | `TimeOff` | Entidade de `WorkSchedule` | Indisponibilidade **excepcional e datada**. Feriado e fechamento do estabelecimento são `TimeOff` sem profissional — valem para todos. |
+| Histórico de link | `BusinessSlugHistory` | Entidade de `Business` | Slug antigo, que continua resolvendo com redirecionamento. Existe porque o link já foi compartilhado e não há como recolhê-lo. |
 
 ## Contexto Catalog
 
@@ -93,7 +94,8 @@ que muda de sentido ao cruzar a fronteira?
 
 | Português | Código | Tipo | Definição |
 |---|---|---|---|
-| Cliente | `Customer` | Raiz de agregado | A pessoa **atendida** pelo estabelecimento. Nome e telefone; sem login no MVP. |
+| Cliente | `Customer` | Raiz de agregado | A pessoa **atendida** pelo estabelecimento. Nome e telefone; sem login no MVP. O telefone, normalizado em E.164, é a chave natural dentro do tenant. |
+| Anonimização | `anonymized_at` | Campo de `Customer` | Pedido de exclusão do titular (LGPD): nome e telefone são substituídos, o agendamento permanece. Ver [ADR 0011](../architecture/adr/0011-ciclo-de-vida-dos-dados.md). |
 | Histórico | — | Consulta | **Não é entidade.** É uma consulta em `scheduling` filtrada por `customerId`. |
 
 ---
