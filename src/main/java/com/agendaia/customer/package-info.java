@@ -14,4 +14,7 @@
  *
  * <p>Outros contextos só podem importar {@code com.agendaia.customer.api}.
  */
+@ApplicationModule(displayName = "Customer")
 package com.agendaia.customer;
+
+import org.springframework.modulith.ApplicationModule;

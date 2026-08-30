@@ -11,4 +11,7 @@
  *
  * <p>Outros contextos só podem importar {@code com.agendaia.organization.api}.
  */
+@ApplicationModule(displayName = "Organization")
 package com.agendaia.organization;
+
+import org.springframework.modulith.ApplicationModule;

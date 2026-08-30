@@ -33,7 +33,21 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<archunit.version>1.5.0</archunit.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.modulith</groupId>
+				<artifactId>spring-modulith-bom</artifactId>
+				<version>${spring-modulith.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -86,6 +100,17 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!--
+			Só as anotações do Modulith (@ApplicationModule, @NamedInterface),
+			necessárias em compilação porque ficam nos package-info.
+			A verificação em si é test-scope: o Modulith não entra no jar de
+			produção — usamos como verificador de build, não em runtime.
+		-->
+		<dependency>
+			<groupId>org.springframework.modulith</groupId>
+			<artifactId>spring-modulith-api</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
@@ -129,6 +154,21 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Fronteira ENTRE contextos: encapsulamento, ciclos, dependências declaradas -->
+		<dependency>
+			<groupId>org.springframework.modulith</groupId>
+			<artifactId>spring-modulith-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Camadas DENTRO do contexto, e convenções de nome (ADR 0010) -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

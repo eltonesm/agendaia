@@ -12,4 +12,7 @@
  *
  * <p>Outros contextos só podem importar {@code com.agendaia.scheduling.api}.
  */
+@ApplicationModule(displayName = "Scheduling (core)")
 package com.agendaia.scheduling;
+
+import org.springframework.modulith.ApplicationModule;

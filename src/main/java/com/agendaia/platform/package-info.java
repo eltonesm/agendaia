@@ -6,4 +6,8 @@
  * aparecer aqui uma classe cujo nome um analista de negócio reconheceria, ela
  * está no contexto errado.
  */
+@ApplicationModule(type = Type.OPEN, displayName = "Platform")
 package com.agendaia.platform;
+
+import org.springframework.modulith.ApplicationModule;
+import org.springframework.modulith.ApplicationModule.Type;

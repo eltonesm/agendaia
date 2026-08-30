@@ -11,4 +11,8 @@
  * base de agregado e evento. Se um tipo tem dono natural em algum contexto, ele
  * mora lá — este pacote não é biblioteca de utilidades.
  */
+@ApplicationModule(type = Type.OPEN, displayName = "Shared Kernel")
 package com.agendaia.shared;
+
+import org.springframework.modulith.ApplicationModule;
+import org.springframework.modulith.ApplicationModule.Type;
