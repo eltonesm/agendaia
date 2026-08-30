@@ -178,7 +178,7 @@
       "id": "TASK-008",
       "title": "RegisterBusinessUseCase e RegisterBusinessHandler",
       "description": "Caso de uso do cadastro: valida slug, cria Business e User na mesma transacao e autentica a sessao. Interface separada da implementacao, conforme a convencao do time.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "High",
       "depends_on": ["TASK-003", "TASK-004", "TASK-007"],
@@ -193,7 +193,7 @@
       "acceptance_criteria": [
         "AC-1: interface com sufixo UseCase, implementacao com sufixo Handler; nunca Impl",
         "AC-2: @Transactional no handler, em nenhum outro lugar",
-        "AC-3: autenticacao gravada no SecurityContextRepository, nao apenas no SecurityContextHolder",
+        "AC-3: MOVIDO PARA TASK-010 — autenticar sessao envolve requisicao, resposta e cookie, que sao do adapter web. Refina o DD-5 mantendo a decisao e removendo o vazamento de camada que ele aceitava.",
         "AC-4: violacao de unicidade do banco traduzida em excecao de dominio, nao propagada como erro de infraestrutura",
         "AC-5: teste unitario com repositorios mockados cobre e-mail duplicado, slug em uso e slug reservado",
         "GATE: ./mvnw test verde; ArchitectureTest confirma UseCase como interface e ausencia de sufixo Impl"
@@ -243,6 +243,7 @@
         "AC-1: erro de validacao devolve 200 com a mesma tela e erro por campo, preservando o preenchimento",
         "AC-2: o endereco completo do link e exibido ao lado do campo de slug",
         "AC-3: controller nao injeta repositorio nem entidade JPA",
+        "AC-5: autenticacao gravada no SecurityContextRepository, nao apenas no SecurityContextHolder — recebido da TASK-008 (DD-5)",
         "AC-4: JavaScript apenas preenche; nenhuma regra de negocio no template",
         "GATE: @WebMvcTest cobre rota, CSRF e erro por campo"
       ],
