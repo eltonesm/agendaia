@@ -1,0 +1,18 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Página não encontrada')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 32rem">
+  <h1 class="h4">Página não encontrada</h1>
+  <p class="text-body-secondary">
+    O endereço que você abriu não existe. Se veio de um link compartilhado por um
+    estabelecimento, confira se ele foi copiado por inteiro.
+  </p>
+  <a class="btn btn-primary" th:href="@{/}">Ir para o início</a>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

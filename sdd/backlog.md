@@ -154,6 +154,18 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-010: Plugin do Modulith na IDE acusa falso positivo em platform -> shared
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: TASK-005 do build
+- **Context**: A IDE marca `MODULITH_TYPE_REF_VIOLATION` em toda referencia de `platform` a `TenantId` e `DomainException`, que estao na raiz do modulo `shared` e portanto sao API publica. O `ModuleStructureTest` passa — o plugin da IDE nao esta honrando `@ApplicationModule(type = OPEN)`. Risco real: erro vermelho constante treina o olho a ignorar diagnostico da IDE.
+- **Affected Files**: configuracao da IDE
+- **Complexity**: Low
+- **Risk if Ignored**: Diagnostico verdadeiro passa despercebido no meio do ruido
+
+---
+
 ### DEBT-009: Skill java-spring-expert mira Spring Boot 3.x
 - **Priority**: Medium
 - **Status**: pending

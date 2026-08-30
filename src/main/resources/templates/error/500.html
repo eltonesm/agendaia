@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Erro inesperado')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 32rem">
+  <h1 class="h4">Algo deu errado</h1>
+  <p class="text-body-secondary">
+    Não foi possível concluir a operação. O problema foi registrado e será
+    analisado.
+  </p>
+
+  <!--/*
+    O mesmo identificador aparece no log em nível ERROR. É o que liga a
+    reclamação do usuário à linha certa, sem expor stack trace na tela.
+  */-->
+  <p class="small text-body-secondary" th:if="${requestId}">
+    Código para suporte: <code th:text="${requestId}">—</code>
+  </p>
+
+  <a class="btn btn-primary" th:href="@{/}">Voltar ao início</a>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
