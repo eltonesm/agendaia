@@ -1,0 +1,387 @@
+{
+  "feature": "cadastro-estabelecimento-login",
+  "from_backlog": "TODO-001",
+  "generated_at": "2026-08-30",
+  "spec_language": "pt",
+
+  "local_config": {
+    "postgresql": "container",
+    "postgresql_note": "compose.yaml sobe postgres:18-alpine para desenvolvimento; testes de integracao usam Testcontainers com a mesma imagem. Ambos ja existem desde a Fase 0.",
+    "kvs": null,
+    "bigqueue": null
+  },
+
+  "adaptations": [
+    "Tarefa de Dockerfile NAO gerada: e infraestrutura de deploy, coberta pela TODO-106, e criar Dockerfile dentro de uma feature de cadastro violaria a regra de fatia vertical do PATTERNS.md.",
+    "Tarefa de endpoint /ping NAO gerada: /ping e convencao da plataforma interna do Mercado Livre. O equivalente aqui e /actuator/health, que ja existe e ja e testado desde a Fase 0.",
+    "Layer 2 vazia: nao ha servicos de plataforma interna neste projeto.",
+    "AUTO-TASK-E2E nao gerada: ltp.enabled e false. Os tres cenarios E2E viram testes de integracao com Testcontainers, nas TASK-012 e TASK-013.",
+    "IDs gerados manualmente: generate-ids.sh nao existe nesta instalacao."
+  ],
+
+  "stats": {
+    "total": 16,
+    "done": 0,
+    "by_layer": { "1": 13, "2": 0, "3": 3 },
+    "by_complexity": { "Low": 5, "Medium": 8, "High": 3 }
+  },
+
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Adicionar dependencias de seguranca e Thymeleaf",
+      "description": "Acrescentar spring-boot-starter-security, o starter de teste correspondente e spring-boot-starter-thymeleaf ao pom. Confirmar cada artifactId contra o BOM do Boot 4.1.1 antes de escrever, porque a renomeacao do Boot 4 nao foi uniforme.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": [],
+      "files": ["pom.xml"],
+      "acceptance_criteria": [
+        "AC-1: artifactIds conferidos contra spring-boot-dependencies:4.1.1, nao copiados de tutorial de Boot 3",
+        "AC-2: thymeleaf-extras-springsecurity confirmado ou substituido pelo nome vigente no Boot 4",
+        "GATE: ./mvnw verify continua verde com os 13 testes existentes"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-002",
+      "title": "Migration V2: tabelas business e app_user",
+      "description": "Criar V2__organization_create_business_and_user.sql conforme a spec tecnica. Inclui as restricoes de unicidade, o CHECK de formato do slug e o indice por tenant.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": ["src/main/resources/db/migration/V2__organization_create_business_and_user.sql"],
+      "acceptance_criteria": [
+        "AC-1: business sem coluna tenant_id, com comentario explicando que ela E o tenant",
+        "AC-2: tabela nomeada app_user, nunca user",
+        "AC-3: UNIQUE em business.slug e em app_user.email; indice em app_user.tenant_id",
+        "AC-4: CHECK de formato do slug replicando a regra do dominio",
+        "AC-5: business_slug_history NAO e criada",
+        "GATE: aplicacao sobe contra o compose e o Flyway registra a V2 como aplicada"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-3", "DD-6"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "SlugGenerator e ReservedSlugs com testes puros",
+      "description": "Implementar a derivacao de slug como classe sem estado e sem dependencia, e o conjunto de palavras reservadas. E a unica logica com regra de verdade da feature.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
+        "src/main/java/com/agendaia/organization/domain/ReservedSlugs.java",
+        "src/test/java/com/agendaia/organization/domain/SlugGeneratorTest.java",
+        "src/test/java/com/agendaia/organization/domain/ReservedSlugsTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: cobre a tabela de casos da spec, incluindo entrada que gera slug vazio",
+        "AC-2: remove acentuacao via Normalizer NFD, nao por tabela de substituicao",
+        "AC-3: testes sem Spring e sem banco, rodando em milissegundos",
+        "GATE: ./mvnw test verde e nenhuma regra de ArchUnit violada"
+      ],
+      "references": ["US-2"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-004",
+      "title": "Entidades Business e User com repositorios",
+      "description": "Criar as entidades JPA no regime CRUD do ADR 0002, onde a entidade E o modelo. Construtor privado, criacao por metodo de fabrica, sem setter publico.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/Business.java",
+        "src/main/java/com/agendaia/organization/domain/User.java",
+        "src/main/java/com/agendaia/organization/domain/UserRole.java",
+        "src/main/java/com/agendaia/organization/domain/BusinessRepository.java",
+        "src/main/java/com/agendaia/organization/domain/UserRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por Business.register(...) e User.owner(...), com construtor privado",
+        "AC-2: nenhum setter publico; construtor protegido sem argumentos para o Hibernate",
+        "AC-3: sem @Data, @ToString ou @EqualsAndHashCode",
+        "AC-4: id UUIDv7 gerado na aplicacao, nunca no INSERT",
+        "AC-5: @Table(name = \"app_user\") em User",
+        "GATE: ddl-auto validate nao acusa divergencia entre mapeamento e migration"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-6"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "platform: AuthenticatedUser e TenantContext com filtro",
+      "description": "Criar o principal da sessao carregando userId, tenantId e nome do estabelecimento, e o contexto de tenant populado por filtro a partir dele. Ambos moram em platform para evitar ciclo entre modulos.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/agendaia/platform/tenant/TenantContext.java",
+        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: AuthenticatedUser implementa UserDetails e nao importa nada de organization",
+        "AC-2: TenantContext limpa o valor ao fim da requisicao, inclusive quando ela falha",
+        "AC-3: filtro nao le tenant de parametro, corpo ou cabecalho — so do principal",
+        "GATE: ModuleStructureTest continua verde, sem ciclo entre platform e organization"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "organization: BusinessUserDetailsService",
+      "description": "Implementar UserDetailsService carregando o usuario por e-mail e montando o AuthenticatedUser. Fica em organization porque acessa a entidade User; platform depende apenas da interface do Spring.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-004", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: usuario ou estabelecimento inativo resulta em conta desabilitada, nao em excecao distinta",
+        "AC-2: e-mail inexistente e senha errada produzem o mesmo resultado observavel para quem chama",
+        "AC-3: nenhum log registra o e-mail tentado",
+        "GATE: ArchitectureTest verde; a classe nao aparece em platform"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-1", "DD-2"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "platform: SecurityConfig",
+      "description": "Configurar a cadeia de filtros: form login, BCrypt, rotas publicas e protegidas, CSRF ligado e renovacao de sessao. Depende apenas da interface UserDetailsService.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-006"],
+      "files": ["src/main/java/com/agendaia/platform/security/SecurityConfig.java"],
+      "acceptance_criteria": [
+        "AC-1: /admin/** exige sessao e guarda o destino pretendido no redirecionamento",
+        "AC-2: /cadastro, /login, /css/**, /js/** e /actuator/health sao publicos; demais endpoints do actuator, nao",
+        "AC-3: CSRF ligado; sessionFixation newSession no login",
+        "AC-4: BCryptPasswordEncoder registrado como bean",
+        "GATE: ./mvnw verify verde; ArchitectureTest nao acusa dependencia de platform para organization"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "RegisterBusinessUseCase e RegisterBusinessHandler",
+      "description": "Caso de uso do cadastro: valida slug, cria Business e User na mesma transacao e autentica a sessao. Interface separada da implementacao, conforme a convencao do time.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-003", "TASK-004", "TASK-007"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/RegisterBusinessUseCase.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessCommand.java",
+        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
+        "src/main/java/com/agendaia/organization/domain/exception/EmailAlreadyUsedException.java",
+        "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
+        "src/test/java/com/agendaia/organization/application/RegisterBusinessHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: interface com sufixo UseCase, implementacao com sufixo Handler; nunca Impl",
+        "AC-2: @Transactional no handler, em nenhum outro lugar",
+        "AC-3: autenticacao gravada no SecurityContextRepository, nao apenas no SecurityContextHolder",
+        "AC-4: violacao de unicidade do banco traduzida em excecao de dominio, nao propagada como erro de infraestrutura",
+        "AC-5: teste unitario com repositorios mockados cobre e-mail duplicado, slug em uso e slug reservado",
+        "GATE: ./mvnw test verde; ArchitectureTest confirma UseCase como interface e ausencia de sufixo Impl"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-5"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "platform: layout base Thymeleaf e tratamento global de erro",
+      "description": "Criar o esqueleto de layout com Bootstrap 5 por CDN e o @ControllerAdvice que traduz excecao de dominio em tela. Layout minimo: fragmentos so nascem quando a segunda tela mostrar o que se repete.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/platform/web/GlobalExceptionHandler.java",
+        "src/main/resources/templates/fragments/layout.html",
+        "src/main/resources/templates/error/404.html",
+        "src/main/resources/templates/error/500.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Bootstrap por CDN com integrity e crossorigin, versao fixada",
+        "AC-2: excecao de dominio vira mensagem em portugues na tela, com WARN sem stack trace",
+        "AC-3: excecao inesperada gera ERROR com requestId, e a tela mostra o mesmo requestId",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-010",
+      "title": "Tela e controller de cadastro",
+      "description": "RegistrationController com GET e POST, template do formulario e o JavaScript que preenche o slug enquanto o nome e digitado. O servidor valida o valor submetido, nao rederiva.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-008", "TASK-009"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/RegistrationController.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegistrationRequest.java",
+        "src/main/resources/templates/auth/cadastro.html",
+        "src/main/resources/static/js/slug.js",
+        "src/test/java/com/agendaia/organization/adapter/in/web/RegistrationControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: erro de validacao devolve 200 com a mesma tela e erro por campo, preservando o preenchimento",
+        "AC-2: o endereco completo do link e exibido ao lado do campo de slug",
+        "AC-3: controller nao injeta repositorio nem entidade JPA",
+        "AC-4: JavaScript apenas preenche; nenhuma regra de negocio no template",
+        "GATE: @WebMvcTest cobre rota, CSRF e erro por campo"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "Telas de login, logout e painel minimo",
+      "description": "Template de login integrado ao Spring Security, acao de sair visivel, e DashboardController exibindo o nome do estabelecimento e o link publico.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-007", "TASK-009"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/DashboardController.java",
+        "src/main/resources/templates/auth/login.html",
+        "src/main/resources/templates/admin/dashboard.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: credencial incorreta mostra mensagem unica e generica",
+        "AC-2: acao de sair presente em toda tela autenticada; sessao invalidada no servidor",
+        "AC-3: painel le o estabelecimento a partir do TenantContext, nunca de parametro",
+        "GATE: @WebMvcTest cobre login, logout e acesso negado sem sessao"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "Testes de integracao dos tres cenarios E2E",
+      "description": "Implementar E2E-1, E2E-2 e E2E-3 como testes de integracao com Testcontainers e MockMvc, seguindo redirecionamento. E o unico lugar onde a armadilha do DD-5 aparece.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-010", "TASK-011"],
+      "files": [
+        "src/test/java/com/agendaia/organization/RegistrationIT.java",
+        "src/test/java/com/agendaia/organization/LoginIT.java",
+        "src/test/java/com/agendaia/organization/SlugUnavailableIT.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 segue o redirecionamento e confirma que o painel abre AUTENTICADO — cobre o DD-5",
+        "AC-2: E2E-2 confirma retorno a rota originalmente pretendida, nao ao painel",
+        "AC-3: E2E-3 confirma que nenhum Business ou User parcial foi criado",
+        "AC-4: usam Postgres real via Testcontainers, nunca H2",
+        "GATE: ./mvnw verify verde com os tres cenarios passando"
+      ],
+      "references": ["US-1", "US-2", "US-3"],
+      "design_decisions": ["DD-5"]
+    },
+    {
+      "id": "TASK-013",
+      "title": "Teste de isolamento entre tenants",
+      "description": "Criar dois estabelecimentos e afirmar que nenhuma rota autenticada de um alcanca dado do outro. Nasce aqui e cresce a cada feature.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-012"],
+      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: dois tenants criados, com dado distinguivel em cada",
+        "AC-2: sessao do tenant A nao le, lista, altera nem apaga dado do tenant B por nenhuma rota existente",
+        "AC-3: o teste falha se o filtro de tenant for desligado — verificado desligando-o de proposito uma vez",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-014",
+      "title": "Code review",
+      "description": "Rodar o Skill sdd-code-reviewer sobre o diff da feature e resolver os achados. Portao bloqueante.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhum achado de corretude em aberto",
+        "AC-2: conformidade com PATTERNS.md conferida: sem setter, sem Impl, transacao so na application",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Revisao de performance",
+      "description": "Rodar o Skill sdd-performance-expert. Nesta feature o foco e ausencia de N+1 e de EAGER, e uso correto dos indices no login.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhuma associacao EAGER; nenhuma consulta em laco",
+        "AC-2: login usa o indice unico de e-mail, confirmado por EXPLAIN",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-016",
+      "title": "Revisao de seguranca",
+      "description": "Rodar o Skill sdd-code-reviewer com foco em seguranca. Conferir os pontos que a spec tecnica listou na secao Security.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: senha nunca em log, mensagem de erro ou resposta",
+        "AC-2: CSRF ligado; login nao permite enumeracao de conta",
+        "AC-3: nenhum caminho aceita tenant_id vindo do cliente",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    }
+  ],
+
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-003"],
+        "level_1": ["TASK-002", "TASK-005", "TASK-009"],
+        "level_2": ["TASK-004"],
+        "level_3": ["TASK-006"],
+        "level_4": ["TASK-007"],
+        "level_5": ["TASK-008", "TASK-011"],
+        "level_6": ["TASK-010"],
+        "level_7": ["TASK-012"],
+        "level_8": ["TASK-013"]
+      },
+      "3": {
+        "level_0": ["TASK-014", "TASK-015", "TASK-016"]
+      }
+    }
+  }
+}
