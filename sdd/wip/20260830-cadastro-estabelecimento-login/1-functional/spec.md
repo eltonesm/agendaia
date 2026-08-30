@@ -161,8 +161,8 @@ início e do fim.
 
 **Palavras reservadas para slug**:
 
-`admin`, `login`, `logout`, `cadastro`, `api`, `actuator`, `error`, `b`,
-`static`, `css`, `js`, `img`, `assets`, `health`, `sobre`, `ajuda`, `contato`,
+`admin`, `login`, `logout`, `cadastro`, `api`, `actuator`, `error`,
+`static`, `css`, `img`, `assets`, `health`, `sobre`, `ajuda`, `contato`,
 `termos`, `privacidade`, `app`, `www`, `null`, `undefined`.
 
 > **Nota sobre o tamanho desta lista**: o ADR 0008 já prefixa a rota pública com
@@ -170,6 +170,10 @@ início e do fim.
 > `/admin`. A necessidade técnica da lista praticamente desapareceu com aquela
 > decisão. O que resta é proteger rotas futuras sob `/b/` e evitar slugs
 > confusos. A lista é curta de propósito; crescê-la sem motivo é cerimônia.
+>
+> **Correção durante a implementação (2026-08-30)**: `b` e `js` saíram da lista.
+> Ambos têm menos de 3 caracteres e já são recusados pela validação de formato,
+> então estavam ali como peso morto. O teste `reservadasSaoSlugsValidos` pegou.
 
 ---
 
