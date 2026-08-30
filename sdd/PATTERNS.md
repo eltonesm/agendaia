@@ -26,8 +26,28 @@
 - Não importe `domain`, `application` ou `adapter` de outro contexto.
 - Não faça JOIN entre tabelas de contextos diferentes. Referência cruzada é
   UUID solto, sem chave estrangeira.
-- Why: com um único módulo Maven (ADR 0001), nada físico impede o import — a
-  fronteira só existe porque o ArchUnit a verifica.
+- A dependência é **declarada**, não inferida: `allowedDependencies` no
+  `package-info.java` do contexto, e `@NamedInterface("api")` no pacote `api`.
+  Dependência nova exige editar essa lista — e aí aparece no diff.
+- Why: com um único módulo Maven (ADR 0001), nada físico impede o import. A
+  fronteira existe porque o Spring Modulith a verifica no build (ADR 0010).
+
+**API entre contextos é grossa, nunca conversadeira**:
+- Desenhe toda operação da `api` **como se já fosse uma chamada de rede**: em
+  lote, granularidade grossa, sem N+1.
+- Não exponha busca por um id para ser chamada dentro de um laço.
+
+```java
+// Ruim — parece inocente hoje
+Offering findOffering(UUID id);
+
+// Bom — uma chamada, independente de quantos
+List<OfferingView> findOfferings(TenantId tenant, Set<UUID> professionalIds);
+```
+
+- Why: in-process a chamada custa nanossegundos e o desenho ruim não dói. É
+  exatamente assim que se constrói um monólito distribuído: o dia da extração
+  chega e cada tela vira quarenta chamadas remotas.
 
 **Leitura é chamada, escrita é evento**:
 - Consulta a outro contexto: chamada síncrona na `api` dele.

@@ -31,7 +31,8 @@ Depois de TODO-008 existe um produto que um barbeiro real consegue usar — que
 |---|---|---|
 | TODO-101 | Flyway, datasource e migration inicial com `btree_gist` | Deve entrar antes de TODO-001, senão a feature 1 carrega o andaime e deixa de ser fatia vertical. |
 | TODO-102 | Testcontainers com a imagem do `compose.yaml` | H2 não serve: não implementa `EXCLUDE USING gist`. |
-| TODO-103 | Regras de ArchUnit | Carregam sozinhas todo o peso das fronteiras desde o ADR 0001. Usar `allowEmptyShould(true)` enquanto os pacotes estiverem vazios. |
+| TODO-103 | Regras de ArchUnit — camadas dentro do contexto | Domínio sem Spring, `application` sem `adapter`, controller sem repositório, sufixos. Usar `allowEmptyShould(true)` enquanto os pacotes estiverem vazios. |
+| TODO-107 | Spring Modulith 2.1.1 — fronteira entre contextos | `@NamedInterface("api")`, `allowedDependencies` por contexto e `ApplicationModules.verify()`. Ver ADR 0010. |
 | TODO-104 | Pipeline de CI | Depois que existir teste que valha a pena rodar. |
 | TODO-105 | Backup `pg_dump` com **restore testado** | Obrigatório antes do primeiro cliente pagante. Backup não restaurado não é backup. |
 | TODO-106 | Compose de produção: app, banco e Caddy com TLS | Nasce junto com a VPS, para poder ser testado. |
@@ -46,7 +47,7 @@ Depois de TODO-008 existe um produto que um barbeiro real consegue usar — que
 | DEBT-004 | `PATTERNS.md` sem o exemplo de ponta a ponta | Marcado como pendente; entra depois de TODO-002 |
 | DEBT-005 | `docs/security/threat-model.md` | Melhor escrito depois que autenticação existir |
 | DEBT-006 | `docs/operations/runbook.md` | Escrever durante o deploy e o restore reais, não antes |
-| DEBT-007 | Avaliar Spring Modulith para dar dentes ao ADR 0001 | Confirmar versão compatível com Boot 4.1 |
+| ~~DEBT-007~~ | ~~Avaliar Spring Modulith~~ | **Resolvido em 2026-08-29**: adotado no ADR 0010, versão 2.1.1. Implementação em TODO-107. |
 | DEBT-008 | Instrumentar ociosidade da agenda | É o gatilho de reavaliação do ADR 0006 — sem o dado, a decisão sobre encaixe dinâmico não pode ser tomada |
 
 ## IDEA

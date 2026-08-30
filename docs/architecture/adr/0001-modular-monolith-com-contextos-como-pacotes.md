@@ -100,7 +100,10 @@ A migração é mecânica nos dois sentidos — mover diretórios e escrever pom
 o que é justamente por que a decisão mais simples é a certa agora: o custo de
 estar errado é uma tarde de trabalho.
 
-Vale avaliar também o **Spring Modulith**, que foi feito para dar dentes a este
-desenho: verifica fronteiras entre módulos em teste, gera documentação da
-estrutura e traz registro confiável de eventos. Confirmar a versão compatível
-com Spring Boot 4.1 antes de adotar.
+> **Resolvido pelo [ADR 0010](0010-spring-modulith-para-fronteira-entre-contextos.md)
+> em 2026-08-29.** Este ADR sugeria avaliar o Spring Modulith para dar dentes ao
+> desenho. Foi avaliado e adotado na versão 2.1.1, com escopo estreito: ele
+> cuida da fronteira **entre** contextos; o ArchUnit continua responsável pelas
+> camadas **dentro** de cada um. A consequência negativa registrada acima — "a
+> fronteira passa a ser verificada em teste, não em compilação" — **permanece
+> verdadeira**: o Modulith também verifica em teste.

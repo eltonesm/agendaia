@@ -14,6 +14,45 @@ O ecossistema inteiro (Spring, JPA, bibliotecas) é inglês, e misturar produz
 lado. A rota `/admin/servicos` renderiza `ServiceController` — e este glossário é
 a ponte entre as duas metades.
 
+## Três palavras que não são sinônimos
+
+Subdomínio, contexto delimitado e módulo são usados como se fossem a mesma
+coisa, e não são. Confundi-los leva a decisões erradas de fronteira.
+
+| | Espaço | O que é | Muda quando |
+|---|---|---|---|
+| **Subdomínio** | do **problema** | Uma parte do negócio. Existe mesmo que ninguém escreva software. | O negócio muda |
+| **Contexto delimitado** | da **solução** | Uma fronteira de **linguagem**: dentro dela, cada termo tem um significado só. | Você reaprende o domínio |
+| **Módulo** | do **código** | Unidade de empacotamento: pacote Java, módulo Maven. | Conveniência de build |
+
+Subdomínio você **descobre** conversando com o estabelecimento. Contexto
+delimitado você **decide** ao modelar. Módulo você **escolhe** ao empacotar.
+
+### O mapeamento neste projeto
+
+| Subdomínio | Tipo | Contexto | Módulo |
+|---|---|---|---|
+| Agendamento | **Core** | `scheduling` | `com.agendaia.scheduling` |
+| Cadastro do estabelecimento | Suporte | `organization` | `com.agendaia.organization` |
+| Identidade e acesso | Genérico | `organization` — **o mesmo** | idem |
+| Catálogo de serviços | Suporte | `catalog` | `com.agendaia.catalog` |
+| Cliente atendido | Suporte | `customer` | `com.agendaia.customer` |
+
+**O mapeamento não é 1:1:1.** Dois subdomínios — cadastro e identidade — moram
+num contexto só, por decisão registrada no
+[ADR 0003](../architecture/adr/0003-identidade-dentro-de-organization.md).
+Sempre que o mapeamento deixar de ser um-para-um, isso é decisão e vira ADR.
+
+### A prova de que contexto é sobre linguagem
+
+`Service` no `catalog` é um item vendável, com nome e descrição. `Service` no
+`scheduling` é apenas uma duração e um identificador. **Mesma palavra, dois
+significados — logo, dois contextos.** Se o significado fosse o mesmo, seria um
+contexto só, e a separação seria burocracia.
+
+É esse o teste para decidir se algo merece contexto próprio: existe uma palavra
+que muda de sentido ao cruzar a fronteira?
+
 ## Contexto Organization
 
 | Português | Código | Tipo | Definição |
