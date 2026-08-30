@@ -233,6 +233,28 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+			<!--
+				Sem isto, todo teste terminado em IT é escrito e NUNCA executado:
+				o Surefire só pega *Test.java, e a suíte fica verde justamente
+				porque não rodou. Descoberto quando SecurityRoutesIT não apareceu
+				no relatório.
+
+				A separação tem valor: `./mvnw test` roda só o que é rápido;
+				`./mvnw verify` inclui os testes que sobem Postgres real.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

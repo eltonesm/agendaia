@@ -2,7 +2,9 @@ package com.agendaia.platform.web;
 
 import com.agendaia.shared.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
+import org.springframework.web.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -50,9 +52,28 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ModelAndView erroInesperado(Exception e, HttpServletRequest request) {
+    public ModelAndView erroInesperado(
+            Exception e, HttpServletRequest request, HttpServletResponse response) {
+
+        // Exceção do próprio Spring que JÁ carrega o status certo: página
+        // inexistente, método não suportado, mídia não aceita. Todas implementam
+        // ErrorResponse — mas nem todas estendem ErrorResponseException, então a
+        // checagem tem que ser pela interface. NoResourceFoundException é
+        // justamente uma das que não estende.
+        //
+        // Sem este desvio, um 404 vira 500 e o usuário lê "algo deu errado"
+        // quando apenas digitou um endereço que não existe. Foi o SecurityRoutesIT
+        // que pegou.
+        if (e instanceof ErrorResponse resposta) {
+            var status = resposta.getStatusCode().value();
+            response.setStatus(status);
+            // 4xx é uso incorreto, não defeito: WARN e sem stack trace.
+            log.warn("Requisição rejeitada com {} em {}", status, request.getRequestURI());
+            return new ModelAndView(status == 404 ? "error/404" : "error/500");
+        }
+
         var requestId = UUID.randomUUID().toString().substring(0, 8);
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         // O identificador vai para o log E para a tela. Sem ele, "deu erro"
         // é irrastreável.
