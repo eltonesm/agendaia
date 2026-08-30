@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-08-30
 **Last Updated**: 2026-08-30
-**Current Stage**: technical
+**Current Stage**: tasks
 
 > **Sobre o modo greenfield**: o repositório tem código, mas nenhum código de
 > negócio — apenas o andaime da Fase 0 (build, Flyway, Testcontainers, ArchUnit,
@@ -88,11 +88,11 @@ ltp:
 
 ```yaml
 migration:
-  detected: null            # a definir em /sdd.spec technical
-  service_name: null
+  detected: true
+  service_name: "agendaia (compose local; VPS na TODO-106)"
   service_type: postgresql
   branch_name: null
-  branch_status: null
+  branch_status: pending
   migration_files: []
 ```
 
@@ -164,12 +164,12 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
-    owner: null
-    approved_by: null
-    approved_at: null
+    started: 2026-08-30
+    completed: 2026-08-30
+    status: approved
+    owner: Elton Marques
+    approved_by: Elton Marques
+    approved_at: 2026-08-30T19:25:27Z
     mcpqueried: false
     services_count: 0
 

@@ -154,6 +154,18 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-009: Skill java-spring-expert mira Spring Boot 3.x
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: spec técnica da TODO-001
+- **Context**: O skill instalado declara "Java 17+, Spring Boot 3.x". O projeto é Java 21 e Boot 4.1.1. Carregá-lo injetaria orientação de Boot 3 — que já custou três erros no andaime: nome de starter, modularização das auto-configurações do Flyway e renomeação dos módulos do Testcontainers. Foi deliberadamente **não** carregado na spec técnica. Atualizar o skill, ou desativá-lo neste projeto para não ser invocado por engano no `/sdd.build`.
+- **Affected Files**: `.claude/skills/java-spring-expert/SKILL.md`
+- **Complexity**: Low
+- **Risk if Ignored**: O `/sdd.build` invoca o skill por gatilho de palavra-chave e gera código com API de Boot 3
+
+---
+
 ### DEBT-003: IDE precisa apontar para JDK 21
 - **Priority**: Low
 - **Status**: pending
