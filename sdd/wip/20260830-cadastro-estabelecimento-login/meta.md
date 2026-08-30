@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-08-30
 **Last Updated**: 2026-08-30
-**Current Stage**: functional
+**Current Stage**: technical
 
 > **Sobre o modo greenfield**: o repositório tem código, mas nenhum código de
 > negócio — apenas o andaime da Fase 0 (build, Flyway, Testcontainers, ArchUnit,
@@ -156,11 +156,11 @@ auto_generated:
 stages:
   functional:
     started: 2026-08-30
-    completed: null
-    status: pending
+    completed: 2026-08-30
+    status: approved
     owner: Elton Marques
-    approved_by: null
-    approved_at: null
+    approved_by: Elton Marques
+    approved_at: 2026-08-30T19:19:19Z
     iterations: 0
 
   technical:

@@ -70,5 +70,28 @@ language:
 
 ## Project Vision
 
-<!-- Ainda não definida. Preencher com /sdd.project vision quando as respostas
-     de posicionamento e meta do piloto estiverem fechadas. Ver docs/product/. -->
+```yaml
+vision:
+  summary: "Agenda online para barbearias, salões e profissionais que atendem por horário, com um link público que o estabelecimento compartilha para que seus clientes agendem sozinhos."
+
+  target_users: "Estabelecimentos que hoje não usam nenhum sistema — controlam a agenda por WhatsApp, caderno e memória."
+
+  value_proposition: "O concorrente real é o caderno, não o Trinks. A promessa é simplicidade: o dono configura em minutos e compartilha um link."
+
+  principles:
+    - "Corretude da agenda acima de tudo — overbooking destrói a confiança e devolve o estabelecimento ao caderno"
+    - "Isolamento entre estabelecimentos é inegociável"
+    - "Simplicidade de uso — nenhuma configuração que o dono não saiba responder"
+    - "Velocidade de evolução — uma pessoa entrega uma funcionalidade por semana"
+
+  anti_goals:
+    - "Não é ERP de salão: sem estoque, folha ou comissão no MVP"
+    - "Não compete por preço — existe concorrente a R$ 19,90"
+    - "Não é plataforma de descoberta: não há busca por estabelecimentos"
+    - "Desempenho e escala não estão entre os atributos de qualidade"
+```
+
+> Transposta em 2026-08-30 do
+> [architecture haiku](../docs/architecture/architecture-haiku.md), que já
+> continha a substância. Os `principles` são os atributos de qualidade em ordem
+> de prioridade: quando dois conflitarem, o de cima ganha.

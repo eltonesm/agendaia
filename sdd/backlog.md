@@ -141,6 +141,17 @@ passa por `/sdd.start`.
 
 ---
 
+### TODO-109: Recuperação de senha
+- **Priority**: High
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: TODO-001 — declarado fora de escopo na spec funcional
+- **Context**: Sem isto, o dono que esquecer a senha perde o acesso ao próprio negócio e a única saída é alterar o hash direto no banco. Aceitável enquanto o piloto é um barbeiro conhecido; inaceitável no segundo cliente. Depende de e-mail transacional, que o projeto ainda não tem — a mesma dependência que manteve a confirmação de e-mail fora da TODO-001.
+- **Affected Files**: `organization`, `platform`
+- **Complexity**: Medium
+
+---
+
 ## 🔧 Technical Debt
 
 ### DEBT-003: IDE precisa apontar para JDK 21
