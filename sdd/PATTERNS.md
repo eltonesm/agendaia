@@ -248,6 +248,74 @@ com.agendaia.<contexto>
 - Todo agregado com invariante de concorrência tem um teste que dispara duas
   operações simultâneas e exige que exatamente uma vença.
 
+## Frontend
+
+**Tela é parte da feature, não uma fase depois**:
+- Uma feature só está pronta quando dá para usá-la pelo navegador.
+- A ordem dentro da feature é domain → application → adapter de saída →
+  controller e template. O template é o **último passo da mesma feature**.
+- Não crie feature de "camada web" separada.
+- Why: a tela é onde se descobre que a spec estava errada. Melhor descobrir na
+  terça da mesma feature do que três features depois.
+
+**Estrutura de templates**:
+
+```
+templates/
+├── fragments/   layout.html, head.html, nav.html, footer.html, form-errors.html
+├── error/       404.html, 500.html
+├── auth/        login.html, cadastro.html
+├── admin/       dashboard.html, empresa/, profissionais/, servicos/, agenda/, clientes/
+└── public/      empresa.html, agendamento.html, confirmacao.html, meu-agendamento.html
+```
+
+- **Nome de template é em português**, espelhando a URL: `/admin/servicos` é
+  renderizado por `admin/servicos/lista.html`, a partir de `ServiceController`.
+- Why: é exceção explícita à regra de idioma. O caminho do template é parte do
+  roteamento visível ao usuário, não um identificador de código — espelhar a URL
+  torna a navegação óbvia.
+
+**Fragmento nasce na segunda repetição, não na primeira**:
+- A primeira tela carrega um layout mínimo. Extraia `th:fragment` quando a
+  segunda tela mostrar o que de fato se repete.
+- Não desenhe um design system antes de existir tela.
+- Why: layout sem tela é especulação — a mesma ficção do runbook escrito antes
+  do procedimento.
+
+**Bootstrap 5 por CDN, versão fixada** (ADR 0012):
+- Sempre com `integrity` e `crossorigin`. Nunca versão flutuante.
+- No admin, use Bootstrap como vem — é ferramenta de trabalho, não vitrine.
+- Na página pública, o tema sobrescreve as custom properties `--bs-*`
+  (tipografia, cor, raio, sombra, ritmo vertical). **Não** escreva CSS ad-hoc
+  por tela.
+- Evite na página pública os componentes que denunciam Bootstrap: navbar e card
+  padrão.
+
+**A página pública é desenhada para o polegar**:
+- Mobile-first. Alvo de toque com no mínimo 44px.
+- O cliente está no 3G, em pé, na rua. Cada campo a mais é desistência.
+- Why: é a única tela que representa o estabelecimento para os clientes dele.
+
+**Sem JavaScript até existir interação real**:
+- Formulário HTML e redirect resolvem cadastro, login e edição.
+- HTMX entra apenas no seletor de horários (`TODO-005`/`TODO-006`), que é a
+  única tela com interação de verdade.
+- Why: adotar HTMX na tela de login seria adotá-lo por moda.
+
+**Template não decide nada**:
+- Thymeleaf formata o que o controller já resolveu. Sem `th:if` com regra de
+  negócio, sem cálculo, sem chamada a serviço a partir da view.
+- O controller entrega ao model um objeto já pronto para exibir.
+- Why: regra dentro de template não é testável nem encontrável — e com
+  `open-in-view: false` uma chamada lazy no template estoura em produção.
+
+**Teste de tela verifica contrato, não markup**:
+- `@WebMvcTest` com `MockMvc`: status, view escolhida, atributos do model e a
+  presença dos elementos que importam.
+- Não asserte sobre o HTML inteiro nem sobre classes de CSS.
+- Why: teste sobre markup quebra a cada ajuste visual e ensina o time a ignorar
+  teste vermelho.
+
 ## Observabilidade
 
 **Log estruturado, com tenant em toda linha**:
