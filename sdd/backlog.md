@@ -195,6 +195,17 @@ de aceite de produto. Entra como commit direto.
 
 ---
 
+### TODO-108: Observabilidade — log estruturado e métricas
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: convenções do time
+- **Context**: Log em JSON com `tenantId` e `requestId` no MDC, saindo em toda linha da requisição. Actuator com `/health` e `/prometheus`, ambos protegidos. Métricas de negócio junto com as técnicas: agendamentos criados, cancelados e falhas por conflito de horário. Proibido logar telefone e nome de cliente (LGPD).
+- **Affected Files**: `platform`, `application.yaml`
+- **Complexity**: Medium
+
+---
+
 ## 🔧 Technical Debt
 
 ### DEBT-001: mvnw com CRLF não executa em Linux
@@ -412,6 +423,28 @@ de aceite de produto. Entra como commit direto.
 - **Context**: Migração mecânica nos dois sentidos: mover diretórios e escrever poms. É por isso que a decisão mais simples é a certa agora.
 - **Potential Impact**: Isolamento
 - **Notes**: Gatilho — mais de três pessoas simultâneas, extração de serviço, ou histórico de falha de ArchUnit sendo ignorada
+
+---
+
+### IDEA-013: Subir Prometheus e Grafana na VPS
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: convenções do time
+- **Context**: O endpoint `/actuator/prometheus` já é exposto pela TODO-108. Falta o servidor que raspa e o painel que exibe. São dois containers a mais disputando memória com o Postgres na mesma VPS.
+- **Potential Impact**: Operação
+- **Notes**: Gatilho — quando houver mais de um estabelecimento em produção, ou quando um incidente exigir olhar série temporal em vez de log
+
+---
+
+### IDEA-014: Trocar cache em memória por Redis
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: convenções do time
+- **Context**: O código usa a abstração `@Cacheable` do Spring, então a troca é configuração, não reescrita. Primeiro candidato a cache é a resolução de slug para tenant, que roda em toda visita à página pública e quase nunca muda. Disponibilidade **não** deve ser cacheada — muda a cada agendamento.
+- **Potential Impact**: Latência
+- **Notes**: Gatilho — mais de uma instância da aplicação, ou pressão de memória medida. Antes disso, Redis é um container a mais sem nada para cachear
 
 ---
 

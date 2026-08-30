@@ -79,9 +79,29 @@ com.agendaia.<contexto>
 - Why: é a distinção que mais gera dúvida. Regra prática — se um analista de
   negócio reconheceria o nome da interface, ela é do domínio.
 
+**Interface entre camadas, sempre**:
+- Toda comunicação entre camadas passa por interface: controller → caso de uso,
+  caso de uso → repositório, caso de uso → adapter, contexto → contexto.
+- Vale em **todos** os contextos, inclusive nos de regime CRUD.
+- Não injete classe concreta de outra camada.
+- Why: convenção do time, por inversão de dependência e para manter as camadas
+  substituíveis. O custo é um arquivo por caso de uso; o ganho é que nenhuma
+  camada conhece a implementação da vizinha.
+
+**Nomeação de interface e implementação**:
+- Interface: `BookAppointmentUseCase`. Implementação: `BookAppointmentHandler`.
+- **Nunca** o sufixo `Impl`.
+- Why: `XImpl` é sintoma de que ninguém achou um segundo nome — porque não há um
+  segundo conceito. `Handler` diz o que a classe faz: trata um comando. E evita
+  a colisão que `...Service` teria em `catalog`, onde `Service` é entidade do
+  domínio e `@Service` é anotação do Spring.
+- A mesma lógica vale nas portas de saída: `AppointmentRepository` é
+  implementada por `AppointmentPersistenceAdapter` — nomes diferentes porque são
+  coisas diferentes.
+
 **Sufixos obrigatórios**:
-- `...UseCase` — caso de uso em `application`. Em `catalog` **nunca** use
-  `Service` sozinho: colide com o `Service` do domínio e com `@Service`.
+- `...UseCase` — interface do caso de uso, em `application/port/in`.
+- `...Handler` — implementação do caso de uso, em `application`.
 - `...Controller`, `...Request`, `...Response` — adapter de entrada web.
 - `...JpaEntity`, `...JpaRepository`, `...PersistenceAdapter` — saída.
 - `...Policy` — regra de negócio isolada e testável.
@@ -124,6 +144,17 @@ com.agendaia.<contexto>
 - Why: essa semântica precisa casar exatamente com a exclusion constraint do
   banco (ADR 0005), senão domínio e Postgres discordam sobre o que é conflito.
   Com ela, 10:00–10:30 e 10:30–11:00 não colidem.
+
+**Sem setter, em lugar nenhum**:
+- Nenhuma classe expõe `setX()`. Estado muda por método de negócio com nome do
+  domínio: `confirm()`, `cancel(reason)`, `reschedule(newRange)`.
+- Vale também para entidade JPA em contexto de suporte: `@Getter` sim,
+  `@Setter` **não**.
+- O Hibernate não precisa de setter: use acesso a campo (`@Access(FIELD)`) e um
+  construtor sem argumentos `protected`, que só ele usa.
+- Why: setter público devolve ao chamador a responsabilidade de manter a
+  invariante — e o objeto deixa de poder garantir qualquer coisa sobre si. Um
+  `setStatus()` joga fora a máquina de estados inteira.
 
 **Lombok em entidade JPA**:
 - Use `@Getter` e `@Setter` pontuais quando necessário.
@@ -216,6 +247,85 @@ com.agendaia.<contexto>
   sistema.
 - Todo agregado com invariante de concorrência tem um teste que dispara duas
   operações simultâneas e exige que exatamente uma vença.
+
+## Observabilidade
+
+**Log estruturado, com tenant em toda linha**:
+- Log em JSON, não texto corrido.
+- `tenantId` e `requestId` entram no MDC no filtro de resolução de tenant e
+  saem em **toda** linha da requisição.
+- Why: num sistema multi-tenant, "está lento" é sempre a pergunta errada. A
+  pergunta é "está lento para qual estabelecimento" — e sem `tenantId` no log
+  não há como responder.
+
+**Nunca logar dado pessoal**:
+- Proibido em log: telefone, nome de cliente, e-mail, senha, token público.
+- Use o id: `customerId=01a04ae1-...`, nunca `phone=+5511987654321`.
+- Why: log vai para arquivo, para agregador e para backup — e vira dado pessoal
+  fora do controle do titular. É obrigação da LGPD, não higiene opcional.
+
+**Métricas via Actuator e Prometheus**:
+- Expor `/actuator/health` e `/actuator/prometheus`, ambos protegidos e fora do
+  alcance público.
+- Métricas de negócio contam tanto quanto as técnicas: agendamentos criados,
+  cancelados, falhas por conflito de horário, tempo do cálculo de
+  disponibilidade.
+- Why: `SlotUnavailableException` subindo é sinal de disputa real por horário —
+  informação de produto, não só de infraestrutura.
+- O endpoint custa uma dependência e fica pronto desde o início. **Subir o
+  servidor Prometheus e o Grafana na VPS é decisão separada**: consome memória
+  da mesma máquina que roda o banco. Ligar quando houver o que observar.
+
+**Erro que o usuário vê e erro que o operador vê**:
+- Exceção de negócio (`SlotUnavailableException`) é log em `WARN`, sem stack
+  trace: é fluxo esperado.
+- Exceção inesperada é `ERROR` com stack trace e `requestId`, e o usuário vê uma
+  página genérica com esse mesmo `requestId`.
+- Why: stack trace de regra de negócio polui o log e esconde o defeito real.
+
+## Performance e Cache
+
+**O caminho quente é o cálculo de disponibilidade**:
+- Buscar jornada, bloqueios e agendamentos do dia em **uma consulta cada**,
+  nunca dentro de laço.
+- O cálculo em si é função pura, em memória. Não vá ao banco dentro dele.
+- Why: é a consulta mais frequente do sistema — roda a cada troca de data na
+  página pública.
+
+**Proibido N+1**:
+- Toda associação é `LAZY`. Nunca `FetchType.EAGER`.
+- Precisa da associação? Busque explicitamente com `join fetch` ou
+  `@EntityGraph`, na consulta que precisa dela.
+- Why: `EAGER` resolve um caso e degrada todos os outros, silenciosamente.
+
+**Consulta de leitura não carrega agregado**:
+- Tela de listagem usa projeção (`record` com só os campos exibidos), não a
+  entidade inteira.
+- Consulta sem escrita é `@Transactional(readOnly = true)`.
+- Why: carregar o agregado para exibir três colunas paga o custo de tudo o que
+  não vai ser usado.
+
+**Toda lista que cresce é paginada**:
+- Histórico de cliente, lista de agendamentos, lista de clientes.
+- Why: funciona nos três primeiros meses do piloto e quebra no décimo.
+
+**Cache: medir antes, e começar em memória**:
+- Use a abstração `@Cacheable` do Spring, nunca a API do provedor direto.
+- Comece com cache **em memória** (Caffeine). Trocar para **Redis** é mudar
+  configuração, não código — e só se justifica quando houver mais de uma
+  instância da aplicação ou pressão real de memória.
+- Candidato natural quando chegar a hora: resolução de `slug` para tenant, que
+  roda em toda visita à página pública e quase nunca muda.
+- **Não cacheie disponibilidade**: ela muda a cada agendamento, e cache
+  desatualizado aqui oferece horário que já não existe.
+- Why: Redis no MVP é mais um container disputando memória com o Postgres na
+  mesma VPS, para cachear um sistema com dezenas de requisições por dia. A
+  decisão certa é deixar o caminho pronto e ligar quando a medição pedir.
+
+**Índice sempre começa por `tenant_id`**:
+- Exceto os globais por natureza: `slug`, `email`, `public_token`.
+- Why: toda consulta de negócio filtra por tenant primeiro. Índice que não
+  começa por ele não é usado.
 
 ## Exemplo de ponta a ponta
 

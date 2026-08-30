@@ -60,12 +60,18 @@ estabelecimento tem dezenas de agendamentos por dia, não milhares.
 
 ## O que deliberadamente não fazemos
 
-Microsserviços · Kubernetes · Kafka · Redis · React ou qualquer SPA ·
-aplicativo mobile · gateway de pagamento · planos Free/Pro/Premium ·
-IA generativa · contexto de notificação · outbox.
+Microsserviços · Kubernetes · Kafka · React ou qualquer SPA · aplicativo
+mobile · gateway de pagamento · planos Free/Pro/Premium · IA generativa ·
+contexto de notificação · outbox.
 
 Cada um tem um gatilho registrado no [backlog](../../sdd/backlog.md) que o
 traria de volta. Nenhum entra por antecipação.
+
+**Preparado, mas desligado:** o endpoint de métricas do Prometheus é exposto
+desde o início, mas o servidor Prometheus e o Grafana só sobem quando houver o
+que observar — eles disputam memória com o Postgres na mesma VPS. O cache segue
+a mesma lógica: a abstração do Spring desde já, com implementação em memória, e
+Redis quando a medição pedir. Ver `sdd/PATTERNS.md`.
 
 ## O princípio que resolve empate
 
