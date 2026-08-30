@@ -61,22 +61,24 @@ Estas quebram o build ou o produto. O resto está em `sdd/PATTERNS.md`.
 
 ## SDD Kit
 
-This project uses **SDD Kit** for spec-driven development.
+@sdd-kit/CLAUDE.md
+
+O arquivo acima descreve o framework — comandos, fluxo e estrutura. Abaixo, só
+o que é específico deste projeto.
 
 ### Spec Language
 
 All specifications MUST be written in **Portuguese (Português)** (`pt`).
 Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English.
 
-### Quick Reference
+Identificadores de código são em **inglês** — ver
+[`docs/domain/glossary.md`](docs/domain/glossary.md), que é normativo.
 
-- Framework expert: `Skill("sdd-kit-expert")`
-- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.finish`
-- Project conventions: `sdd/PROJECT.md`
-- Discovered patterns: `sdd/PATTERNS.md`
+### Específico daqui
 
-### Rules
-
-- Never create files under `sdd/specs/`, `sdd/wip/`, or `sdd/features/` manually
-- Always go through the `/sdd.start` workflow
-- Respect the phased workflow — don't skip phases
+- Convenções do time: [`sdd/PROJECT.md`](sdd/PROJECT.md) · Padrões de código:
+  [`sdd/PATTERNS.md`](sdd/PATTERNS.md) · Backlog: [`sdd/backlog.md`](sdd/backlog.md)
+- Nunca criar arquivo sob `sdd/wip/` ou `sdd/features/` à mão — sempre pelo
+  `/sdd.start`, que mantém o `state.json` coerente.
+- Andaime de infraestrutura não passa pelo ciclo SDD: não tem regra de negócio
+  nem critério de aceite de produto. Entra como commit direto.

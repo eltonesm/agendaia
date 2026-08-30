@@ -1,0 +1,70 @@
+{
+  "feature": "{{FEATURE_NAME}}",
+  "version": "1.0",
+  "generated_by": "{{GENERATED_BY}}",
+  "generated_at": "{{DATE}}",
+  "stats": {
+    "total": 0,
+    "done": 0,
+    "pending": 0,
+    "by_layer": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    "by_complexity": {
+      "low": 0,
+      "medium": 0,
+      "high": 0
+    }
+  },
+  "strategy": "batched",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Example task title",
+      "description": "Brief description of what this task accomplishes (max 2-3 sentences).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "medium",
+      "depends_on": [],
+      "files": [
+        "path/to/file1.ext",
+        "path/to/file2.ext"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Functional requirement met",
+        "AC-2: Edge cases handled",
+        "GATE: [build command] passes",
+        "GATE: [test command] passes"
+      ],
+      "references": [
+        "US-1",
+        "REQ-001",
+        "DEC-001"
+      ]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": [],
+        "level_1": []
+      },
+      "2": {
+        "level_0": [],
+        "level_1": []
+      },
+      "3": {
+        "level_0": []
+      }
+    }
+  },
+  "metadata": {
+    "functional_spec": "sdd/wip/{{FEATURE_NAME}}/1-functional/spec.md",
+    "technical_spec": "sdd/wip/{{FEATURE_NAME}}/2-technical/spec.md",
+    "approved_by": "{{APPROVED_BY}}",
+    "approved_at": "{{APPROVAL_DATE}}",
+    "template_mode": "full"
+  }
+}

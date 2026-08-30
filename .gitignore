@@ -35,3 +35,5 @@ build/
 ### AgendaIA ###
 .env
 !.env.example
+# SDD Kit
+sdd/wip/*/progress.md
