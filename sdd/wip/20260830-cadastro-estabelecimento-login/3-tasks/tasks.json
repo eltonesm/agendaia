@@ -91,7 +91,7 @@
       "id": "TASK-004",
       "title": "Entidades Business e User com repositorios",
       "description": "Criar as entidades JPA no regime CRUD do ADR 0002, onde a entidade E o modelo. Construtor privado, criacao por metodo de fabrica, sem setter publico.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-002"],
