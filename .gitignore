@@ -37,3 +37,6 @@ build/
 !.env.example
 # SDD Kit
 sdd/wip/*/progress.md
+
+# Backups locais
+backups/

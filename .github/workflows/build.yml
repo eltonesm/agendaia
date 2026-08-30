@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Um push novo cancela o build anterior da mesma referência.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # O maven-toolchains-plugin descobre o JDK a partir do JAVA_HOME que a
+      # action define. Não é preciso escrever toolchains.xml aqui.
+      #
+      # Testcontainers sobe um postgres:18-alpine de verdade: os runners
+      # ubuntu-latest já têm Docker, e H2 não serviria (não implementa
+      # EXCLUDE USING gist — ver ADR 0005).
+      - name: Build e testes
+        run: ./mvnw -B --no-transfer-progress verify
+
+      - name: Publicar relatório de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -14,17 +14,18 @@ A numeração agrupa por natureza; a ordem de execução é outra e não é capr
 cada item existe porque torna o seguinte mais barato:
 
 ```
-andaime          TODO-101 → 102 → 103 → 107
+andaime          ✅ concluído — Fase 0 fechada em 2026-08-30
 features do MVP  TODO-001 → 002 → 003 → 004 → 005 → 006 → 007 → 008
-produção         TODO-105 → 104 → 106
+produção         TODO-106 (quando existir VPS)
 ```
 
-O andaime vem antes da primeira feature de propósito: se a `TODO-001` tiver de
-montar Flyway e Testcontainers junto com o cadastro, ela deixa de ser fatia
-vertical — que é a regra do `PATTERNS.md`.
+O andaime veio antes da primeira feature de propósito: se a `TODO-001` tivesse
+de montar Flyway e Testcontainers junto com o cadastro, ela deixaria de ser
+fatia vertical — que é a regra do `PATTERNS.md`.
 
-O andaime **não passa pelo ciclo SDD**: não tem regra de negócio nem critério
-de aceite de produto. Entra como commit direto.
+O andaime **não passou pelo ciclo SDD**: não tem regra de negócio nem critério
+de aceite de produto. Entrou como commit direto. Da `TODO-001` em diante, tudo
+passa por `/sdd.start`.
 
 ---
 
@@ -118,61 +119,6 @@ de aceite de produto. Entra como commit direto.
 
 ---
 
-### TODO-101: Flyway, datasource e migration inicial
-- **Priority**: High
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: Fase 0
-- **Context**: Migration inicial habilita `btree_gist`, exigida pela exclusion constraint do ADR 0005. Locations por contexto, nomenclatura `V{n}__{contexto}_{o_que_faz}.sql`. Andaime, não feature.
-- **Affected Files**: `pom.xml`, `application.yaml`, `db/migration`
-- **Complexity**: Low
-
----
-
-### TODO-102: Testcontainers com a imagem do compose
-- **Priority**: High
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: Fase 0
-- **Context**: Mesma imagem do `compose.yaml` (`postgres:18-alpine`). H2 não implementa `EXCLUDE USING gist` — testar contra ele é testar outro sistema.
-- **Affected Files**: `pom.xml`, `src/test`
-- **Complexity**: Low
-
----
-
-### TODO-103: Regras de ArchUnit — camadas dentro do contexto
-- **Priority**: High
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: ADR 0001, ADR 0010
-- **Context**: `scheduling.domain` sem Spring e sem JPA; `application` sem `adapter`; controller sem repositório; sufixos obrigatórios; sem `@Data` em entidade JPA. Usar `allowEmptyShould(true)` enquanto os pacotes estiverem vazios.
-- **Affected Files**: `src/test`
-- **Complexity**: Medium
-
----
-
-### TODO-104: Pipeline de CI
-- **Priority**: Medium
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: Fase 0
-- **Context**: Depois que existir teste que valha a pena rodar. Depende de DEBT-001: o `mvnw` com CRLF não executa em Linux.
-- **Affected Files**: `.github/workflows`
-- **Complexity**: Low
-
----
-
-### TODO-105: Backup pg_dump com restore testado
-- **Priority**: High
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: revisão arquitetural — risco T-03
-- **Context**: Uma VPS, um Postgres, a agenda inteira de clientes pagantes dentro. Destino fora da VPS, retenção de 30 dias. Obrigatório antes do primeiro cliente pagante — backup nunca restaurado não é backup.
-- **Affected Files**: `scripts`, `docs/operations`
-- **Complexity**: Medium
-
----
-
 ### TODO-106: Compose de produção com TLS
 - **Priority**: Medium
 - **Status**: pending
@@ -181,17 +127,6 @@ de aceite de produto. Entra como commit direto.
 - **Context**: App, banco e Caddy com certificado automático. Nasce junto com a VPS, para poder ser testado de verdade. Link público em HTTP não fecha: coleta nome e telefone em claro.
 - **Affected Files**: `compose.prod.yaml`
 - **Complexity**: Low
-
----
-
-### TODO-107: Spring Modulith — fronteira entre contextos
-- **Priority**: High
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: ADR 0010
-- **Context**: Versão 2.1.1. `@NamedInterface("api")` em cada pacote `api`, `allowedDependencies` por contexto e um teste `ApplicationModules.of(...).verify()`. Cuida do que atravessa a fronteira; o ArchUnit (TODO-103) cuida do que acontece dentro dela.
-- **Affected Files**: `pom.xml`, `package-info.java`, `src/test`
-- **Complexity**: Medium
 
 ---
 
@@ -207,30 +142,6 @@ de aceite de produto. Entra como commit direto.
 ---
 
 ## 🔧 Technical Debt
-
-### DEBT-001: mvnw com CRLF não executa em Linux
-- **Priority**: Medium
-- **Status**: pending
-- **Created**: 2026-08-28
-- **Origin**: commit inicial
-- **Context**: O `.gitattributes` do Initializr normaliza para CRLF. Marcar `mvnw` como LF obrigatório antes do CI.
-- **Affected Files**: `.gitattributes`
-- **Complexity**: Low
-- **Risk if Ignored**: O pipeline de CI não roda
-
----
-
-### DEBT-002: ArchUnit deve proibir Spring em teste de domínio
-- **Priority**: Medium
-- **Status**: pending
-- **Created**: 2026-08-29
-- **Origin**: reversão para módulo Maven único
-- **Context**: Quando `shared-kernel` era módulo separado, `spring-boot-starter-test` não estava no classpath dele. Com módulo único, nada impede um `@SpringBootTest` para testar um `TimeRange`. A garantia física virou regra a escrever.
-- **Affected Files**: `src/test`
-- **Complexity**: Low
-- **Risk if Ignored**: Teste de domínio lento e acoplado ao framework
-
----
 
 ### DEBT-003: IDE precisa apontar para JDK 21
 - **Priority**: Low
@@ -450,6 +361,120 @@ de aceite de produto. Entra como commit direto.
 
 ## ✅ Resolved Items
 
+### DEBT-002: ArchUnit deve proibir Spring em teste de domínio
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: reversão para módulo Maven único
+- **Context**: Quando `shared-kernel` era módulo separado, `spring-boot-starter-test` não estava no classpath dele. Com módulo único, nada impede um `@SpringBootTest` para testar um `TimeRange`. A garantia física virou regra a escrever.
+- **Affected Files**: `src/test`
+- **Complexity**: Low
+- **Risk if Ignored**: Teste de domínio lento e acoplado ao framework
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed — a regra o_dominio_do_nucleo_nao_conhece_framework analisa tambem as classes de teste, entao um @SpringBootTest em scheduling.domain e detectado pela mesma regra
+
+---
+
+### TODO-101: Flyway, datasource e migration inicial
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: Fase 0
+- **Context**: Migration inicial habilita `btree_gist`, exigida pela exclusion constraint do ADR 0005. Locations por contexto, nomenclatura `V{n}__{contexto}_{o_que_faz}.sql`. Andaime, não feature.
+- **Affected Files**: `pom.xml`, `application.yaml`, `db/migration`
+- **Complexity**: Low
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### TODO-102: Testcontainers com a imagem do compose
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: Fase 0
+- **Context**: Mesma imagem do `compose.yaml` (`postgres:18-alpine`). H2 não implementa `EXCLUDE USING gist` — testar contra ele é testar outro sistema.
+- **Affected Files**: `pom.xml`, `src/test`
+- **Complexity**: Low
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### TODO-103: Regras de ArchUnit — camadas dentro do contexto
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: ADR 0001, ADR 0010
+- **Context**: `scheduling.domain` sem Spring e sem JPA; `application` sem `adapter`; controller sem repositório; sufixos obrigatórios; sem `@Data` em entidade JPA. Usar `allowEmptyShould(true)` enquanto os pacotes estiverem vazios.
+- **Affected Files**: `src/test`
+- **Complexity**: Medium
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### TODO-104: Pipeline de CI
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: Fase 0
+- **Context**: Depois que existir teste que valha a pena rodar. Depende de DEBT-001: o `mvnw` com CRLF não executa em Linux.
+- **Affected Files**: `.github/workflows`
+- **Complexity**: Low
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### TODO-105: Backup pg_dump com restore testado
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: revisão arquitetural — risco T-03
+- **Context**: Uma VPS, um Postgres, a agenda inteira de clientes pagantes dentro. Destino fora da VPS, retenção de 30 dias. Obrigatório antes do primeiro cliente pagante — backup nunca restaurado não é backup.
+- **Affected Files**: `scripts`, `docs/operations`
+- **Complexity**: Medium
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### TODO-107: Spring Modulith — fronteira entre contextos
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Origin**: ADR 0010
+- **Context**: Versão 2.1.1. `@NamedInterface("api")` em cada pacote `api`, `allowedDependencies` por contexto e um teste `ApplicationModules.of(...).verify()`. Cuida do que atravessa a fronteira; o ArchUnit (TODO-103) cuida do que acontece dentro dela.
+- **Affected Files**: `pom.xml`, `package-info.java`, `src/test`
+- **Complexity**: Medium
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+
+---
+
+### DEBT-001: mvnw com CRLF não executa em Linux
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-28
+- **Origin**: commit inicial
+- **Context**: O `.gitattributes` do Initializr normaliza para CRLF. Marcar `mvnw` como LF obrigatório antes do CI.
+- **Affected Files**: `.gitattributes`
+- **Complexity**: Low
+- **Risk if Ignored**: O pipeline de CI não roda
+
+- **Resolved**: 2026-08-30
+- **Resolution**: Won't Do — alarme falso: o .gitattributes do Initializr ja marca /mvnw como eol
+
+---
+
 ### DEBT-007: Avaliar Spring Modulith
 - **Priority**: Medium
 - **Status**: resolved
@@ -463,4 +488,4 @@ de aceite de produto. Entra como commit direto.
 
 ## Last Updated
 
-2026-08-30 — convertido para o formato lido por `/sdd.backlog`.
+2026-08-30 — Fase 0 fechada: andaime concluído e movido para Resolved Items.
