@@ -33,12 +33,14 @@ passa por `/sdd.start`.
 
 ### TODO-002: Cadastro de profissional
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-08-31
 - **Origin**: revisão arquitetural
-- **Context**: A menor fatia possível já com tenant. Valida o padrão inteiro de ponta a ponta e é candidata a virar o exemplo pendente do `PATTERNS.md` (DEBT-004). Todo estabelecimento tem ao menos um profissional, mesmo sendo uma pessoa só.
+- **Context**: A menor fatia possível já com tenant. Valida o padrão inteiro de ponta a ponta. Todo estabelecimento tem ao menos um profissional, mesmo sendo uma pessoa só.
 - **Affected Files**: `organization`
 - **Complexity**: Medium
+- **Feature**: `sdd/wip/20260831-cadastro-profissional/`
 
 ---
 
