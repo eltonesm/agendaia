@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-08-31
 **Last Updated**: 2026-08-31
-**Current Stage**: technical
+**Current Stage**: tasks
 
 > **Sobre o modo brownfield aqui**: não é o brownfield clássico do kit — não
 > há código legado sem spec para fazer engenharia reversa. É brownfield porque
@@ -181,9 +181,14 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-08-31
+    completed: 2026-08-31
+    status: approved
+    owner: Elton Marques
+    approved_by: Elton Marques
+    approved_at: 2026-08-31T23:38:36Z
+    mcpqueried: false
+    services_count: 0
 
   tasks:
     started: null
