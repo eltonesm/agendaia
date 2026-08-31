@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-08-31
 **Last Updated**: 2026-08-31
-**Current Stage**: functional
+**Current Stage**: technical
 
 > **Sobre o modo brownfield aqui**: não é o brownfield clássico do kit — não
 > há código legado sem spec para fazer engenharia reversa. É brownfield porque
@@ -173,11 +173,11 @@ não reinventar o que a TODO-001 já decidiu:
 stages:
   functional:
     started: 2026-08-31
-    completed: null
-    status: pending
-    owner: null
-    approved_by: null
-    approved_at: null
+    completed: 2026-08-31
+    status: approved
+    owner: Elton Marques
+    approved_by: Elton Marques
+    approved_at: 2026-08-31T23:30:01Z
     iterations: 0
 
   technical:
