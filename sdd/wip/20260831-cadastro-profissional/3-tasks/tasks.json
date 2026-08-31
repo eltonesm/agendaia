@@ -1,0 +1,265 @@
+{
+  "feature": "cadastro-profissional",
+  "from_backlog": "TODO-002",
+  "generated_at": "2026-08-31",
+  "spec_language": "pt",
+
+  "local_config": {
+    "postgresql": "container",
+    "postgresql_note": "Mesmo compose.yaml e Testcontainers ja usados pela TODO-001. Nenhuma infraestrutura nova.",
+    "kvs": null,
+    "bigqueue": null
+  },
+
+  "adaptations": [
+    "Dockerfile e /ping NAO gerados: infraestrutura ja existe desde a Fase 0, e nenhuma delas muda com este segundo agregado de organization.",
+    "Layer 2 vazia: nao ha servicos de plataforma interna neste projeto.",
+    "generate-ids.sh e validate-tasks.sh nao existem nesta instalacao (mesma lacuna documentada na TODO-001): IDs gerados manualmente, tasks.json conferido a mao contra a spec tecnica aprovada."
+  ],
+
+  "stats": {
+    "total": 11,
+    "done": 0,
+    "by_layer": { "1": 8, "2": 0, "3": 3 },
+    "by_complexity": { "Low": 5, "Medium": 6, "High": 0 }
+  },
+
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Migration V3: tabela professional",
+      "description": "Criar V3__organization_create_professional.sql conforme a spec tecnica: tenant_id com FK para business, sem UNIQUE em name (DD-3), indice em tenant_id.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": [],
+      "files": ["src/main/resources/db/migration/V3__organization_create_professional.sql"],
+      "acceptance_criteria": [
+        "AC-1: tenant_id references business(id), NOT NULL",
+        "AC-2: nenhuma restricao UNIQUE em name (DD-3)",
+        "AC-3: CHECK de nome nao vazio, mesmo padrao de business_name_not_blank",
+        "AC-4: indice em tenant_id, mesmo padrao de app_user_tenant_idx",
+        "GATE: aplicacao sobe contra o compose e o Flyway registra a V3 como aplicada"
+      ],
+      "references": [],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Entidade Professional com repositorio e testes puros",
+      "description": "Criar a entidade JPA no mesmo regime CRUD de Business/User (ADR 0002): construtor privado, criacao por fabrica estatica, sem setter, deactivate() para nao apagar (ADR 0011).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/Professional.java",
+        "src/main/java/com/agendaia/organization/domain/ProfessionalRepository.java",
+        "src/test/java/com/agendaia/organization/domain/ProfessionalTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por Professional.register(tenantId, name), construtor privado",
+        "AC-2: nenhum setter publico; construtor protegido sem argumentos para o Hibernate",
+        "AC-3: nome fora do intervalo 2-120 caracteres lanca IllegalArgumentException",
+        "AC-4: id UUIDv7 gerado na aplicacao, nunca no INSERT",
+        "AC-5: findByTenantIdAndActiveTrueOrderByNameAsc no repositorio",
+        "GATE: ddl-auto validate nao acusa divergencia; nenhuma regra de ArchUnit violada"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-003",
+      "title": "Caso de uso do cadastro de profissional",
+      "description": "RegisterProfessionalUseCase/Handler. O comando carrega so o nome -- tenant nunca e parametro (DD-1); o handler le TenantContext.require() por dentro.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/RegisterProfessionalUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/RegisteredProfessional.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterProfessionalCommand.java",
+        "src/main/java/com/agendaia/organization/application/RegisterProfessionalHandler.java",
+        "src/test/java/com/agendaia/organization/application/RegisterProfessionalHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: RegisterProfessionalCommand tem so o campo name -- nenhum campo de tenant",
+        "AC-2: interface com sufixo UseCase, implementacao com sufixo Handler; nunca Impl",
+        "AC-3: @Transactional no handler, em nenhum outro lugar",
+        "AC-4: teste unitario com repositorio mockado confirma que o tenant gravado e o do TenantContext, nao um valor arbitrario",
+        "GATE: ./mvnw test verde; ArchitectureTest confirma UseCase como interface"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Caso de uso da listagem de profissionais",
+      "description": "ListProfessionalsUseCase/Handler. list() sem nenhum parametro -- mesmo padrao de tenant implicito do TASK-003 e do ViewDashboardHandler da TODO-001.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/ListProfessionalsUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/ProfessionalView.java",
+        "src/main/java/com/agendaia/organization/application/ListProfessionalsHandler.java",
+        "src/test/java/com/agendaia/organization/application/ListProfessionalsHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: list() nao aceita nenhum argumento",
+        "AC-2: @Transactional(readOnly = true)",
+        "AC-3: resultado ordenado por nome, so profissionais ativos",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "Tela e controller de /admin/profissionais",
+      "description": "GET mostra lista + formulario numa tela so (DD-2); POST valido redireciona (PRG) para a mesma rota; POST invalido devolve a mesma tela com a lista recarregada e o erro no campo.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-003", "TASK-004"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/ProfessionalController.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterProfessionalRequest.java",
+        "src/main/resources/templates/admin/profissionais.html",
+        "src/test/java/com/agendaia/organization/adapter/in/web/ProfessionalControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: GET /admin/profissionais mostra a lista atual e o formulario de cadastro",
+        "AC-2: POST valido gera 302 para /admin/profissionais (Post-Redirect-Get)",
+        "AC-3: POST com nome vazio devolve 200 com a MESMA tela -- a lista precisa ser recarregada, nao so o erro do formulario",
+        "AC-4: controller nao injeta repositorio nem entidade JPA -- so os dois casos de uso",
+        "GATE: @WebMvcTest cobre as tres situacoes e o token CSRF"
+      ],
+      "references": ["US-1", "US-2", "US-3"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Link do painel para a nova tela",
+      "description": "O texto solto 'cadastrar seus profissionais e servicos' no dashboard vira link para /admin/profissionais.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-005"],
+      "files": ["src/main/resources/templates/admin/dashboard.html"],
+      "acceptance_criteria": [
+        "AC-1: o trecho 'cadastrar seus profissionais' e um th:href para /admin/profissionais",
+        "GATE: ./mvnw verify verde, nenhum teste de dashboard quebrado"
+      ],
+      "references": ["US-3"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Testes de integracao dos tres cenarios (E2E-1, E2E-2, E2E-3)",
+      "description": "ProfessionalRegistrationIT com Postgres real via Testcontainers, cobrindo cadastro do primeiro profissional, nome invalido, e multiplos profissionais com nome repetido.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-005", "TASK-006"],
+      "files": ["src/test/java/com/agendaia/organization/ProfessionalRegistrationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 confirma que o profissional aparece na lista com o tenant_id da sessao",
+        "AC-2: E2E-2 confirma que nome vazio nao grava nada e devolve erro de campo, nunca 500",
+        "AC-3: E2E-3 confirma que dois profissionais com o mesmo nome coexistem, cada um com seu id",
+        "AC-4: usa Postgres real via Testcontainers, nunca H2",
+        "GATE: ./mvnw verify verde com os tres cenarios passando"
+      ],
+      "references": ["US-1", "US-2", "US-3"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-008",
+      "title": "Extensao do isolamento entre tenants",
+      "description": "CrossTenantIsolationIT ganha um caso para Professional: tenant A nao ve nem consegue afetar profissional de tenant B por /admin/profissionais. Nasce na TODO-001 e cresce a cada feature, conforme o proprio AC-3 daquela task.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-007"],
+      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: sessao do tenant A nao ve profissional criado pelo tenant B na lista",
+        "AC-2: nenhuma rota aceita tenant como parametro, entao nao ha o que forjar -- o teste confirma a ausencia de vazamento, nao a rejeicao de um parametro que nunca existiu",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Code review",
+      "description": "Rodar o Skill sdd-code-reviewer sobre o diff da feature e resolver os achados. Portao bloqueante.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-008"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhum achado de corretude em aberto",
+        "AC-2: conformidade com PATTERNS.md conferida: sem setter, sem Impl, transacao so na application, tenant nunca por parametro",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-010",
+      "title": "Revisao de performance",
+      "description": "Rodar o Skill sdd-performance-expert. Nesta feature o foco e o indice em tenant_id e ausencia de N+1 na listagem.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-008"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: consulta de listagem usa o indice de tenant_id, confirmado por EXPLAIN",
+        "AC-2: nenhuma associacao EAGER; nenhuma consulta em laco",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-011",
+      "title": "Revisao de seguranca",
+      "description": "Rodar o Skill sdd-code-reviewer com foco em seguranca. Conferir isolamento entre tenants e ausencia de superficie nova.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-008"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhum caso de uso desta feature aceita tenant como parametro (DD-1)",
+        "AC-2: CSRF ligado no formulario de cadastro",
+        "AC-3: /admin/profissionais protegido por omissao pela cadeia de filtros existente, sem mudanca em SecurityConfig",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1"]
+    }
+  ],
+
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001"],
+        "level_1": ["TASK-002"],
+        "level_2": ["TASK-003", "TASK-004"],
+        "level_3": ["TASK-005"],
+        "level_4": ["TASK-006"],
+        "level_5": ["TASK-007"],
+        "level_6": ["TASK-008"]
+      },
+      "3": {
+        "level_0": ["TASK-009", "TASK-010", "TASK-011"]
+      }
+    }
+  }
+}

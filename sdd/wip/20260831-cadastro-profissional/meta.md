@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-08-31
 **Last Updated**: 2026-08-31
-**Current Stage**: tasks
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: não é o brownfield clássico do kit — não
 > há código legado sem spec para fazer engenharia reversa. É brownfield porque
@@ -191,9 +191,15 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-08-31
+    completed: 2026-08-31
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-08-31T23:38:36Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 11
+    iterations: 0
+    final_tasks_count: 11
 
   implementation:
     started: null
@@ -210,9 +216,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null
-  chosen_date: null
-  rationale: null
+  type: batched
+  chosen_date: 2026-08-31
+  estimated_agent_time: null
+  estimated_tokens: null
+  actual_agent_time: null
+  rationale: "Revisao por lote de nivel de dependencia. A cadeia e praticamente sequencial (migration -> entidade -> casos de uso -> tela -> testes -> qualidade), com um unico ponto de paralelismo real: TASK-003 e TASK-004 nao dependem uma da outra."
 ```
 
 ---
