@@ -35,7 +35,9 @@
       "layer": 1,
       "complexity": "Low",
       "depends_on": [],
-      "files": ["pom.xml"],
+      "files": [
+        "pom.xml"
+      ],
       "acceptance_criteria": [
         "AC-1: artifactIds conferidos contra spring-boot-dependencies:4.1.1, nao copiados de tutorial de Boot 3",
         "AC-2: thymeleaf-extras-springsecurity confirmado ou substituido pelo nome vigente no Boot 4",
@@ -52,7 +54,9 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
-      "files": ["src/main/resources/db/migration/V2__organization_create_business_and_user.sql"],
+      "files": [
+        "src/main/resources/db/migration/V2__organization_create_business_and_user.sql"
+      ],
       "acceptance_criteria": [
         "AC-1: business sem coluna tenant_id, com comentario explicando que ela E o tenant",
         "AC-2: tabela nomeada app_user, nunca user",
@@ -76,7 +80,9 @@
         "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
         "src/main/java/com/agendaia/organization/domain/ReservedSlugs.java",
         "src/test/java/com/agendaia/organization/domain/SlugGeneratorTest.java",
-        "src/test/java/com/agendaia/organization/domain/ReservedSlugsTest.java"
+        "src/test/java/com/agendaia/organization/domain/ReservedSlugsTest.java",
+        "src/main/java/com/agendaia/shared/UuidV7.java",
+        "src/test/java/com/agendaia/shared/UuidV7Test.java"
       ],
       "acceptance_criteria": [
         "AC-1: cobre a tabela de casos da spec, incluindo entrada que gera slug vazio",
@@ -100,7 +106,10 @@
         "src/main/java/com/agendaia/organization/domain/User.java",
         "src/main/java/com/agendaia/organization/domain/UserRole.java",
         "src/main/java/com/agendaia/organization/domain/BusinessRepository.java",
-        "src/main/java/com/agendaia/organization/domain/UserRepository.java"
+        "src/main/java/com/agendaia/organization/domain/UserRepository.java",
+        "src/main/java/com/agendaia/shared/TenantId.java",
+        "src/test/java/com/agendaia/organization/domain/BusinessTest.java",
+        "src/test/java/com/agendaia/organization/domain/UserTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por Business.register(...) e User.owner(...), com construtor privado",
@@ -124,7 +133,10 @@
       "files": [
         "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
         "src/main/java/com/agendaia/platform/tenant/TenantContext.java",
-        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java"
+        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java",
+        "src/test/java/com/agendaia/platform/tenant/TenantContextTest.java",
+        "src/test/java/com/agendaia/ArchitectureTest.java",
+        "src/test/java/com/agendaia/ModuleStructureTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: AuthenticatedUser implementa UserDetails e nao importa nada de organization",
@@ -144,7 +156,8 @@
       "complexity": "Medium",
       "depends_on": ["TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java"
+        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java",
+        "src/test/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsServiceTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: usuario ou estabelecimento inativo resulta em conta desabilitada, nao em excecao distinta",
@@ -163,7 +176,10 @@
       "layer": 1,
       "complexity": "High",
       "depends_on": ["TASK-006"],
-      "files": ["src/main/java/com/agendaia/platform/security/SecurityConfig.java"],
+      "files": [
+        "src/main/java/com/agendaia/platform/security/SecurityConfig.java",
+        "src/test/java/com/agendaia/platform/security/SecurityRoutesIT.java"
+      ],
       "acceptance_criteria": [
         "AC-1: /admin/** exige sessao e guarda o destino pretendido no redirecionamento",
         "AC-2: /cadastro, /login, /css/**, /js/** e /actuator/health sao publicos; demais endpoints do actuator, nao",
@@ -188,7 +204,9 @@
         "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
         "src/main/java/com/agendaia/organization/domain/exception/EmailAlreadyUsedException.java",
         "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
-        "src/test/java/com/agendaia/organization/application/RegisterBusinessHandlerTest.java"
+        "src/test/java/com/agendaia/organization/application/RegisterBusinessHandlerTest.java",
+        "src/main/java/com/agendaia/shared/DomainException.java",
+        "src/main/java/com/agendaia/organization/application/port/in/RegisteredBusiness.java"
       ],
       "acceptance_criteria": [
         "AC-1: interface com sufixo UseCase, implementacao com sufixo Handler; nunca Impl",
@@ -213,7 +231,10 @@
         "src/main/java/com/agendaia/platform/web/GlobalExceptionHandler.java",
         "src/main/resources/templates/fragments/layout.html",
         "src/main/resources/templates/error/404.html",
-        "src/main/resources/templates/error/500.html"
+        "src/main/resources/templates/error/500.html",
+        "src/main/java/com/agendaia/platform/web/LayoutAdvice.java",
+        "src/main/java/com/agendaia/platform/web/WebConfig.java",
+        "src/test/java/com/agendaia/platform/web/GlobalExceptionHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: Bootstrap por CDN com integrity e crossorigin, versao fixada",
@@ -261,7 +282,11 @@
       "files": [
         "src/main/java/com/agendaia/organization/adapter/in/web/DashboardController.java",
         "src/main/resources/templates/auth/login.html",
-        "src/main/resources/templates/admin/dashboard.html"
+        "src/main/resources/templates/admin/dashboard.html",
+        "src/main/java/com/agendaia/organization/application/ViewDashboardHandler.java",
+        "src/main/java/com/agendaia/organization/application/port/in/ViewDashboardUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/DashboardView.java",
+        "src/test/java/com/agendaia/organization/application/ViewDashboardHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: credencial incorreta mostra mensagem unica e generica",
@@ -303,7 +328,9 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-012"],
-      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "files": [
+        "src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"
+      ],
       "acceptance_criteria": [
         "AC-1: dois tenants criados, com dado distinguivel em cada",
         "AC-2: sessao do tenant A nao le, lista, altera nem apaga dado do tenant B por nenhuma rota existente",
@@ -321,7 +348,10 @@
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],
-      "files": [],
+      "files": [
+        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java"
+      ],
       "acceptance_criteria": [
         "AC-1: nenhum achado de corretude em aberto",
         "AC-2: conformidade com PATTERNS.md conferida: sem setter, sem Impl, transacao so na application",
@@ -338,7 +368,9 @@
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],
-      "files": [],
+      "files": [
+        "pom.xml"
+      ],
       "acceptance_criteria": [
         "AC-1: nenhuma associacao EAGER; nenhuma consulta em laco",
         "AC-2: login usa o indice unico de e-mail, confirmado por EXPLAIN",
@@ -355,7 +387,10 @@
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],
-      "files": [],
+      "files": [
+        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/RegistrationController.java"
+      ],
       "acceptance_criteria": [
         "AC-1: senha nunca em log, mensagem de erro ou resposta",
         "AC-2: CSRF ligado; login nao permite enumeracao de conta",
@@ -376,7 +411,8 @@
       "files": [
         "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
         "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
-        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java"
+        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
+        "src/test/java/com/agendaia/organization/domain/SlugGeneratorTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: link tomado por outro estabelecimento devolve a primeira variacao livre na mensagem do campo",

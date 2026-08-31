@@ -1,3 +1,7 @@
+| POST | `/logout` | sim | 302 → `/login?saiu` |
+| GET | `/admin/dashboard` | sim | painel mínimo |
+| GET | `/` | não | 302 → `/cadastro` |
+| GET | `/` | não | 302 → `/cadastro` |
 # cadastro-estabelecimento-login - Technical Spec
 
 **Feature**: cadastro-estabelecimento-login
@@ -363,8 +367,9 @@ Conjunto imutável com as 23 palavras da spec funcional.
 | POST | `/cadastro` | não | 302 → `/admin/dashboard`, já autenticado |
 | GET | `/login` | não | formulário |
 | POST | `/login` | não | processado pelo Spring Security |
-| POST | `/logout` | sim | 302 → `/login?logout` |
+| POST | `/logout` | sim | 302 → `/login?saiu` |
 | GET | `/admin/dashboard` | sim | painel mínimo |
+| GET | `/` | não | 302 → `/cadastro` |
 
 **POST `/cadastro`** — corpo de formulário: `name`, `slug`, `email`, `password`.
 Erro de validação devolve **200 com a mesma tela** e os erros por campo, não 400
@@ -373,8 +378,14 @@ Erro de validação devolve **200 com a mesma tela** e os erros por campo, não 
 **Regras de rota**:
 
 - `/admin/**` exige sessão. Sem ela: 302 para `/login`, guardando o destino.
-- `/cadastro`, `/login`, `/css/**`, `/js/**` e `/actuator/health` são públicos.
-- Demais endpoints do actuator exigem autenticação.
+- São públicos, e a lista é exaustiva de propósito — endpoint novo nasce
+  protegido por omissão: `/`, `/cadastro`, `/login`, `/error`, `/css/**`,
+  `/js/**`, `/img/**`, `/favicon.ico` e `/actuator/health`.
+- `/` só existe para redirecionar ao cadastro enquanto não houver página
+  institucional; `/error` precisa ser público para que a própria tela de erro
+  não exija sessão.
+- Demais endpoints do actuator exigem autenticação: expõem informação de
+  operação.
 
 ---
 
@@ -522,6 +533,10 @@ src/main/java/com/agendaia/
 │   │       └── SlugUnavailableException.java
 │   ├── application/
 │   │   ├── port/in/RegisterBusinessUseCase.java
+│   │   ├── port/in/RegisteredBusiness.java
+│   │   ├── port/in/ViewDashboardUseCase.java
+│   │   ├── port/in/DashboardView.java
+│   │   ├── ViewDashboardHandler.java   @Transactional(readOnly)
 │   │   ├── command/RegisterBusinessCommand.java
 │   │   └── RegisterBusinessHandler.java   @Transactional
 │   ├── adapter/
@@ -531,7 +546,6 @@ src/main/java/com/agendaia/
 │   │   │   └── request/RegistrationRequest.java
 │   │   └── out/security/
 │   │       └── BusinessUserDetailsService.java
-│   └── config/OrganizationConfig.java
 └── platform/
     ├── security/
     │   ├── SecurityConfig.java
@@ -539,7 +553,10 @@ src/main/java/com/agendaia/
     ├── tenant/
     │   ├── TenantContext.java
     │   └── TenantContextFilter.java
-    └── web/GlobalExceptionHandler.java
+    └── web/
+        ├── GlobalExceptionHandler.java
+        ├── LayoutAdvice.java
+        └── WebConfig.java
 
 src/main/resources/
 ├── db/migration/V2__organization_create_business_and_user.sql

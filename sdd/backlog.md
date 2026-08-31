@@ -31,17 +31,6 @@ passa por `/sdd.start`.
 
 ## 📋 TODOs
 
-### TODO-001: Cadastro de estabelecimento e login
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Origin**: revisão arquitetural
-- **Context**: Estabelece o tenant — sem ele nada mais tem onde morar. Exercita `TenantContext`, Spring Security e a primeira migration de verdade. Inclui a escolha do slug, com lista de palavras reservadas.
-- **Affected Files**: `organization`, `platform`
-- **Complexity**: High
-
----
-
 ### TODO-002: Cadastro de profissional
 - **Priority**: High
 - **Status**: pending
@@ -154,6 +143,31 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-015: Scripts do sdd-kit quebrados ou ausentes
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: /sdd.finish da TODO-001
+- **Context**: Tres problemas encontrados ao rodar o `/sdd.finish` pela primeira vez. (1) `validate-complete.sh` conta tarefas com `grep "^#### TASK-"` **dentro do `tasks.json`** — sintaxe markdown contra arquivo JSON, entao sempre le 0 tarefas e a verificacao nunca vale nada. (2) `detect-phase.sh` so reconhece `status: in-progress` como fase de implementacao; com `completed` ele regride a feature para `tasks`. (3) `validate-tests.sh` e `validate-spec-conflicts.sh`, citados pelo proprio `sdd.finish`, nao existem nesta instalacao — sao dois dos 22 scripts ausentes. Consequencia pratica: os portoes deterministicos do finish tem que ser feitos a mao, e um deles passa por acidente.
+- **Affected Files**: `sdd-kit/framework/tools/`
+- **Complexity**: Low
+- **Risk if Ignored**: Portao que sempre passa treina o time a confiar num check que nao verifica nada
+
+---
+
+### DEBT-014: Sem Content-Security-Policy
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: revisao de seguranca do /sdd.finish da TODO-001
+- **Context**: Valem os cabecalhos padrao do Spring Security — X-Content-Type-Options, X-Frame-Options DENY, Cache-Control e HSTS sob HTTPS — mas nao ha CSP, e a pagina carrega CSS e JS de cdn.jsdelivr.net. Nao foi corrigido junto porque os templates usam atributos `style=` inline: uma CSP honesta exigiria `unsafe-inline` em style-src, o que a esvazia. Resolver junto com a **TODO-106**, quando houver dominio e proxy, tirando os inline styles antes.
+- **Affected Files**: `platform/security/SecurityConfig.java`, `templates/`
+- **Complexity**: Medium
+- **Risk if Ignored**: Defesa em profundidade ausente. A superficie primaria ja esta coberta (tudo escapado por th:text, sem th:utext, sem innerHTML, CDN com SRI), entao o risco hoje e baixo — cresce quando a pagina publica /b/{slug} existir e renderizar texto de terceiro.
+
+---
+
+
 ### DEBT-013: Sessao em memoria — reiniciar desloga todo mundo
 - **Priority**: Medium
 - **Status**: pending
@@ -228,7 +242,8 @@ passa por `/sdd.start`.
 
 ### DEBT-004: PATTERNS.md sem o exemplo de ponta a ponta
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: resolved
+- **Resolved**: 2026-08-30 — a fatia vertical do cadastro virou o exemplo, com o diagrama de camadas e a tabela de arquivos reais. Promovido no `/sdd.finish` da TODO-001.
 - **Created**: 2026-08-29
 - **Origin**: `sdd/PATTERNS.md`
 - **Context**: A seção está marcada como pendente de propósito — inventar exemplo antes de existir código que compila seria pior que não ter. Preencher com um caso de uso real depois da TODO-002.
@@ -431,6 +446,19 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-001: Cadastro de estabelecimento e login
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Resolved**: 2026-08-30
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260830-cadastro-estabelecimento-login/`
+- **Origin**: revisão arquitetural
+- **Context**: Estabeleceu o tenant. 17 tasks, 214 testes, 91% de cobertura de instruções. Entregou o cadastro com autenticação imediata da sessão, login com retorno à rota pretendida, logout, painel mínimo com o link público, e o primeiro teste de isolamento entre tenants — que nasce aqui e cresce a cada feature.
+- **Deixou para trás**: DEBT-011 (nome do estabelecimento com duas fontes na tela), DEBT-012 (sem limite de tentativa de login), DEBT-013 (sessão em memória), DEBT-014 (sem CSP) e a TODO-109 (recuperação de senha, declarada fora de escopo na spec funcional).
+
+---
 
 ### DEBT-002: ArchUnit deve proibir Spring em teste de domínio
 - **Priority**: Medium

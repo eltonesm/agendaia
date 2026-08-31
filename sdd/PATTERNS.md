@@ -203,6 +203,42 @@ com.agendaia.<contexto>
 - Não devolva 500 para conflito de horário: o usuário precisa ler "esse horário
   acabou de ser reservado".
 
+### Spring Boot 4 e Spring Security 7 — confirme, não deduza
+
+- **Nunca copie artifactId, pacote ou nome de API de tutorial de Boot 3.** Confirme
+  contra o jar: `javap -classpath` para membro de classe, `unzip -l` para pacote,
+  `repo1.maven.org/maven2/<path>/maven-metadata.xml` para versão.
+- Why: dez quebras foram encontradas na primeira feature, e **nenhuma é
+  dedutível**. Uma delas falha em silêncio.
+
+| Boot 3 / Security 6 | Boot 4 / Security 7 |
+|---|---|
+| `flyway-core` sozinho roda as migrations | exige `spring-boot-starter-flyway` |
+| `org.testcontainers:postgresql` | `org.testcontainers:testcontainers-postgresql` |
+| `HttpStatus.UNPROCESSABLE_ENTITY` | `UNPROCESSABLE_CONTENT` (RFC 9110) |
+| `...boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc` | `...boot.webmvc.test.autoconfigure.AutoConfigureMockMvc` |
+| `@MockBean` | `@MockitoBean` |
+| — | `thymeleaf-extras-springsecurity6` mantém o "6" |
+| `...test.web.servlet.result.SecurityMockMvcResultMatchers` | `...test.web.servlet.response.SecurityMockMvcResultMatchers` |
+| `SecurityProperties.DEFAULT_FILTER_ORDER` | `SecurityFilterProperties.DEFAULT_FILTER_ORDER`, jar `spring-boot-security` |
+| `formLogin().session(...)` | não existe; usar `post("/login")` comum |
+| `new NoResourceFoundException(method, path)` | exige três argumentos |
+
+> A primeira é a perigosa: **o build passa, a aplicação sobe e zero migrations
+> são aplicadas.** Só foi pega porque havia um teste afirmando que o Flyway
+> tinha rodado. Toda configuração que pode falhar em silêncio precisa de um
+> teste que afirme que ela funcionou.
+
+### Ordem de filtro em relação à cadeia do Spring Security
+
+- A cadeia é **um único filtro** no chain do servlet, em
+  `SecurityFilterProperties.DEFAULT_FILTER_ORDER` (`-100`). Filtro que precise
+  do principal tem que declarar ordem **maior** que isso.
+- Não confie no javadoc: o do `TenantContextFilter` afirmava o contrário do que
+  o `@Order` fazia, e o tenant nunca era populado.
+- Why: quem vem antes lê um `SecurityContextHolder` vazio, e a falha aparece
+  como 500 numa rota autenticada, longe da causa.
+
 ## Database Patterns
 
 **Toda tabela de negócio tem `tenant_id`**:
@@ -316,6 +352,50 @@ templates/
 - Why: teste sobre markup quebra a cada ajuste visual e ensina o time a ignorar
   teste vermelho.
 
+## Testes que realmente garantem
+
+**Todo portão precisa ser visto falhando pelo menos uma vez**:
+- Depois de escrever uma regra de ArchUnit, um piso de cobertura ou um teste de
+  isolamento, **desligue o mecanismo de propósito** e confirme que ele falha.
+  Depois restaure.
+- Why: três portões desta base foram conferidos assim e os três estavam certos —
+  mas dois outros, não conferidos, não pegavam nada. Portão que nunca falhou é
+  portão que ninguém sabe se funciona.
+
+**Teste que não roda é pior que teste ausente**:
+- Ao acrescentar a primeira classe `*IT`, confirme que o `maven-failsafe-plugin`
+  está no `pom.xml` e que ela aparece na saída do `verify`.
+- Why: `SecurityRoutesIT` foi escrito e nunca executado. A suíte estava verde
+  **porque o arquivo era ignorado**, e teria engolido em silêncio as quatro
+  classes seguintes.
+
+**Regra que cobre metade do que promete é pior que regra ausente**:
+- `noClasses().beAnnotatedWith(...)` olha **anotação de classe**. Para cobrir
+  método, é preciso a regra irmã com `noMethods()`.
+- Escope todo predicado por nome ao pacote do projeto:
+  `resideInAPackage("com.agendaia..")`. Sem isso, `SecurityContextRepository`
+  do Spring casa com uma regra sobre "repositório".
+- Why: falso positivo treina o time a ignorar a ferramenta, e cobertura parcial
+  dá a sensação de garantia sem a garantia.
+
+**Teste de fluxo autenticado segue o redirecionamento**:
+- Capture a `MockHttpSession` do resultado e faça a requisição seguinte com ela.
+  Parar no `302` não prova nada.
+- Why: desde o Spring Security 6 o `SecurityContextHolder` vive na thread da
+  requisição. Autenticar sem gravar no `SecurityContextRepository` produz um
+  usuário autenticado no POST e deslogado no redirecionamento — **com a suíte
+  verde**.
+
+**Cenário que coincide com o padrão não testa nada**:
+- Ao verificar "volta para a rota pretendida", use uma rota que **não** seja o
+  `defaultSuccessUrl`. Ao verificar "usa o valor configurado", use um valor
+  diferente do default.
+- Why: o teste passa igual se o comportamento for ignorado.
+
+**Sem `@Transactional` em teste de integração de fluxo web**:
+- Limpe o estado no `@BeforeEach`. Em produção cada requisição abre a sua
+  transação, e uma transação ambiente do teste esconde exatamente isso.
+
 ## Observabilidade
 
 **Log estruturado, com tenant em toda linha**:
@@ -397,13 +477,54 @@ templates/
 
 ## Exemplo de ponta a ponta
 
-<!--
-  PENDENTE: adicionar após a primeira fatia vertical (cadastro de empresa e
-  login). Um caso de uso completo e curto, de controller a migration, é de onde
-  o agente copia o padrão — vale mais que todos os parágrafos acima juntos.
-  Não inventar antes de existir código real que compile e passe nos testes.
--->
+A fatia vertical do cadastro de estabelecimento é o modelo a copiar. Ela existe,
+compila e passa nos testes — leia o código, não a descrição.
+
+```
+HTTP  →  RegistrationController          adapter/in/web       devolve tela, nunca objeto
+         ↓ RegisterBusinessCommand       application/command  o que entra, sem tipo de web
+      →  RegisterBusinessUseCase         application/port/in  INTERFACE
+         ↑ implementada por
+         RegisterBusinessHandler         application          @Transactional mora aqui, e só aqui
+         ↓
+      →  Business.register(...)          domain               fábrica; construtor privado, sem setter
+         SlugGenerator                   domain               Java puro, testável em milissegundos
+         ↓
+      →  BusinessRepository              domain               interface do Spring Data
+         ↓
+         V2__organization_create_...sql  db/migration         Flyway é dono do schema; ddl-auto: validate
+```
+
+| Camada | Arquivo |
+|---|---|
+| Controller | `organization/adapter/in/web/RegistrationController.java` |
+| Porta de entrada | `organization/application/port/in/RegisterBusinessUseCase.java` |
+| Caso de uso | `organization/application/RegisterBusinessHandler.java` |
+| Domínio | `organization/domain/Business.java`, `SlugGenerator.java` |
+| Migration | `db/migration/V2__organization_create_business_and_user.sql` |
+| Teste puro | `organization/domain/SlugGeneratorTest.java` |
+| Teste de camada web | `organization/adapter/in/web/RegistrationControllerTest.java` |
+| Teste de ponta a ponta | `organization/RegistrationIT.java` |
+
+O que este exemplo demonstra e vale imitar:
+
+- **O controller não conhece repositório nem entidade.** Fala com a interface do
+  caso de uso e devolve nome de view.
+- **Erro de negócio vira erro no campo que o causou**, preservando o
+  preenchimento — não mensagem solta no topo, que faz o usuário reescrever tudo.
+- **A garantia é do banco.** A verificação em memória existe para dar mensagem
+  boa; quem impede duplicata é o `UNIQUE`, e o adapter traduz a violação em
+  exceção de domínio.
+- **Três níveis de teste, com propósitos distintos**: puro para a regra, camada
+  web isolada para a tradução HTTP, e integração com Postgres real para o fluxo.
+
+> Contexto completo, incluindo o que deu errado no caminho:
+> [`sdd/features/20260830-cadastro-estabelecimento-login/`](features/20260830-cadastro-estabelecimento-login/README.md).
 
 ## Last Updated
 
 2026-08-29 — versão inicial, derivada dos ADRs 0001 a 0009.
+2026-08-30 — promovidos os aprendizados da TODO-001 no `/sdd.finish`: as dez
+quebras do Boot 4 / Security 7, a ordem de filtro em relação à cadeia do Spring
+Security, a seção "Testes que realmente garantem" e o exemplo de ponta a ponta,
+que estava pendente esperando a primeira fatia vertical (DEBT-004).
