@@ -1,0 +1,53 @@
+<!doctype html>
+<!--/*
+  Cadastro e lista de profissionais, numa tela só (DD-2).
+
+  Um campo só no formulário — nome. Foto, especialidade e telefone ficam de
+  fora nesta feature (Out of Scope da spec funcional).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Profissionais')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 30rem">
+
+  <h1 class="h4 mb-1">Profissionais</h1>
+  <p class="text-body-secondary mb-4">
+    Quem atende no seu estabelecimento.
+  </p>
+
+  <form th:action="@{/admin/profissionais}" th:object="${form}" method="post" novalidate class="mb-4">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="name" class="form-label">Nome do profissional</label>
+      <div class="input-group has-validation">
+        <input type="text" id="name" th:field="*{name}"
+               class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+               placeholder="João da Silva" autocomplete="off" autofocus>
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}">erro</div>
+      </div>
+    </div>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(profissionais)}">
+    <li class="list-group-item" th:each="profissional : ${profissionais}"
+        th:text="${profissional.name}">Nome do profissional</li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(profissionais)}">
+    Nenhum profissional cadastrado ainda. Cadastre o primeiro acima —
+    pode ser você mesmo.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
