@@ -80,4 +80,24 @@ public final class SlugGenerator {
         }
         return FORMATO_VALIDO.matcher(slug).matches();
     }
+
+    /**
+     * Deriva a n-ésima variação de um slug: {@code barbearia-do-joao} vira
+     * {@code barbearia-do-joao-2}.
+     *
+     * <p>Serve à sugestão que o cadastro oferece quando o link escolhido já
+     * está em uso. Puro de propósito: não sabe o que está disponível — quem
+     * sabe é o caso de uso, que tem o banco.
+     *
+     * <p>Se o sufixo estourasse {@value #MAX_LENGTH}, a raiz é encurtada antes,
+     * e o hífen que sobrar na ponta é removido: {@code ...-do-} + {@code -2}
+     * daria dois hífens seguidos, que o formato recusa.
+     */
+    public static String variation(String base, int number) {
+        var sufixo = "-" + number;
+        var limite = MAX_LENGTH - sufixo.length();
+        var raiz = base.length() > limite ? base.substring(0, limite) : base;
+        raiz = HIFEN_NAS_PONTAS.matcher(raiz).replaceAll("");
+        return raiz + sufixo;
+    }
 }

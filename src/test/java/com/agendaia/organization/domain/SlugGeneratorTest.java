@@ -104,4 +104,51 @@ class SlugGeneratorTest {
                     .isFalse();
         }
     }
+
+    @Nested
+    @DisplayName("variação sugerida quando o link está tomado")
+    class Variacao {
+
+        @Test
+        @DisplayName("acrescenta o número ao fim")
+        void acrescentaONumero() {
+            assertThat(SlugGenerator.variation("barbearia-do-joao", 2))
+                    .isEqualTo("barbearia-do-joao-2");
+        }
+
+        @Test
+        @DisplayName("encurta a raiz em vez de estourar o limite da coluna")
+        void respeitaOLimite() {
+            var noLimite = "a".repeat(SlugGenerator.MAX_LENGTH);
+
+            var variacao = SlugGenerator.variation(noLimite, 2);
+
+            assertThat(variacao).hasSizeLessThanOrEqualTo(SlugGenerator.MAX_LENGTH);
+            assertThat(SlugGenerator.hasValidFormat(variacao)).isTrue();
+        }
+
+        @Test
+        @DisplayName("não deixa hífen duplo quando o corte cai em cima de um")
+        void naoDeixaHifenDuplo() {
+            // O corte para caber cairia logo depois de um hífen, e "...-" + "-2"
+            // daria "--2", que o formato recusa.
+            var comHifenNoCorte = "a".repeat(SlugGenerator.MAX_LENGTH - 3) + "-bc";
+
+            var variacao = SlugGenerator.variation(comHifenNoCorte, 2);
+
+            assertThat(variacao).doesNotContain("--");
+            assertThat(SlugGenerator.hasValidFormat(variacao)).isTrue();
+        }
+
+        @Test
+        @DisplayName("toda variação de 2 a 9 continua um slug válido")
+        void todasAsVariacoesSaoValidas() {
+            for (var n = 2; n <= 9; n++) {
+                assertThat(SlugGenerator.hasValidFormat(
+                                SlugGenerator.variation("barbearia-do-joao", n)))
+                        .as("variação %d", n)
+                        .isTrue();
+            }
+        }
+    }
 }

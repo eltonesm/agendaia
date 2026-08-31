@@ -87,21 +87,26 @@ class LoginIT {
     @Test
     @DisplayName("E2E-2: depois de entrar, volta para a rota que tentou abrir")
     void voltaParaDestinoPretendido() throws Exception {
-        // 1. Tenta uma rota protegida sem sessão. O destino fica guardado nela.
-        var sessao = (MockHttpSession) mockMvc.perform(get("/admin/dashboard"))
+        // A rota é /admin/agenda de propósito, e não o painel: o painel é o
+        // defaultSuccessUrl, então usá-lo aqui faria o teste passar mesmo se o
+        // destino pretendido fosse ignorado. Ela ainda não existe — chega numa
+        // feature seguinte — mas isso não muda o que este cenário verifica, que
+        // é para onde o Spring Security manda depois de autenticar.
+        var sessao = (MockHttpSession) mockMvc.perform(get("/admin/agenda"))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
                 .getRequest()
                 .getSession();
 
-        // 2. Entra usando a MESMA sessão.
+        // Entra usando a MESMA sessão.
         //
         // O destino vem absoluto e com "?continue": desde o Spring Security 6.3
         // o request cache só devolve a requisição guardada quando esse parâmetro
-        // está presente. O usuário chega em /admin/dashboard do mesmo jeito.
+        // está presente.
         mockMvc.perform(entrar(sessao))
                 .andExpect(authenticated())
-                .andExpect(header().string("Location", Matchers.endsWith("/admin/dashboard?continue")));
+                .andExpect(header().string("Location", Matchers.endsWith("/admin/agenda?continue")))
+                .andExpect(header().string("Location", Matchers.not(Matchers.containsString("dashboard"))));
     }
 
     @Test

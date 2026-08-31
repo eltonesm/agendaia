@@ -6,6 +6,7 @@ import com.agendaia.organization.application.port.in.RegisteredBusiness;
 import com.agendaia.organization.domain.Business;
 import com.agendaia.organization.domain.BusinessRepository;
 import com.agendaia.organization.domain.ReservedSlugs;
+import com.agendaia.organization.domain.SlugGenerator;
 import com.agendaia.organization.domain.User;
 import com.agendaia.organization.domain.UserRepository;
 import com.agendaia.organization.domain.exception.EmailAlreadyUsedException;
@@ -51,8 +52,15 @@ public class RegisterBusinessHandler implements RegisterBusinessUseCase {
         // Verificação antecipada: dá erro no campo certo, com mensagem útil.
         // Não é garantia — duas requisições simultâneas passam as duas aqui. A
         // garantia é a restrição do banco, tratada no catch abaixo.
-        if (ReservedSlugs.contains(slug) || businessRepository.existsBySlug(slug)) {
+        // Palavra reservada é recusada sem nem consultar o banco, e sem
+        // sugestão: oferecer "admin-2" a quem digitou "admin" ensinaria que o
+        // caminho está quase livre. Link tomado por outro estabelecimento é
+        // outra história — ali a sugestão é o que evita o abandono.
+        if (ReservedSlugs.contains(slug)) {
             throw new SlugUnavailableException(slug);
+        }
+        if (businessRepository.existsBySlug(slug)) {
+            throw new SlugUnavailableException(slug, sugerirVariacao(slug));
         }
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException();
@@ -95,7 +103,7 @@ public class RegisterBusinessHandler implements RegisterBusinessUseCase {
             return e;
         }
         if (causa.contains(CONSTRAINT_SLUG)) {
-            return new SlugUnavailableException(slug);
+            return new SlugUnavailableException(slug, sugerirVariacao(slug));
         }
         if (causa.contains(CONSTRAINT_EMAIL)) {
             return new EmailAlreadyUsedException();
@@ -103,5 +111,23 @@ public class RegisterBusinessHandler implements RegisterBusinessUseCase {
         // Violação que não sabemos traduzir é defeito, não regra de negócio:
         // propaga e vira 500 com identificador, para ser investigada.
         return e;
+    }
+
+    /**
+     * Primeira variação livre do link pedido, ou {@code null} se não houver.
+     *
+     * <p>O limite de nove tentativas é deliberado. Isto roda no caminho de erro
+     * de um formulário, e cada tentativa é uma consulta: um estabelecimento que
+     * não achou vaga em nove variações tem um nome disputado demais para a
+     * sugestão ajudar, e aí a mensagem genérica serve melhor que uma espera.
+     */
+    private String sugerirVariacao(String slug) {
+        for (var n = 2; n <= 9; n++) {
+            var candidato = SlugGenerator.variation(slug, n);
+            if (!ReservedSlugs.contains(candidato) && !businessRepository.existsBySlug(candidato)) {
+                return candidato;
+            }
+        }
+        return null;
     }
 }

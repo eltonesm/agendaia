@@ -20,10 +20,10 @@
   ],
 
   "stats": {
-    "total": 16,
-    "done": 11,
-    "by_layer": { "1": 13, "2": 0, "3": 3 },
-    "by_complexity": { "Low": 5, "Medium": 8, "High": 3 }
+    "total": 17,
+    "done": 13,
+    "by_layer": { "1": 14, "2": 0, "3": 3 },
+    "by_complexity": { "Low": 6, "Medium": 8, "High": 3 }
   },
 
   "tasks": [
@@ -276,7 +276,7 @@
       "id": "TASK-012",
       "title": "Testes de integracao dos tres cenarios E2E",
       "description": "Implementar E2E-1, E2E-2 e E2E-3 como testes de integracao com Testcontainers e MockMvc, seguindo redirecionamento. E o unico lugar onde a armadilha do DD-5 aparece.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "High",
       "depends_on": ["TASK-010", "TASK-011"],
@@ -364,6 +364,28 @@
       ],
       "references": [],
       "design_decisions": []
+    },
+    {
+      "id": "TASK-017",
+      "title": "Sugestao de variacao livre quando o link esta em uso",
+      "description": "Divergencia encontrada ao escrever o E2E-3: a spec funcional pede duas vezes que o erro do slug sugira uma variacao disponivel, e nem a spec tecnica nem as tasks previam isso. Task criada durante o build para a implementacao nao ficar sem rastro no ciclo.",
+      "status": "completed",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-008"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
+        "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
+        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: link tomado por outro estabelecimento devolve a primeira variacao livre na mensagem do campo",
+        "AC-2: palavra reservada continua recusada sem consultar o banco e sem sugerir variacao",
+        "AC-3: a variacao respeita o formato do slug e o limite de 60 caracteres",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": ["US-2", "BR-2"],
+      "design_decisions": []
     }
   ],
 
@@ -376,7 +398,7 @@
         "level_3": ["TASK-006"],
         "level_4": ["TASK-007"],
         "level_5": ["TASK-008", "TASK-011"],
-        "level_6": ["TASK-010"],
+        "level_6": ["TASK-010", "TASK-017"],
         "level_7": ["TASK-012"],
         "level_8": ["TASK-013"]
       },
