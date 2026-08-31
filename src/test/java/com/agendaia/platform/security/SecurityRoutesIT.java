@@ -55,11 +55,25 @@ class SecurityRoutesIT {
     }
 
     @Test
-    @DisplayName("cadastro é público — é a porta de entrada do produto")
+    @DisplayName("cadastro é público e renderiza — é a porta de entrada do produto")
     void cadastroEPublico() throws Exception {
-        // Ainda não há controller: o que importa aqui é NÃO ser redirecionado
-        // para o login. 404 é o esperado até a TASK-010.
-        mockMvc.perform(get("/cadastro")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/cadastro"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view()
+                        .name("auth/cadastro"));
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser
+    @DisplayName("página inexistente devolve 404, não 500")
+    void paginaInexistenteDevolve404() throws Exception {
+        // Precisa estar autenticado: rota desconhecida cai em
+        // anyRequest().authenticated(), e quem não entrou é mandado ao login
+        // ANTES de chegar ao 404.
+        //
+        // Regressão do GlobalExceptionHandler: o tratamento genérico engolia as
+        // exceções do Spring que já carregam status, e todo 404 virava 500.
+        mockMvc.perform(get("/rota-que-nao-existe")).andExpect(status().isNotFound());
     }
 
     @Test

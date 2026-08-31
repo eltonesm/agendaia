@@ -31,8 +31,13 @@
   <div class="container">
     <a class="navbar-brand fw-semibold" th:href="@{/admin/dashboard}">AgendaIA</a>
     <div class="d-flex align-items-center gap-3">
-      <span class="text-body-secondary small"
-            sec:authentication="principal.businessName">Estabelecimento</span>
+      <!--/*
+        Lê do model, não do principal. Navegar por principal.businessName
+        estouraria em toda página quando o principal fosse de outro tipo —
+        e erro no layout derruba todas as telas de uma vez. Quem resolve isso
+        é o LayoutAdvice.
+      */-->
+      <span class="text-body-secondary small" th:text="${businessName}">Estabelecimento</span>
       <!--/* Logout é POST por causa do CSRF: link GET seria vulnerável a
              logout forçado por terceiro. */-->
       <form th:action="@{/logout}" method="post" class="m-0">

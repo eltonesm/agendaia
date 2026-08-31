@@ -228,7 +228,7 @@
       "id": "TASK-010",
       "title": "Tela e controller de cadastro",
       "description": "RegistrationController com GET e POST, template do formulario e o JavaScript que preenche o slug enquanto o nome e digitado. O servidor valida o valor submetido, nao rederiva.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-008", "TASK-009"],

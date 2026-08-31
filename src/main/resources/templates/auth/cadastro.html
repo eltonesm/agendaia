@@ -1,0 +1,93 @@
+<!doctype html>
+<!--/*
+  Cadastro do estabelecimento.
+
+  Três campos mais o link. Cada campo a mais é abandono — o dono do piloto
+  provavelmente preenche isto à noite, no celular, depois de fechar a barbearia.
+
+  Nenhuma regra de negócio aqui: o template só exibe o que o controller já
+  resolveu.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Criar conta')}"></head>
+<body>
+
+<main class="container py-5" style="max-width: 30rem">
+
+  <h1 class="h3 mb-1">Crie a conta do seu estabelecimento</h1>
+  <p class="text-body-secondary mb-4">Leva menos de um minuto.</p>
+
+  <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+
+    <!--/*
+      Erro que não pertence a nenhum campo específico.
+
+      Precisa estar DENTRO do form: o objeto #fields só existe no contexto de um
+      th:object. Fora daqui, o Thymeleaf lança "Could not bind form errors using
+      expression global" e a página inteira vira 500 — inclusive na primeira
+      visita, sem erro nenhum para exibir.
+    */-->
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="businessName" class="form-label">Nome do estabelecimento</label>
+      <input type="text" id="businessName" th:field="*{businessName}"
+             class="form-control" th:classappend="${#fields.hasErrors('businessName')} ? 'is-invalid'"
+             placeholder="Barbearia do João" autocomplete="organization" autofocus>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('businessName')}"
+           th:errors="*{businessName}">erro</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="slug" class="form-label">Seu link</label>
+      <div class="input-group" th:classappend="${#fields.hasErrors('slug')} ? 'has-validation'">
+        <span class="input-group-text text-body-secondary">agendaia.com/b/</span>
+        <input type="text" id="slug" th:field="*{slug}"
+               class="form-control" th:classappend="${#fields.hasErrors('slug')} ? 'is-invalid'"
+               autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('slug')}"
+             th:errors="*{slug}">erro</div>
+      </div>
+      <div class="form-text">
+        É o endereço que você compartilha com seus clientes:
+        <strong>agendaia.com/b/<span id="slug-previa">seu-link</span></strong>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Seu e-mail</label>
+      <input type="email" id="email" th:field="*{email}"
+             class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+             autocomplete="email">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+           th:errors="*{email}">erro</div>
+    </div>
+
+    <div class="mb-4">
+      <label for="password" class="form-label">Senha</label>
+      <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
+             digitada de volta ao navegador quando o formulário fosse
+             reexibido com erro. */-->
+      <input type="password" id="password" name="password"
+             class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+             autocomplete="new-password">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+           th:errors="*{password}">erro</div>
+      <div class="form-text">Pelo menos 8 caracteres.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Criar conta</button>
+  </form>
+
+  <p class="text-center mt-4 mb-0 text-body-secondary">
+    Já tem conta? <a th:href="@{/login}">Entrar</a>
+  </p>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:src="@{/js/slug.js}" defer></script>
+</body>
+</html>

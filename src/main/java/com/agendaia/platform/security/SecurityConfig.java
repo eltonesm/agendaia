@@ -6,6 +6,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
  * Cadeia de filtros de segurança.
@@ -28,9 +30,24 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Onde o contexto de segurança é persistido entre requisições.
+     *
+     * <p>Exposto como bean de propósito: o cadastro precisa autenticar a sessão
+     * por conta própria, e tem que gravar **no mesmo lugar** que a cadeia de
+     * filtros lê. Deixar cada lado instanciar o seu funcionaria por acidente
+     * hoje e quebraria no dia em que um deles mudasse.
+     */
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(auth -> auth
+    SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository contextRepository)
+            throws Exception {
+        return http.securityContext(sc -> sc.securityContextRepository(contextRepository))
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/cadastro", "/login", "/error")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico")

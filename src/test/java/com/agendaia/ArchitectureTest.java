@@ -4,6 +4,9 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.properties.HasName;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -54,13 +57,30 @@ class ArchitectureTest {
                     a regra de dependência aponta para dentro: o caso de uso define \
                     a porta, o adapter a implementa. O contrário inverte a seta.""");
 
+    /**
+     * Repositório <strong>nosso</strong>, não qualquer classe cujo nome termine
+     * em Repository.
+     *
+     * <p>A primeira versão desta regra não tinha o recorte de pacote e acusou
+     * três violações no {@code RegistrationController} por causa do
+     * {@code SecurityContextRepository} — que é armazenamento de sessão do
+     * Spring Security, e não repositório de dados. Sessão é responsabilidade
+     * legítima da camada web.
+     *
+     * <p>Regra com falso positivo é pior que regra ausente: ela treina o time a
+     * enfraquecê-la ou apagá-la.
+     */
+    private static final DescribedPredicate<JavaClass> REPOSITORIO_DO_PROJETO =
+            JavaClass.Predicates.resideInAPackage("com.agendaia..")
+                    .and(HasName.Predicates.nameMatching(".*Repository"))
+                    .as("repositório do projeto");
+
     @ArchTest
     static final ArchRule controller_nao_fala_com_repositorio = noClasses()
             .that()
             .haveSimpleNameEndingWith("Controller")
             .should()
-            .dependOnClassesThat()
-            .haveSimpleNameEndingWith("Repository")
+            .dependOnClassesThat(REPOSITORIO_DO_PROJETO)
             .because("""
                     o fluxo é Controller → UseCase → Domain → Port → Adapter. \
                     Controller que injeta repositório pula o caso de uso e leva \
