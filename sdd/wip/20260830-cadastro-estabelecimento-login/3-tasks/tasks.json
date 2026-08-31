@@ -21,7 +21,7 @@
 
   "stats": {
     "total": 17,
-    "done": 13,
+    "done": 14,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 6, "Medium": 8, "High": 3 }
   },
@@ -299,7 +299,7 @@
       "id": "TASK-013",
       "title": "Teste de isolamento entre tenants",
       "description": "Criar dois estabelecimentos e afirmar que nenhuma rota autenticada de um alcanca dado do outro. Nasce aqui e cresce a cada feature.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-012"],
