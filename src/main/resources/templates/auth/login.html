@@ -1,0 +1,49 @@
+<!doctype html>
+<!--/*
+  Entrada no painel.
+
+  A mensagem de erro é uma só, genérica, para qualquer causa: e-mail
+  inexistente, senha errada, conta desativada ou estabelecimento desativado.
+  Distinguir revelaria quais e-mails têm conta no sistema.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Entrar')}"></head>
+<body>
+
+<main class="container py-5" style="max-width: 24rem">
+
+  <h1 class="h3 mb-4">Entrar</h1>
+
+  <div class="alert alert-danger" th:if="${param.erro}">
+    E-mail ou senha incorretos.
+  </div>
+
+  <div class="alert alert-success" th:if="${param.saiu}">
+    Você saiu da sua conta.
+  </div>
+
+  <form th:action="@{/login}" method="post">
+    <div class="mb-3">
+      <label for="username" class="form-label">E-mail</label>
+      <input type="email" id="username" name="username" class="form-control"
+             autocomplete="username" required autofocus>
+    </div>
+
+    <div class="mb-4">
+      <label for="password" class="form-label">Senha</label>
+      <input type="password" id="password" name="password" class="form-control"
+             autocomplete="current-password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+  </form>
+
+  <p class="text-center mt-4 mb-0 text-body-secondary">
+    Ainda não tem conta? <a th:href="@{/cadastro}">Criar conta</a>
+  </p>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

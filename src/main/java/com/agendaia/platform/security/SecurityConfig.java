@@ -58,18 +58,19 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                // Página de login gerada pelo Spring, por enquanto. A TASK-011
-                // a substitui por auth/login.html e acrescenta .loginPage("/login").
-                //
-                // Declarar loginPage ANTES de existir o controller quebraria o
-                // fluxo: /login daria 404, e o redirecionamento de quem não está
-                // autenticado entraria em laço. Cada commit precisa deixar a
-                // aplicação funcionando.
                 .formLogin(form -> form
+                        // Nossa tela, agora que ela existe. O GET é servido pelo
+                        // view controller do WebConfig; o POST, pelo próprio
+                        // Spring Security.
+                        .loginPage("/login")
                         // O "false" mantém o destino pretendido: quem foi barrado
                         // ao tentar /admin/agenda volta para lá depois de entrar,
                         // e não para o painel (US-3).
                         .defaultSuccessUrl("/admin/dashboard", false)
+                        // Uma mensagem só, para qualquer causa: e-mail
+                        // inexistente, senha errada ou conta desativada.
+                        // Distinguir revelaria quais e-mails têm conta.
+                        .failureUrl("/login?erro")
                         .permitAll())
                 .logout(logout -> logout.logoutUrl("/logout")
                         .logoutSuccessUrl("/login?saiu")

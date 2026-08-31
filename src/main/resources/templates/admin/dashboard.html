@@ -1,0 +1,40 @@
+<!doctype html>
+<!--/*
+  Painel, deliberadamente mínimo nesta feature.
+
+  Ele existe para provar que a sessão funciona e para entregar ao dono o link
+  que ele acabou de criar. As telas de verdade chegam nas features seguintes —
+  e o painel diz explicitamente qual é o próximo passo, para ele não ficar
+  olhando uma tela vazia sem saber o que fazer.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Painel')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 40rem">
+
+  <h1 class="h4 mb-1" th:text="${painel.businessName}">Estabelecimento</h1>
+  <p class="text-body-secondary">Sua conta está pronta.</p>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h2 class="h6 card-title">Seu link de agendamento</h2>
+      <p class="card-text small text-body-secondary mb-2">
+        Compartilhe com seus clientes para que eles agendem sozinhos.
+      </p>
+      <code class="d-block p-2 bg-body-tertiary rounded"
+            th:text="${painel.publicUrl}">agendaia.com/b/seu-link</code>
+    </div>
+  </div>
+
+  <div class="alert alert-secondary" role="status">
+    <strong>Próximo passo:</strong> cadastrar seus profissionais e serviços.
+    Até lá, o link acima ainda não mostra horários.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

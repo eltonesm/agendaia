@@ -21,7 +21,7 @@
 
   "stats": {
     "total": 16,
-    "done": 0,
+    "done": 11,
     "by_layer": { "1": 13, "2": 0, "3": 3 },
     "by_complexity": { "Low": 5, "Medium": 8, "High": 3 }
   },
@@ -254,7 +254,7 @@
       "id": "TASK-011",
       "title": "Telas de login, logout e painel minimo",
       "description": "Template de login integrado ao Spring Security, acao de sair visivel, e DashboardController exibindo o nome do estabelecimento e o link publico.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-007", "TASK-009"],

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.slf4j.MDC;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterProperties;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,16 +16,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Popula o {@link TenantContext} a partir da sessão autenticada.
  *
- * <p>Roda depois do filtro de autenticação do Spring Security — por isso a
- * ordem baixa não serve aqui; o registro como {@code @Component} coloca este
- * filtro após a cadeia de segurança, que é onde o principal já existe.
+ * <p><strong>A ordem é o ponto todo.</strong> A cadeia do Spring Security é um
+ * único filtro no chain do servlet, em {@link SecurityFilterProperties#DEFAULT_FILTER_ORDER}
+ * ({@code -100}). Quem vem antes dele lê um {@code SecurityContextHolder} ainda
+ * vazio; quem vem depois roda dentro dele, com o principal já resolvido. Este
+ * filtro precisa do principal, logo vem depois — por um ponto só.
  *
  * <p>Também coloca {@code tenantId} no MDC, para que toda linha de log da
  * requisição saia identificada. Num sistema multi-tenant, "está lento" é a
  * pergunta errada: a certa é "para qual estabelecimento" (TODO-108).
  */
 @Component
-@Order(Integer.MIN_VALUE + 100)
+@Order(SecurityFilterProperties.DEFAULT_FILTER_ORDER + 1)
 public class TenantContextFilter extends OncePerRequestFilter {
 
     static final String MDC_TENANT = "tenantId";
