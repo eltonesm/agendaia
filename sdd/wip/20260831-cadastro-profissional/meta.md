@@ -253,15 +253,28 @@ overrides:
 
 ## Notes
 
-Segunda feature do projeto pelo ciclo SDD completo. Duas perguntas em aberto
-ficam para o `/sdd.spec` decidir com o usuário (não decididas aqui, em
-`/sdd.start`, porque são de produto/arquitetura, não de andaime):
-
-1. O dono vira `Professional` automaticamente no cadastro, ou é um passo à parte?
-2. `organization/api/` nasce nesta feature mesmo sem consumidor imediato?
+Segunda feature do projeto pelo ciclo SDD completo.
 
 Antes de `/sdd.start`, a branch `feature/cadastro-estabelecimento-login` foi
 mesclada em `main` via fast-forward (18 commits, nunca tinha sido mesclada) —
 corrigindo uma violação da própria regra de "branch curta" do `PROJECT.md`.
 `feature/cadastro-profissional` nasce corretamente a partir de `main`
 atualizada.
+
+**As duas perguntas em aberto foram respondidas pelo usuário em 2026-08-31,
+antes da spec funcional:**
+
+1. **O dono vira `Professional` num passo à parte**, não automaticamente no
+   cadastro de estabelecimento. Consequência direta para a spec funcional:
+   existe uma janela entre "cadastrei o estabelecimento" e "tenho um
+   profissional" — o painel da TODO-001 precisa continuar orientando esse
+   próximo passo (ele já diz "cadastrar seus profissionais e serviços"), e
+   esta feature é quem cumpre essa promessa. Precisa decidir na spec: o dono é
+   *obrigado* a se cadastrar como profissional, ou pode cadastrar só outra
+   pessoa? O glossário sugere que o estabelecimento sem nenhum profissional é
+   estado inválido de longo prazo, mas não que o *dono especificamente* seja
+   o profissional.
+2. **`organization/api/` continua adiado até a TODO-003** — não nasce nesta
+   feature. Consequência: nenhuma classe aqui pode anticipar
+   `@NamedInterface("api")` nem criar o pacote vazio; `Professional` e seu
+   repositório ficam em `organization.domain`, mesmo padrão da TODO-001.
