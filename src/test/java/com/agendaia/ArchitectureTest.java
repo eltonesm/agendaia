@@ -98,6 +98,25 @@ class ArchitectureTest {
                     o domínio não sabe que existe banco e o controller não decide \
                     fronteira de consistência. Transação é decisão de caso de uso.""");
 
+    /**
+     * A regra acima olha só a classe. Um {@code @Transactional} em método
+     * passava livre — foi assim que o {@code BusinessUserDetailsService} manteve
+     * uma transação em {@code adapter} até a revisão da TASK-014. Regra que
+     * cobre metade do que promete é pior que regra ausente.
+     */
+    @ArchTest
+    static final ArchRule transacao_em_metodo_so_na_application = noMethods()
+            .that()
+            .areDeclaredInClassesThat()
+            .resideOutsideOfPackage("..application..")
+            .should()
+            .beAnnotatedWith("org.springframework.transaction.annotation.Transactional")
+            .orShould()
+            .beAnnotatedWith("jakarta.transaction.Transactional")
+            .because("""
+                    anotar o método em vez da classe não muda de quem é a decisão: \
+                    a fronteira de consistência continua sendo do caso de uso.""");
+
     @ArchTest
     static final ArchRule sem_setter_publico_no_dominio = noMethods()
             .that()

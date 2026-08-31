@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Carrega quem está tentando entrar.
@@ -46,9 +45,13 @@ public class BusinessUserDetailsService implements UserDetailsService {
      *
      * <p><strong>Nenhum log aqui registra o e-mail tentado.</strong> Log vai
      * para arquivo, agregador e backup, e e-mail é dado pessoal.
+     *
+     * <p>Sem {@code @Transactional}: transação é decisão de caso de uso, e este
+     * é um adapter. As duas consultas são leituras independentes — cada uma
+     * abre a sua, e nada aqui depende de vê-las no mesmo instante. Não há
+     * associação lazy para estourar depois, porque não há associação nenhuma.
      */
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var normalizado = email == null ? "" : email.strip().toLowerCase(Locale.ROOT);
 

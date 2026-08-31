@@ -21,7 +21,7 @@
 
   "stats": {
     "total": 17,
-    "done": 14,
+    "done": 17,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 6, "Medium": 8, "High": 3 }
   },
@@ -317,7 +317,7 @@
       "id": "TASK-014",
       "title": "Code review",
       "description": "Rodar o Skill sdd-code-reviewer sobre o diff da feature e resolver os achados. Portao bloqueante.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],
@@ -334,7 +334,7 @@
       "id": "TASK-015",
       "title": "Revisao de performance",
       "description": "Rodar o Skill sdd-performance-expert. Nesta feature o foco e ausencia de N+1 e de EAGER, e uso correto dos indices no login.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],
@@ -351,7 +351,7 @@
       "id": "TASK-016",
       "title": "Revisao de seguranca",
       "description": "Rodar o Skill sdd-code-reviewer com foco em seguranca. Conferir os pontos que a spec tecnica listou na secao Security.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-013"],

@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.agendaia.TestcontainersConfiguration;
 import com.agendaia.organization.domain.BusinessRepository;
 import com.agendaia.organization.domain.UserRepository;
+import com.agendaia.platform.security.AuthenticatedUser;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -138,6 +141,30 @@ class RegistrationIT {
                 .andExpect(redirectedUrl("/admin/dashboard"));
 
         assertThat(userRepository.findAll().getFirst().email()).isEqualTo("joao@exemplo.com");
+    }
+
+    @Test
+    @DisplayName("o hash da senha não fica guardado na sessão")
+    void hashNaoFicaNaSessao() throws Exception {
+        var sessao = (MockHttpSession) mockMvc.perform(post("/cadastro")
+                        .with(csrf())
+                        .param("businessName", "Barbearia do João")
+                        .param("slug", "barbearia-do-joao")
+                        .param("email", "joao@exemplo.com")
+                        .param("password", "senha-do-joao"))
+                .andReturn()
+                .getRequest()
+                .getSession();
+
+        var contexto = (SecurityContext)
+                sessao.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        var principal = (AuthenticatedUser) contexto.getAuthentication().getPrincipal();
+
+        // O cadastro autentica à mão, sem passar por provider: se o controller
+        // esquecer o eraseCredentials, o hash BCrypt vai para a sessão e a
+        // acompanha até onde ela for guardada.
+        assertThat(principal.getPassword()).isNull();
+        assertThat(principal.tenantId()).isNotNull();
     }
 
     @Test

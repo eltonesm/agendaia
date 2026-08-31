@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -111,6 +112,15 @@ public class RegistrationController {
             String email, HttpServletRequest request, HttpServletResponse response) {
 
         var principal = userDetailsService.loadUserByUsername(email);
+
+        // Apaga o hash antes de o principal entrar na sessão. No login isso é o
+        // ProviderManager quem faz; aqui não há provider nenhum, então é
+        // responsabilidade deste método. Achado da revisão de segurança
+        // (TASK-016).
+        if (principal instanceof CredentialsContainer credenciais) {
+            credenciais.eraseCredentials();
+        }
+
         var autenticacao = UsernamePasswordAuthenticationToken.authenticated(
                 principal, null, principal.getAuthorities());
 

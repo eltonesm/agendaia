@@ -4,6 +4,7 @@ import com.agendaia.shared.TenantId;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,15 +24,23 @@ import org.springframework.security.core.userdetails.UserDetails;
  * <p>Carrega o {@code tenantId} de propósito: é dele que o filtro popula o
  * {@link com.agendaia.platform.tenant.TenantContext}. O tenant nunca vem de
  * parâmetro, corpo ou cabeçalho (ADR 0004).
+ *
+ * <p>Implementa {@link CredentialsContainer} para que o hash da senha saia do
+ * objeto assim que a autenticação termina — achado da revisão de segurança
+ * (TASK-016). Sem isso, o principal fica na sessão HTTP <em>carregando o hash
+ * BCrypt</em>, e ele acompanharia a sessão para onde ela fosse guardada. Hoje é
+ * memória do processo; no dia em que a sessão for para o Redis, o hash iria
+ * junto. O {@code passwordHash} é o único campo não-final da classe por causa
+ * disso, e é o preço.
  */
-public final class AuthenticatedUser implements UserDetails {
+public final class AuthenticatedUser implements UserDetails, CredentialsContainer {
 
     private final UUID userId;
     private final TenantId tenantId;
     private final String email;
     private final String displayName;
     private final String businessName;
-    private final String passwordHash;
+    private String passwordHash;
     private final String role;
     private final boolean enabled;
 
@@ -83,6 +92,19 @@ public final class AuthenticatedUser implements UserDetails {
     @Override
     public String getPassword() {
         return passwordHash;
+    }
+
+    /**
+     * Apaga o hash depois que o provider já comparou a senha.
+     *
+     * <p>Chamado pelo {@code ProviderManager} no login. No cadastro, onde a
+     * sessão é autenticada à mão sem passar por provider, quem chama é o
+     * controller — o esquecimento ali é justamente o que esta revisão
+     * encontrou.
+     */
+    @Override
+    public void eraseCredentials() {
+        this.passwordHash = null;
     }
 
     @Override

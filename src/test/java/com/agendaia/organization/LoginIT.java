@@ -165,6 +165,26 @@ class LoginIT {
     }
 
     @Test
+    @DisplayName("no login, o hash da senha também não sobra na sessão")
+    void hashNaoFicaNaSessao() throws Exception {
+        var sessao = (MockHttpSession)
+                mockMvc.perform(entrar(null)).andReturn().getRequest().getSession();
+
+        var contexto = (org.springframework.security.core.context.SecurityContext)
+                sessao.getAttribute(
+                        org.springframework.security.web.context
+                                .HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+        // Aqui quem apaga é o ProviderManager, não o nosso código — mas só
+        // porque o AuthenticatedUser implementa CredentialsContainer. Sem isso,
+        // o eraseCredentials não teria onde agir.
+        assertThat(((org.springframework.security.core.userdetails.UserDetails)
+                                contexto.getAuthentication().getPrincipal())
+                        .getPassword())
+                .isNull();
+    }
+
+    @Test
     @DisplayName("sem sessão, o painel manda para o login")
     void painelExigeSessao() throws Exception {
         mockMvc.perform(get("/admin/dashboard"))
