@@ -143,6 +143,19 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-016: Erro de formulario nao e anunciado por leitor de tela
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: conferencia da base de UI apos a TODO-001
+- **Context**: Os campos usam `is-invalid` e `invalid-feedback` do Bootstrap, que da retorno **visual** mas nao anuncia nada. Falta `aria-describedby` ligando o input a mensagem e `role="alert"` na regiao de erro. Quem usa leitor de tela submete o formulario, ele volta com erro e nada e dito. O resto da base esta correto: lang, viewport, label com for, e tokens de autocomplete.
+- **Affected Files**: `templates/auth/cadastro.html`, `templates/auth/login.html`
+- **Complexity**: Low
+- **Risk if Ignored**: Formulario inutilizavel para quem depende de leitor de tela — e o cadastro e a unica porta de entrada do produto
+- **Notes**: Gatilho — resolver quando o fragmento de campo de formulario for extraido (na segunda tela com formulario, conforme a regra do PATTERNS.md), para nao repetir a marcacao em cada template.
+
+---
+
 ### DEBT-015: Scripts do sdd-kit quebrados ou ausentes
 - **Priority**: Low
 - **Status**: pending
