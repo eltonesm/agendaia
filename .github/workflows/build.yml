@@ -37,11 +37,17 @@ jobs:
       - name: Build e testes
         run: ./mvnw -B --no-transfer-progress verify
 
-      - name: Publicar relatório de testes
+      # Publica os tres, e nao so o surefire: desde que o failsafe e o JaCoCo
+      # entraram no build, uma falha de teste de integracao ou de cobertura no
+      # runner nao deixaria nada para olhar.
+      - name: Publicar relatórios
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
-          path: target/surefire-reports/
+          name: relatorios
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/site/jacoco/
           retention-days: 7
           if-no-files-found: ignore

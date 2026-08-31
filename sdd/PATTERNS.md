@@ -354,6 +354,16 @@ templates/
 
 ## Testes que realmente garantem
 
+**Script versionado precisa do bit de execução no índice do git**:
+- Ao acrescentar qualquer `.sh` ou wrapper que o CI invoque como `./arquivo`,
+  rode `git update-index --chmod=+x <arquivo>` e confirme com `git ls-files -s`
+  que ele está `100755`, não `100644`.
+- Why: o Windows não tem bit de execução, então o git registra `100644` e o
+  runner Linux responde `Permission denied` com exit 126. O `.gitattributes`
+  resolve fim de linha, **não** permissão — são dois problemas diferentes, e o
+  primeiro estar resolvido não diz nada sobre o segundo.
+- `.cmd` e `.bat` ficam `100644`: nunca são executados como programa Unix.
+
 **Todo portão precisa ser visto falhando pelo menos uma vez**:
 - Depois de escrever uma regra de ArchUnit, um piso de cobertura ou um teste de
   isolamento, **desligue o mecanismo de propósito** e confirme que ele falha.
