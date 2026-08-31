@@ -1,13 +1,18 @@
 # Revisões de qualidade — TASK-014, TASK-015, TASK-016
 
 Feature: `cadastro-estabelecimento-login` · Data: 2026-08-30
-Base: `./mvnw clean verify` verde — 172 unitários + 33 de integração.
+Base: `./mvnw clean verify` verde — 181 unitários + 33 de integração,
+91,1% de instruções cobertas.
 
 As três revisões foram feitas em linha, não pelos Skills `sdd-code-reviewer` e
 `sdd-performance-expert`. Motivo: a instrução operacional em vigor nesta sessão
 proíbe delegar a subagente sem pedido explícito. O conteúdo do portão foi
 cumprido; o mecanismo, não. Fica registrado para não parecer que os Skills
 rodaram.
+
+Uma segunda passada, adversarial e sobre o código e não sobre os critérios de
+aceite, encontrou mais três coisas — estão na seção
+[Segunda passada](#segunda-passada-revisão-do-código-não-dos-critérios).
 
 ---
 
@@ -155,12 +160,71 @@ recusa em vez de devolver algo, então o mecanismo falha fechado.
 
 ---
 
+## Segunda passada: revisão do código, não dos critérios
+
+A primeira passada seguiu os critérios de aceite das três tasks. Critério de
+aceite só encontra o que alguém previu, então a segunda passada leu o código
+procurando o que não estava na lista.
+
+### Achado 3 — barra final na URL base duplicava a barra do link público
+
+`ViewDashboardHandler` concatenava `publicBaseUrl + "/b/" + slug`. Com
+`AGENDAIA_PUBLIC_BASE_URL=https://agendaia.com/` — que é o jeito natural de
+escrever a variável — o link sai `https://agendaia.com//b/barbearia-do-joao`.
+
+O link que o dono manda para os clientes **é o produto**. Não pode depender de
+alguém lembrar de não pôr a barra. Corrigido no construtor, com
+`ViewDashboardHandlerTest.naoDuplicaABarra` cobrindo as duas formas.
+
+### Achado 4 — o piso de cobertura declarado não existia
+
+`meta.md` declarava `coverage_target: "80%"` como "piso do build". **Não havia
+JaCoCo no `pom.xml`.** O número estava num documento e nada o verificava — que é
+o modo como alvo de qualidade apodrece sem ninguém notar.
+
+JaCoCo entrou no build, com o agente ligado também no Failsafe: sem isso o
+relatório contaria só os testes unitários, e metade do que este projeto verifica
+está nos testes de integração contra Postgres real.
+
+Estado ao entrar: **87,5%** de instruções. O piso ficou em 80% — piso, não meta.
+Perseguir número faz escrever teste de getter; o que se quer é o que o
+`PATTERNS.md` já pede.
+
+O piso foi conferido subindo-o a 99% de propósito: o build falhou com
+`Rule violated for bundle agendaia: instructions covered ratio is 0.91, but
+expected minimum is 0.99`. Restaurado em seguida. Portão que nunca falhou é
+portão que ninguém sabe se funciona.
+
+### Achado 5 — a classe menos coberta era a que já tinha dado defeito
+
+O relatório apontou `GlobalExceptionHandler` com **37,1%** — e é a mesma classe
+que produziu um defeito real nesta feature, quando o
+`@ExceptionHandler(Exception.class)` engolia as exceções do próprio Spring que
+já carregam status e um 404 virava 500.
+
+Coberta por `GlobalExceptionHandlerTest`, sem Spring: os cinco caminhos, com um
+teste dedicado ao `NoResourceFoundException`, que implementa `ErrorResponse` mas
+**não** estende `ErrorResponseException` — é exatamente o caso que quebrou.
+
+Cobertura depois das duas correções: **91,1%** de instruções, 68,0% de ramos.
+
+> Quebra do Spring 7 encontrada ao escrever este teste:
+> `NoResourceFoundException` passou a exigir três argumentos
+> `(HttpMethod, String, String)`. O construtor de dois do Spring 6 não existe
+> mais.
+
+---
+
 ## Pendências deixadas em aberto
 
-Nenhuma bloqueante. Duas anotações para o backlog:
+Nenhuma bloqueante. Três foram para o backlog em vez de ficarem só aqui:
 
-- **Sessão em memória.** Reiniciar a aplicação desloga todo mundo, e não há como
-  rodar duas instâncias. Aceitável no MVP com um estabelecimento piloto; vira
-  problema no primeiro deploy sem janela.
-- **Sem limite de tentativa de login.** Força bruta é contida só pelo custo do
-  BCrypt. Suficiente enquanto a base é pequena e o produto não é alvo.
+| Item | Por que não agora |
+|---|---|
+| [DEBT-013](../../../../backlog.md) — sessão em memória | Reiniciar desloga todos e não dá para rodar duas instâncias. Aceitável com um estabelecimento piloto num container só. |
+| [DEBT-012](../../../../backlog.md) — sem limite de tentativa de login | Força bruta contida só pelo custo do BCrypt. Resolver junto com a TODO-109, que abre superfície do mesmo tipo. |
+| [DEBT-011](../../../../backlog.md) — nome do estabelecimento com duas fontes na tela | `LayoutAdvice` lê da sessão, `ViewDashboardHandler` lê do banco. Só diverge no dia em que existir tela de renomear. |
+
+Cobertura de ramos em 68,0% não virou piso. O número baixo é quase todo
+`equals`/`hashCode` e guarda de nulo; travá-lo hoje compraria teste de cerimônia,
+não segurança.

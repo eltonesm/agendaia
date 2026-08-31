@@ -185,13 +185,20 @@ stages:
     final_tasks_count: 16
 
   implementation:
-    started: null
-    completed: null
-    status: pending
-    execution_strategy: null
-    total_tasks: 0
-    completed_tasks: 0
+    started: 2026-08-30
+    completed: 2026-08-30
+    status: completed
+    execution_strategy: batched
+    total_tasks: 17
+    completed_tasks: 17
 ```
+
+> As três revisões da camada 3 (TASK-014, 015, 016) foram feitas **em linha**,
+> não pelos Skills `sdd-code-reviewer` e `sdd-performance-expert`: a instrução
+> operacional em vigor na sessão proibia delegar a subagente sem pedido
+> explícito. O conteúdo dos portões foi cumprido e está evidenciado em
+> `4-implementation/artifacts/revisoes.md`; o mecanismo previsto pelo kit, não.
+> Registrado aqui para que o `/sdd.finish` não conclua que os Skills rodaram.
 
 ---
 
@@ -224,9 +231,9 @@ metrics:
     variance_percent: null
 
   quality:
-    test_coverage: null
-    tests_total: null
-    tests_passing: null
+    test_coverage: "91.1% de instrucoes, 68.0% de ramos"
+    tests_total: 214           # 181 unitarios + 33 de integracao
+    tests_passing: 214
     linter_errors: 0
     type_errors: 0
 
@@ -241,13 +248,47 @@ metrics:
 
 ```yaml
 changes:
-  tasks_added: []
+  tasks_added:
+    - id: TASK-017
+      title: "Sugestao de variacao livre quando o link esta em uso"
+      date: 2026-08-30
+      origin: "Divergencia encontrada ao escrever o teste do E2E-3"
+      reason: >-
+        A spec funcional pedia a sugestao em dois pontos — a tabela de
+        tratamento de erro e o resultado esperado do E2E-3 — e nem a spec
+        tecnica nem as 16 tasks cobriam. Criada durante o build para a
+        implementacao nao ficar sem rastro. O caminho previsto pelo kit seria
+        /sdd.fix; a task foi acrescentada a mao e a spec tecnica, atualizada
+        junto, para que as quatro camadas voltassem a concordar.
   tasks_removed: []
   tasks_modified: []
   spec_changes:
     functional: []
-    technical: []
-  risks_materialized: []
+    technical:
+      - section: "DD-4.1 — A sugestao de variacao quando o link esta tomado"
+        date: 2026-08-30
+        type: addition
+        reason: >-
+          Cobre o que a spec funcional ja exigia e a tecnica omitia. Registra
+          onde cada parte mora (mecanica de string no dominio, busca pela
+          primeira livre no caso de uso), o limite de nove tentativas e por que
+          palavra reservada nao ganha sugestao.
+  risks_materialized:
+    - risk: "Corrida no cadastro do mesmo slug"
+      status: "mitigado como previsto"
+      note: >-
+        Nao materializou em producao, mas o caminho de traducao da violacao de
+        UNIQUE em erro de campo esta implementado e agora tambem emite sugestao.
+    - risk: "Defeito de ordem de filtro nao previsto no Risk Assessment"
+      status: "materializou"
+      note: >-
+        O TenantContextFilter declarava @Order(Integer.MIN_VALUE + 100), que o
+        colocava ANTES da cadeia do Spring Security — o SecurityContextHolder
+        ainda estava vazio e o tenant nunca era populado. /admin/dashboard
+        devolvia 500 para qualquer sessao valida, inclusive no redirecionamento
+        logo apos o cadastro. Encontrado pelo LoginIT; travado pelo
+        CrossTenantIsolationIT, cujo AC-3 foi conferido reintroduzindo o defeito
+        de proposito.
 ```
 
 ---

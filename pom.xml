@@ -245,12 +245,108 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<!--
+						O agente do JaCoCo entra por aqui. Sem esta linha o
+						relatório sairia contando só os testes unitários, e a
+						cobertura pareceria muito pior do que é: metade do que
+						este projeto verifica está nos testes de integração,
+						contra Postgres real.
+					-->
+					<argLine>${failsafeArgLine}</argLine>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
 							<goal>integration-test</goal>
 							<goal>verify</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--
+				Cobertura. O piso vive aqui e não num documento: alvo declarado
+				que nada verifica apodrece — este ficou 80% no meta.md da
+				primeira feature enquanto o build não media nada.
+
+				O piso é piso, não meta. Perseguir número faz escrever teste de
+				getter; o que este projeto quer é o que já está em PATTERNS.md —
+				teste de regra, e Postgres real onde a garantia é do banco.
+			-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.15</version>
+				<executions>
+					<execution>
+						<id>agente-unitario</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-unit.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>agente-integracao</id>
+						<goals>
+							<goal>prepare-agent-integration</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-it.exec</destFile>
+							<propertyName>failsafeArgLine</propertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>junta-as-duas-execucoes</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>jacoco-*.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<destFile>${project.build.directory}/jacoco.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>relatorio</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco.exec</dataFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>piso</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco.exec</dataFile>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.80</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

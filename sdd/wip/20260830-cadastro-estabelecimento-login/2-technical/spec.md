@@ -179,6 +179,36 @@ formulário recusa pedindo o link. Aceito.
 Ver o link se formando enquanto se digita é interação real, e são 15 linhas sem
 biblioteca.
 
+#### DD-4.1: A sugestão de variação quando o link está tomado
+
+> Acrescentado em 2026-08-30, durante a implementação. A spec funcional pedia
+> isso em dois pontos — a tabela de tratamento de erro e o resultado esperado do
+> E2E-3 — e nem esta spec nem as tasks cobriam. Encontrado ao escrever o teste
+> do E2E-3. Deu origem à TASK-017.
+
+**Selected**: quando o link pedido já pertence a outro estabelecimento, o caso
+de uso procura a primeira variação livre — `barbearia-do-joao-2`,
+`barbearia-do-joao-3`, … — e ela entra na mensagem do campo.
+
+**Onde cada parte mora**: a mecânica de string é `SlugGenerator.variation`, pura
+e sem banco, coerente com o DD-4 (o domínio não sabe o que está disponível). A
+busca pela primeira livre é do caso de uso, que tem o repositório.
+
+**Limite de nove tentativas**: isto roda no caminho de erro de um formulário e
+cada tentativa é uma consulta. Nove é o ponto em que a sugestão deixa de ajudar
+— um nome disputado a esse ponto pede outro nome, não outro número — e a
+mensagem genérica passa a servir melhor que a espera. Cada consulta é um *index
+only scan* de 3 buffers, medido na revisão de performance.
+
+**Palavra reservada não ganha sugestão.** Oferecer `admin-2` a quem digitou
+`admin` ensina que o caminho está quase livre. Também preserva a propriedade de
+que palavra reservada é recusada **sem consultar o banco**, que a TASK-003 já
+tinha estabelecido e que um teste afirma.
+
+**Trade-offs Accepted**: a sugestão revela que aquela variação específica está
+livre. Quem recebeu o erro já sabe que o link dele não serve; a informação a
+mais é desprezível perto do abandono que a mensagem seca causa.
+
 ### DD-5: Autenticação programática precisa gravar na sessão explicitamente
 
 **Selected**: depois de criar a conta, o handler autentica e **grava o contexto

@@ -154,6 +154,42 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-013: Sessao em memoria — reiniciar desloga todo mundo
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: revisao de seguranca da TODO-001 (TASK-016)
+- **Context**: A sessao vive na memoria do processo. Reiniciar a aplicacao desloga todos, e nao ha como rodar duas instancias. Aceitavel enquanto e um estabelecimento piloto num container so. Quando resolver, o destino provavel e Redis — e ai o `AuthenticatedUser` passa a ser serializado, o que ja foi antecipado: ele implementa `CredentialsContainer` e o hash sai do objeto antes de entrar na sessao.
+- **Affected Files**: `platform/security`
+- **Complexity**: Medium
+- **Risk if Ignored**: Primeiro deploy sem janela derruba a sessao de quem estiver usando
+
+---
+
+### DEBT-012: Sem limite de tentativa de login
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: revisao de seguranca da TODO-001 (TASK-016)
+- **Context**: Forca bruta e contida so pelo custo do BCrypt (~60 ms por tentativa). Nao ha bloqueio por IP nem por conta, nem atraso progressivo. Suficiente enquanto a base e pequena e o produto nao e alvo; deixa de ser no dia em que houver clientes pagantes e o link publico circular. Resolver junto com a TODO-109 (recuperacao de senha), que abre outra superficie do mesmo tipo.
+- **Affected Files**: `platform/security`
+- **Complexity**: Medium
+- **Risk if Ignored**: Enumeracao de senha contra uma conta conhecida sai barato
+
+---
+
+### DEBT-011: Nome do estabelecimento tem duas fontes na tela
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-08-30
+- **Origin**: revisao de codigo da TODO-001 (TASK-014)
+- **Context**: O `LayoutAdvice` le `businessName` do principal da sessao; o `ViewDashboardHandler` le do banco. Hoje concordam sempre porque nao existe tela de renomear. No dia em que existir, a barra de navegacao mostra o nome antigo ate o dono sair e entrar de novo, enquanto o corpo da pagina ja mostra o novo. Resolver quando a TODO de configuracao do estabelecimento chegar: ou o principal e recarregado na troca, ou o layout passa a ler do mesmo caso de uso.
+- **Affected Files**: `platform/web/LayoutAdvice.java`, `organization/application/ViewDashboardHandler.java`
+- **Complexity**: Low
+- **Risk if Ignored**: Dono renomeia, ve o nome antigo no cabecalho e acha que nao salvou
+
+---
+
 ### DEBT-010: Plugin do Modulith na IDE acusa falso positivo em platform -> shared
 - **Priority**: Low
 - **Status**: pending
