@@ -34,12 +34,14 @@ passa por `/sdd.start`.
 
 ### TODO-003: Cadastro de serviço e oferta
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-01
 - **Origin**: revisão arquitetural
 - **Context**: Introduz `ServiceOffering` — serviço por profissional, com duração, preço e intervalo próprios. Primeira referência cruzando contexto por UUID solto, sem chave estrangeira.
 - **Affected Files**: `catalog`
 - **Complexity**: Medium
+- **Feature**: `sdd/wip/20260901-cadastro-servico-oferta/`
 
 ---
 
