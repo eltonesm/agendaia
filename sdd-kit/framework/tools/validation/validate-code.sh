@@ -150,6 +150,14 @@ scan_security() {
     SECURITY_WARNING=$(grep -c '"severity":"WARNING"' "$SECURITY_FINDINGS" 2>/dev/null | tr -d '\n' || echo 0)
     [ -z "$SECURITY_CRITICAL" ] && SECURITY_CRITICAL=0
     [ -z "$SECURITY_WARNING" ] && SECURITY_WARNING=0
+    # Explicit return: the line above is `test && assign`, which evaluates to
+    # a NON-ZERO exit status whenever the variable was already non-empty (the
+    # common case — nothing to fix). As the last statement of this function,
+    # that status becomes the function's own return value; combined with
+    # `set -e` and the bare `scan_security &&` call site below, the whole
+    # script used to die right here on every clean run, before ever reaching
+    # scan_performance/scan_quality or printing a verdict.
+    return 0
 }
 
 # ============================================
@@ -207,6 +215,7 @@ scan_performance() {
     PERF_WARNING=$(grep -c '"severity":"WARNING"' "$PERFORMANCE_FINDINGS" 2>/dev/null | tr -d '\n' || echo 0)
     [ -z "$PERF_CRITICAL" ] && PERF_CRITICAL=0
     [ -z "$PERF_WARNING" ] && PERF_WARNING=0
+    return 0
 }
 
 # ============================================
@@ -242,6 +251,7 @@ scan_quality() {
     QUALITY_WARNING=$(grep -c '"severity":"WARNING"' "$QUALITY_FINDINGS" 2>/dev/null | tr -d '\n' || echo 0)
     [ -z "$QUALITY_CRITICAL" ] && QUALITY_CRITICAL=0
     [ -z "$QUALITY_WARNING" ] && QUALITY_WARNING=0
+    return 0
 }
 
 # ============================================

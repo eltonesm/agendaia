@@ -32,11 +32,13 @@ warnings=0
 
 echo "✅ Checking task completion..."
 
-# Count total tasks
-total_tasks=$(grep -c "^#### TASK-[0-9]" "$TASKS_FILE")
-
-# Count completed tasks in progress.md
-completed_tasks=$(grep -c "^#### TASK-[0-9].*\- \*\*Status\*\*: ✅ Completed" "$PROGRESS_FILE")
+# tasks.json is JSON, not markdown — counting "#### TASK-" headers in it
+# always returns 0 and made this check pass trivially (0 == 0) no matter how
+# many tasks actually existed. Count straight from the JSON's own fields
+# instead; no jq dependency needed since /sdd.plan always pretty-prints one
+# field per line.
+total_tasks=$(grep -c '"id": *"TASK-' "$TASKS_FILE")
+completed_tasks=$(grep -c '"status": *"completed"' "$TASKS_FILE")
 
 echo "  Tasks: $completed_tasks / $total_tasks completed"
 
@@ -44,10 +46,10 @@ if [ "$completed_tasks" -ne "$total_tasks" ]; then
     incomplete=$((total_tasks - completed_tasks))
     echo "  ❌ $incomplete task(s) incomplete"
 
-    # List incomplete tasks
+    # List incomplete tasks straight from tasks.json (id + status pairs).
     echo ""
     echo "  Incomplete tasks:"
-    grep "^#### TASK-" "$PROGRESS_FILE" | grep -v "✅ Completed" | sed 's/^#### /  • /'
+    awk -F'"' '/"id": *"TASK-/{id=$4} /"status":/{if ($4!="completed") print "  • "id" ("$4")"}' "$TASKS_FILE"
 
     ((errors++))
 else

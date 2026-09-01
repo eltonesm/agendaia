@@ -24,6 +24,11 @@ This ensures:
 
 ## Quick Start (3 steps)
 
+> **Read [`PORTABILITY.md`](PORTABILITY.md) once before your first feature.**
+> It's a ground-truth audit — what actually worked, what was broken and got
+> fixed, and what got removed — from running this kit's full cycle twice on
+> a real project. Saves you from rediscovering the same three bugs by hand.
+
 ### 1. Install
 
 ```bash
