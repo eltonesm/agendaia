@@ -1,0 +1,365 @@
+{
+  "feature": "cadastro-servico-oferta",
+  "from_backlog": "TODO-003",
+  "generated_at": "2026-09-01",
+  "spec_language": "pt",
+
+  "local_config": {
+    "postgresql": "container",
+    "postgresql_note": "Mesmo compose.yaml e Testcontainers ja usados pelas TODO-001/002. Nenhuma infraestrutura nova.",
+    "kvs": null,
+    "bigqueue": null
+  },
+
+  "adaptations": [
+    "Dockerfile e /ping NAO gerados: infraestrutura ja existe desde a Fase 0.",
+    "Layer 2 vazia: nao ha servicos de plataforma interna neste projeto.",
+    "generate-ids.sh e validate-tasks.sh nao existem nesta instalacao: IDs gerados manualmente, tasks.json conferido a mao contra a spec tecnica aprovada."
+  ],
+
+  "stats": {
+    "total": 15,
+    "done": 0,
+    "by_layer": { "1": 12, "2": 0, "3": 3 },
+    "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
+  },
+
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Money em shared, com teste puro",
+      "description": "record Money(long cents), fabrica Money.reais(BigDecimal), metodo format() devolvendo 'R$ 30,00'. Sem soma, subtracao ou comparacao (DD-3).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/shared/Money.java",
+        "src/test/java/com/agendaia/shared/MoneyTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Money.reais(BigDecimal) converte para centavos sem erro de arredondamento",
+        "AC-2: construtor recusa cents negativo",
+        "AC-3: format() devolve 'R$ X,YY' com duas casas sempre",
+        "AC-4: nenhum metodo de soma, subtracao ou comparacao (fora de escopo)",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Migration V4: tabelas service e service_offering",
+      "description": "Duas tabelas conforme a spec tecnica. Nenhuma FK aponta para fora de catalog -- tenant_id incluido (DD-2). service_offering.service_id tem FK normal (mesmo contexto); professional_id e UUID solto.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": [],
+      "files": ["src/main/resources/db/migration/V4__catalog_create_service_and_service_offering.sql"],
+      "acceptance_criteria": [
+        "AC-1: service.tenant_id e service_offering.tenant_id sem REFERENCES (DD-2)",
+        "AC-2: service_offering.service_id com FK para service(id)",
+        "AC-3: service_offering.professional_id sem FK",
+        "AC-4: UNIQUE(tenant_id, name) em service; UNIQUE(tenant_id, service_id, professional_id) em service_offering",
+        "AC-5: CHECK de duration_minutes > 0, price_cents >= 0, buffer_minutes >= 0",
+        "GATE: aplicacao sobe contra o compose e o Flyway registra a V4 como aplicada"
+      ],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "organization/api: ProfessionalDirectory",
+      "description": "Primeiro pacote api real do projeto. Interface ProfessionalDirectory.listActive(), sem parametro (DD-1), record ProfessionalRef(id, name), e o Handler que implementa lendo TenantContext e delegando a ProfessionalRepository.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/organization/api/ProfessionalDirectory.java",
+        "src/main/java/com/agendaia/organization/api/ProfessionalRef.java",
+        "src/main/java/com/agendaia/organization/application/ProfessionalDirectoryHandler.java",
+        "src/test/java/com/agendaia/organization/application/ProfessionalDirectoryHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: listActive() nao aceita nenhum argumento",
+        "AC-2: ProfessionalRef e um record distinto de ProfessionalView (nao reaproveita tipo interno)",
+        "AC-3: @Transactional(readOnly = true) no handler",
+        "AC-4: teste unitario confirma que o tenant vem do TenantContext",
+        "GATE: ./mvnw test verde; ModuleStructureTest continua verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Entidade Service com repositorio e testes puros",
+      "description": "Mesmo regime CRUD de organization (ADR 0002): construtor privado, fabrica estatica, sem setter. Nome unico por tenant (BR-1).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/domain/Service.java",
+        "src/main/java/com/agendaia/catalog/domain/ServiceRepository.java",
+        "src/test/java/com/agendaia/catalog/domain/ServiceTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por Service.register(tenantId, name, description), construtor privado",
+        "AC-2: nome entre 2 e 120 caracteres, descricao ate 500",
+        "AC-3: id UUIDv7 gerado na aplicacao",
+        "GATE: ddl-auto validate nao acusa divergencia; nenhuma regra de ArchUnit violada"
+      ],
+      "references": ["US-1"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-005",
+      "title": "Entidade ServiceOffering com repositorio e testes puros",
+      "description": "Guarda price como long internamente (priceCents), expoe Money via accessor -- mesmo padrao de TenantId em Professional (campo raw, tipo rico so na borda). Sem setter.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-002", "TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/domain/ServiceOffering.java",
+        "src/main/java/com/agendaia/catalog/domain/ServiceOfferingRepository.java",
+        "src/test/java/com/agendaia/catalog/domain/ServiceOfferingTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por ServiceOffering.register(tenantId, serviceId, professionalId, durationMinutes, price, bufferMinutes)",
+        "AC-2: durationMinutes <= 0 lanca IllegalArgumentException; NAO exige multiplo de 10 (ADR de grade fixa)",
+        "AC-3: price() devolve Money, nao long cru",
+        "AC-4: bufferMinutes negativo recusado; zero aceito",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Casos de uso de cadastro e listagem de Service",
+      "description": "RegisterServiceUseCase/Handler e ListServicesUseCase/Handler, mesmo padrao de tenant implicito (TenantContext.require(), nunca parametro) das duas features anteriores.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-004"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/application/port/in/RegisterServiceUseCase.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/RegisteredService.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/ListServicesUseCase.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/ServiceView.java",
+        "src/main/java/com/agendaia/catalog/application/command/RegisterServiceCommand.java",
+        "src/main/java/com/agendaia/catalog/application/RegisterServiceHandler.java",
+        "src/main/java/com/agendaia/catalog/application/ListServicesHandler.java",
+        "src/test/java/com/agendaia/catalog/application/RegisterServiceHandlerTest.java",
+        "src/test/java/com/agendaia/catalog/application/ListServicesHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: nenhum dos dois casos de uso aceita tenant como parametro",
+        "AC-2: nome duplicado no mesmo tenant recusa antes de gravar, com erro no campo",
+        "AC-3: @Transactional so no handler de cadastro; readOnly no de listagem",
+        "GATE: ./mvnw test verde; ArchitectureTest confirma UseCase como interface"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Casos de uso de cadastro e listagem de ServiceOffering, com validacao cruzando contexto",
+      "description": "RegisterServiceOfferingUseCase/Handler chama ProfessionalDirectory.listActive() e recusa professionalId fora da lista (DD-1, BR-8) antes de gravar. Tambem confere que o service pertence ao tenant e que nao ha oferta duplicada (BR-7).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-005", "TASK-003", "TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/application/port/in/RegisterServiceOfferingUseCase.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/RegisteredServiceOffering.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/ListServiceOfferingsUseCase.java",
+        "src/main/java/com/agendaia/catalog/application/port/in/ServiceOfferingView.java",
+        "src/main/java/com/agendaia/catalog/application/command/RegisterServiceOfferingCommand.java",
+        "src/main/java/com/agendaia/catalog/application/RegisterServiceOfferingHandler.java",
+        "src/main/java/com/agendaia/catalog/application/ListServiceOfferingsHandler.java",
+        "src/test/java/com/agendaia/catalog/application/RegisterServiceOfferingHandlerTest.java",
+        "src/test/java/com/agendaia/catalog/application/ListServiceOfferingsHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: professionalId fora da lista de ProfessionalDirectory.listActive() recusa com erro de campo, mesma mensagem de 'nao encontrado' generica (nao revela que o id pertence a outro tenant)",
+        "AC-2: serviceId que nao pertence ao tenant da sessao e recusado",
+        "AC-3: segunda oferta do mesmo (service, professional) e recusada, erro de campo, nao 500",
+        "AC-4: teste unitario com ProfessionalDirectory mockado confirma a validacao sem precisar de banco",
+        "AC-5: ListServiceOfferingsHandler resolve nome do servico e do profissional para a projecao (ServiceOfferingView), nao ids crus",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-1", "DD-2"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Tela e controller de /admin/servicos",
+      "description": "GET+POST numa tela so (DD-4, mesmo padrao da TODO-002): lista + formulario de servico.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-006"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/adapter/in/web/ServiceController.java",
+        "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceRequest.java",
+        "src/main/resources/templates/admin/servicos.html",
+        "src/test/java/com/agendaia/catalog/adapter/in/web/ServiceControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: GET mostra lista + formulario; POST valido redireciona (PRG)",
+        "AC-2: POST invalido devolve a MESMA tela com a lista recarregada",
+        "AC-3: controller nao injeta repositorio nem entidade JPA",
+        "GATE: @WebMvcTest cobre as situacoes e o token CSRF"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Tela e controller de /admin/ofertas",
+      "description": "GET+POST numa tela so. Dropdowns de servico e profissional; sem nenhum dos dois cadastrados, mostra chamada explicando o pre-requisito em vez de dropdown vazio.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-007"],
+      "files": [
+        "src/main/java/com/agendaia/catalog/adapter/in/web/ServiceOfferingController.java",
+        "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
+        "src/main/resources/templates/admin/ofertas.html",
+        "src/test/java/com/agendaia/catalog/adapter/in/web/ServiceOfferingControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: sem servico cadastrado, a tela linka para /admin/servicos em vez de dropdown vazio",
+        "AC-2: sem profissional cadastrado, a tela linka para /admin/profissionais",
+        "AC-3: POST invalido (profissional de outro tenant, duplicata, etc.) devolve a MESMA tela com a lista recarregada",
+        "AC-4: preco exibido na lista via Money.format()",
+        "GATE: @WebMvcTest cobre as situacoes"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "Link do painel para as novas telas",
+      "description": "Dashboard passa a linkar para /admin/servicos e /admin/ofertas, completando a promessa 'cadastrar seus profissionais e servicos' desde a TODO-001.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-008", "TASK-009"],
+      "files": ["src/main/resources/templates/admin/dashboard.html"],
+      "acceptance_criteria": [
+        "AC-1: o trecho 'servicos' no painel vira link para /admin/servicos",
+        "GATE: ./mvnw verify verde, nenhum teste de dashboard quebrado"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-011",
+      "title": "Testes de integracao dos cenarios E2E-1 e E2E-2",
+      "description": "ServiceOfferingRegistrationIT com Postgres real via Testcontainers: cadastro completo servico+oferta, e oferta duplicada recusada.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-010"],
+      "files": ["src/test/java/com/agendaia/catalog/ServiceOfferingRegistrationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 confirma servico e oferta cadastrados, nomes resolvidos na listagem",
+        "AC-2: E2E-2 confirma que a segunda oferta do mesmo (servico, profissional) e recusada, nenhuma segunda linha gravada",
+        "AC-3: usa Postgres real via Testcontainers",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-012",
+      "title": "Extensao do isolamento entre tenants (E2E-3)",
+      "description": "CrossTenantIsolationIT ganha um caso para ServiceOffering: tenant A tenta cadastrar oferta usando professionalId do tenant B (requisicao forjada, nao pelo dropdown) e e recusado.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-011"],
+      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: POST forjado com professionalId de outro tenant e recusado, erro de campo",
+        "AC-2: nenhuma ServiceOffering gravada com professionalId de tenant diferente do tenant_id da propria linha",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1", "DD-2"]
+    },
+    {
+      "id": "TASK-013",
+      "title": "Code review",
+      "description": "Revisao de codigo sobre o diff da feature. Portao bloqueante.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhum achado de corretude em aberto",
+        "AC-2: conformidade com PATTERNS.md: sem setter, sem Impl, transacao so na application, tenant nunca por parametro, nenhuma FK cruzando contexto",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-014",
+      "title": "Revisao de performance",
+      "description": "Foco nos indices novos (tenant_id, service_id) e em ProfessionalDirectory.listActive() nao virar N+1.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: consultas usam os indices de tenant_id, confirmado por EXPLAIN",
+        "AC-2: listActive() chamado no maximo uma vez por requisicao, nunca em laco",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Revisao de seguranca",
+      "description": "Foco no isolamento entre catalog e organization sem FK -- a garantia e de aplicacao, precisa estar realmente la.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: RegisterServiceOfferingHandler valida professionalId antes de qualquer INSERT",
+        "AC-2: mensagem de erro identica para profissional inexistente e profissional de outro tenant",
+        "AC-3: CSRF ligado nos dois formularios novos",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1", "DD-2"]
+    }
+  ],
+
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-003"],
+        "level_1": ["TASK-004", "TASK-005"],
+        "level_2": ["TASK-006", "TASK-007"],
+        "level_3": ["TASK-008", "TASK-009"],
+        "level_4": ["TASK-010"],
+        "level_5": ["TASK-011"],
+        "level_6": ["TASK-012"]
+      },
+      "3": {
+        "level_0": ["TASK-013", "TASK-014", "TASK-015"]
+      }
+    }
+  }
+}

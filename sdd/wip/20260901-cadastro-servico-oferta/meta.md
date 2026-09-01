@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-01
 **Last Updated**: 2026-09-01
-**Current Stage**: tasks
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: `organization` já tem `Business`, `User` e
 > `Professional` implementados e testados. Esta é a primeira feature a criar
@@ -194,9 +194,15 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-01
+    completed: 2026-09-01
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-01T23:09:15Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 15
+    iterations: 0
+    final_tasks_count: 15
 
   implementation:
     started: null
@@ -213,9 +219,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null
-  chosen_date: null
-  rationale: null
+  type: batched
+  chosen_date: 2026-09-01
+  estimated_agent_time: null
+  estimated_tokens: null
+  actual_agent_time: null
+  rationale: "Batched por nivel de dependencia. Tres pontos reais de paralelismo (TASK-001/002/003; TASK-004/005; TASK-008/009), mas a cadeia de fundo -- migration -> entidades -> casos de uso -> telas -> testes -> qualidade -- e sequencial."
 ```
 
 ---
