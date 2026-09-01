@@ -202,12 +202,12 @@ stages:
     final_tasks_count: 11
 
   implementation:
-    started: null
-    completed: null
-    status: pending
-    execution_strategy: null
-    total_tasks: 0
-    completed_tasks: 0
+    started: 2026-08-31
+    completed: 2026-08-31
+    status: completed
+    execution_strategy: batched
+    total_tasks: 11
+    completed_tasks: 11
 ```
 
 ---
@@ -232,7 +232,7 @@ execution_strategy:
 metrics:
   timeline: { estimated_days: null, actual_days: null, variance_percent: null }
   effort: { estimated_hours: null, actual_hours: null, variance_percent: null }
-  quality: { test_coverage: null, tests_total: null, tests_passing: null, linter_errors: 0, type_errors: 0 }
+  quality: { test_coverage: "90.6% de instrucoes, 69.4% de ramos", tests_total: 243, tests_passing: 243, linter_errors: 0, type_errors: 0 }
   velocity: { avg_hours_per_task: null, estimation_accuracy: null }
 ```
 

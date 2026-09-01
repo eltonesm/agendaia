@@ -38,9 +38,7 @@ public class ProfessionalController {
 
     @GetMapping("/admin/profissionais")
     public String listar(Model model) {
-        if (!model.containsAttribute("form")) {
-            model.addAttribute("form", new RegisterProfessionalRequest());
-        }
+        model.addAttribute("form", new RegisterProfessionalRequest());
         model.addAttribute("profissionais", listProfessionals.list());
         return VIEW;
     }
