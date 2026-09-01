@@ -51,6 +51,7 @@ class LoginIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private com.agendaia.organization.domain.ProfessionalRepository professionalRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -60,6 +61,8 @@ class LoginIT {
         // Sem @Transactional de propósito: em produção cada requisição abre a
         // sua transação, e uma transação ambiente do teste esconderia isso.
         // O preço é limpar à mão — o container é compartilhado entre os ITs.
+        // professional tem FK para business (TODO-002) — precisa sair primeiro.
+        professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
 

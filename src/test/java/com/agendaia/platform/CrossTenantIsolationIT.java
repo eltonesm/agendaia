@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.agendaia.TestcontainersConfiguration;
 import com.agendaia.organization.domain.Business;
 import com.agendaia.organization.domain.BusinessRepository;
+import com.agendaia.organization.domain.ProfessionalRepository;
 import com.agendaia.organization.domain.User;
 import com.agendaia.organization.domain.UserRepository;
 import org.hamcrest.Matchers;
@@ -65,6 +66,7 @@ class CrossTenantIsolationIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private ProfessionalRepository professionalRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -72,6 +74,7 @@ class CrossTenantIsolationIT {
 
     @BeforeEach
     void semearDoisTenants() {
+        professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
 
@@ -155,6 +158,43 @@ class CrossTenantIsolationIT {
 
         mockMvc.perform(get("/admin/dashboard").session(sessaoDoJoao))
                 .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @DisplayName("TODO-002: profissional cadastrado por um dono não aparece para o outro")
+    void profissionalNaoAparecePeloOutroTenant() throws Exception {
+        mockMvc.perform(post("/admin/profissionais")
+                        .with(csrf())
+                        .session(entrarComo("joao@exemplo.com"))
+                        .param("name", "Pedro, funcionário do João"))
+                .andExpect(status().is3xxRedirection());
+
+        mockMvc.perform(get("/admin/profissionais").session(entrarComo("maria@exemplo.com")))
+                .andExpect(status().isOk())
+                .andExpect(content()
+                        .string(Matchers.not(Matchers.containsString("Pedro, funcionário do João"))));
+    }
+
+    @Test
+    @DisplayName("TODO-002: o profissional cadastrado grava sempre no tenant de quem está logado")
+    void profissionalGravaNoTenantDeQuemEstaLogado() throws Exception {
+        mockMvc.perform(post("/admin/profissionais")
+                        .with(csrf())
+                        .session(entrarComo("joao@exemplo.com"))
+                        .param("name", "Pedro"))
+                .andExpect(status().is3xxRedirection());
+
+        // Não há parâmetro de tenant para forjar (DD-1 da TODO-002) — o teste
+        // confirma a ausência de vazamento, não a rejeição de um valor que
+        // nunca existiu na assinatura.
+        var profissionais =
+                professionalRepository.findByTenantIdAndActiveTrueOrderByNameAsc(barbearia.id());
+        assertThat(profissionais).hasSize(1);
+        assertThat(profissionais.getFirst().tenantId()).isEqualTo(barbearia.tenantId());
+
+        var profissionaisDaMaria =
+                professionalRepository.findByTenantIdAndActiveTrueOrderByNameAsc(salao.id());
+        assertThat(profissionaisDaMaria).isEmpty();
     }
 
     @Test

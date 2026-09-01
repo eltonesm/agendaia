@@ -47,9 +47,14 @@ class RegistrationIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private com.agendaia.organization.domain.ProfessionalRepository professionalRepository;
 
     @BeforeEach
     void limpar() {
+        // professional tem FK para business (TODO-002) — precisa sair primeiro,
+        // senão o business de uma execução anterior no mesmo container recusa
+        // a exclusão.
+        professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
     }

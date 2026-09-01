@@ -41,9 +41,12 @@ class SlugUnavailableIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private com.agendaia.organization.domain.ProfessionalRepository professionalRepository;
 
     @BeforeEach
     void limpar() {
+        // professional tem FK para business (TODO-002) — precisa sair primeiro.
+        professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
     }
