@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-01
 **Last Updated**: 2026-09-01
-**Current Stage**: functional
+**Current Stage**: technical
 
 > **Sobre o modo brownfield aqui**: `organization` já tem `Business`, `User` e
 > `Professional` implementados e testados. Esta é a primeira feature a criar
@@ -176,11 +176,11 @@ auto_generated:
 stages:
   functional:
     started: 2026-09-01
-    completed: null
-    status: pending
-    owner: null
-    approved_by: null
-    approved_at: null
+    completed: 2026-09-01
+    status: approved
+    owner: Elton Marques
+    approved_by: Elton Marques
+    approved_at: 2026-09-01T23:03:38Z
     iterations: 0
 
   technical:
@@ -257,13 +257,32 @@ overrides:
 ## Notes
 
 Terceira feature do projeto pelo ciclo SDD completo, e a primeira a tocar
-`catalog`. Quatro perguntas em aberto ficam para o `/sdd.spec` decidir com o
-usuário (não decididas aqui, em `/sdd.start`, porque são de produto/
-arquitetura, não de andaime):
+`catalog`. As quatro perguntas em aberto foram delegadas ao critério do
+assistente pelo usuário em 2026-09-01, antes da spec funcional:
 
-1. O que exatamente `organization.api` expõe na primeira versão?
-2. O caso de uso de cadastro de oferta precisa validar `professionalId`
-   contra o tenant da sessão via `organization.api`?
-3. `service.name` precisa de unicidade por tenant?
-4. `Money` nasce em `shared` nesta feature — que operações ele precisa
-   suportar já (comparação, soma) ou só armazenar e exibir?
+1. **`organization.api` expõe uma operação só: `ProfessionalDirectory.listActive()`**,
+   sem parâmetro — tenant lido de `TenantContext.require()` por dentro, mesma
+   extensão do DD-1 da TODO-002 (nenhum caso de uso aceita tenant como
+   argumento), agora atravessando a fronteira entre contextos. Devolve
+   `List<ProfessionalRef>` (`id`, `name` — projeção, não a entidade). Uma
+   chamada só serve os dois usos que existem hoje: popular o dropdown de
+   profissional na tela de cadastro de oferta, e validar que o
+   `professionalId` submetido pertence ao tenant (pergunta 2).
+2. **Sim, valida.** O handler de cadastro de oferta chama
+   `ProfessionalDirectory.listActive()` e confere que o `professionalId`
+   recebido está na lista antes de gravar — reaproveita a mesma chamada do
+   item 1, sem round-trip extra. Sem essa validação, um POST forjado
+   referenciaria o profissional de outro tenant sem que nada no banco
+   percebesse (não há FK entre contextos). Consequência: `CrossTenantIsolationIT`
+   ganha um caso novo nesta feature.
+3. **Sim, `service.name` é único por tenant.** Ao contrário de
+   `Professional.name` (rótulo, duplicata aceitável — TODO-002), `Service` é
+   entrada de catálogo: dois "Corte de Cabelo" no mesmo estabelecimento
+   confundiriam o cliente na tela pública (TODO-006). `UNIQUE(tenant_id, name)`.
+4. **`Money` guarda centavos como inteiro** (nunca `double`/`float` — erro de
+   arredondamento não é aceitável em preço), com fábrica a partir de
+   `BigDecimal` (o que chega do formulário) e um método de formatação para
+   exibição ("R$ 30,00"). **Sem soma, subtração ou comparação** nesta
+   feature — nenhum critério de aceite precisa disso hoje (agendamento de
+   serviço combinado é a IDEA-005, ainda não priorizada). Adicionar essas
+   operações agora seria abstração especulativa.
