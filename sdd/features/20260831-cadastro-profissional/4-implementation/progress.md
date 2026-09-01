@@ -11,19 +11,26 @@ Estratégia: `batched` por nível de dependência.
 
 ## Tasks
 
-| ID | Título | Status |
-|---|---|---|
-| TASK-001 | Migration V3: tabela professional | ✅ |
-| TASK-002 | Entidade Professional, repositório, testes puros | ✅ |
-| TASK-003 | Caso de uso do cadastro (DD-1) | ✅ |
-| TASK-004 | Caso de uso da listagem (DD-1) | ✅ |
-| TASK-005 | Tela e controller /admin/profissionais (DD-2) | ✅ |
-| TASK-006 | Link do painel | ✅ |
-| TASK-007 | E2E-1/2/3 (ProfessionalRegistrationIT) | ✅ |
-| TASK-008 | Extensão do CrossTenantIsolationIT | ✅ |
-| TASK-009 | Code review | ✅ |
-| TASK-010 | Revisão de performance | ✅ |
-| TASK-011 | Revisão de segurança | ✅ |
+| ID | Título | Status | Commit |
+|---|---|---|---|
+| TASK-001 | Migration V3: tabela professional | ✅ | `827a684` |
+| TASK-002 | Entidade Professional, repositório, testes puros | ✅ | `827a684` |
+| TASK-003 | Caso de uso do cadastro (DD-1) | ✅ | `827a684` |
+| TASK-004 | Caso de uso da listagem (DD-1) | ✅ | `827a684` |
+| TASK-005 | Tela e controller /admin/profissionais (DD-2) | ✅ | `3ce782e` |
+| TASK-006 | Link do painel | ✅ | `3ce782e` |
+| TASK-007 | E2E-1/2/3 (ProfessionalRegistrationIT) | ✅ | `4ca9438` |
+| TASK-008 | Extensão do CrossTenantIsolationIT | ✅ | `4ca9438` |
+| TASK-009 | Code review | ✅ | `c32688d` |
+| TASK-010 | Revisão de performance | ✅ | `c32688d` |
+| TASK-011 | Revisão de segurança | ✅ | `c32688d` |
+
+## Commits
+
+- Commit: `827a684` — entidade Professional e os dois casos de uso (TASK-001..004)
+- Commit: `3ce782e` — tela e controller de /admin/profissionais (TASK-005, 006)
+- Commit: `4ca9438` — E2E-1/2/3 e extensão do isolamento entre tenants (TASK-007, 008)
+- Commit: `c32688d` — achado de code review, revisões de performance e segurança (TASK-009, 010, 011)
 
 ## Aprendizados
 

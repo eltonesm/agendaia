@@ -31,18 +31,6 @@ passa por `/sdd.start`.
 
 ## 📋 TODOs
 
-### TODO-002: Cadastro de profissional
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-08-31
-- **Origin**: revisão arquitetural
-- **Context**: A menor fatia possível já com tenant. Valida o padrão inteiro de ponta a ponta. Todo estabelecimento tem ao menos um profissional, mesmo sendo uma pessoa só.
-- **Affected Files**: `organization`
-- **Complexity**: Medium
-- **Feature**: `sdd/wip/20260831-cadastro-profissional/`
-
----
 
 ### TODO-003: Cadastro de serviço e oferta
 - **Priority**: High
@@ -461,6 +449,20 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-002: Cadastro de profissional
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Resolved**: 2026-08-31
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260831-cadastro-profissional/`
+- **Origin**: revisão arquitetural
+- **Context**: Segundo agregado de `organization`. 11 tasks, 243 testes, 90,6% de cobertura de instruções. Entregou uma tela só (DD-2) para cadastrar e listar profissionais, com a garantia estrutural de que nenhum caso de uso aceita tenant como parâmetro (DD-1) — o compilador impede, não só a disciplina. Estendeu o `CrossTenantIsolationIT` da TODO-001 com o caso de `Professional`.
+- **Decisões tomadas antes da spec**: cadastro de profissional é um passo à parte do cadastro do estabelecimento; `organization/api/` continua adiado até a TODO-003.
+- **Defeito revelado**: a FK nova de `professional` para `business` quebrou a ordem de limpeza de três testes de integração da TODO-001 (`LoginIT`, `RegistrationIT`, `SlugUnavailableIT`), que compartilham o mesmo container Testcontainers — corrigido.
+
+---
 
 ### TODO-001: Cadastro de estabelecimento e login
 - **Priority**: High

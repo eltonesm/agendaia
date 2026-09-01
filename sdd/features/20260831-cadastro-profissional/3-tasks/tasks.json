@@ -164,7 +164,12 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-005", "TASK-006"],
-      "files": ["src/test/java/com/agendaia/organization/ProfessionalRegistrationIT.java"],
+      "files": [
+        "src/test/java/com/agendaia/organization/ProfessionalRegistrationIT.java",
+        "src/test/java/com/agendaia/organization/LoginIT.java",
+        "src/test/java/com/agendaia/organization/RegistrationIT.java",
+        "src/test/java/com/agendaia/organization/SlugUnavailableIT.java"
+      ],
       "acceptance_criteria": [
         "AC-1: E2E-1 confirma que o profissional aparece na lista com o tenant_id da sessao",
         "AC-2: E2E-2 confirma que nome vazio nao grava nada e devolve erro de campo, nunca 500",

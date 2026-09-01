@@ -406,6 +406,18 @@ templates/
 - Limpe o estado no `@BeforeEach`. Em produção cada requisição abre a sua
   transação, e uma transação ambiente do teste esconde exatamente isso.
 
+**FK nova exige atualizar a limpeza de toda IT que referencia a tabela apontada**:
+- Quando uma tabela ganha `REFERENCES` para outra já existente, faça
+  `grep -rn "deleteAllInBatch" src/test` sobre a tabela **referenciada** e
+  ajuste a ordem — a nova tabela sai primeiro — antes de rodar `verify` pela
+  primeira vez, não depois de ver o erro.
+- Why: ITs que compartilham o mesmo container Testcontainers entre classes
+  (a maioria neste projeto) executam na mesma base. A TODO-002 introduziu
+  `professional.tenant_id → business.id` e quebrou a limpeza de três ITs da
+  TODO-001 que já existiam — `DataIntegrityViolationException` só aparece
+  quando a classe errada roda depois da que criou a linha referenciada,
+  então pode passar despercebido localmente e falhar só na ordem do CI.
+
 ## Observabilidade
 
 **Log estruturado, com tenant em toda linha**:

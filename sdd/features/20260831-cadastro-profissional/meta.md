@@ -244,7 +244,16 @@ metrics:
 changes:
   tasks_added: []
   tasks_removed: []
-  tasks_modified: []
+  tasks_modified:
+    - id: TASK-007
+      date: 2026-08-31
+      change: "Acrescentados LoginIT.java, RegistrationIT.java e SlugUnavailableIT.java ao array files"
+      reason: >-
+        Achado LOW do consistency check final (sdd-layer-analyzer): a FK nova
+        de professional para business exigiu ajustar a ordem de limpeza
+        desses tres testes de integracao da TODO-001, que compartilham o
+        mesmo container Testcontainers. A mudanca ja estava no commit
+        4ca9438; tasks.json nao declarava esses arquivos.
   spec_changes:
     functional: []
     technical: []
