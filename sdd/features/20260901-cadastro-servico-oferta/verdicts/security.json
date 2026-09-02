@@ -1,0 +1,22 @@
+{
+  "skill": "sdd-code-reviewer",
+  "mode": "security",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checklist": {
+    "validacao_antes_do_insert": "OK -- RegisterServiceOfferingHandler.register() valida serviceId (existsByIdAndTenantId), depois professionalId (listActive().anyMatch), depois duplicata (existsByTenantIdAndServiceIdAndProfessionalId), e so entao chama ServiceOffering.register() + saveAndFlush(). Nenhum caminho grava antes de validar.",
+    "mensagem_identica_profissional_inexistente_vs_outro_tenant": "OK -- ProfessionalNotFoundException tem uma unica mensagem fixa ('Profissional nao encontrado.') para ambos os casos; o handler nao distingue 'id nao existe' de 'id existe em outro tenant' -- so pergunta se esta na lista de listActive() do tenant da sessao.",
+    "csrf_ligado_nos_dois_formularios": "OK -- SecurityConfig nao desabilita CSRF (sem .csrf(disable)). Confirmado por teste: ServiceControllerTest.semCsrfERecusado() e ServiceOfferingControllerTest.semCsrfERecusado() -- ambos verificam 403 sem token, ambos passando.",
+    "isolamento_catalog_organization_sem_fk_e_garantia_de_aplicacao": "OK -- V4 migration nao tem REFERENCES em service_offering.professional_id nem em nenhum tenant_id fora de organization (DD-2). A garantia real esta em RegisterServiceOfferingHandler chamando ProfessionalDirectory.listActive() antes de gravar -- exercida contra Postgres real em CrossTenantIsolationIT (E2E-3): POST forjado com professionalId de outro tenant e recusado, nenhuma linha gravada.",
+    "sem_hardcoded_secrets": "OK -- grep por password=\"/secret=\" nos arquivos novos de catalog: nenhuma ocorrencia.",
+    "sql_injection": "OK -- todas as consultas novas sao Spring Data JPA derived queries (existsByTenantIdAndName, existsByIdAndTenantId, existsByTenantIdAndServiceIdAndProfessionalId, findByTenantIdAndActiveTrueOrderBy...), totalmente parametrizadas pelo Spring Data. Nenhum @Query nativo, nenhuma concatenacao de string em SQL.",
+    "xss_nos_templates_novos": "OK -- servicos.html e ofertas.html usam apenas th:text/th:field/th:value (escape automatico do Thymeleaf). Nenhuma ocorrencia de th:utext.",
+    "erro_de_negocio_nao_vira_500": "OK -- todas as DomainException de catalog (ServiceNameAlreadyUsedException, ProfessionalNotFoundException, ServiceNotFoundException, ServiceOfferingAlreadyExistsException) sao capturadas nos controllers e viram erro de campo (200 + BindingResult), nunca propagam para o GlobalExceptionHandler como 500."
+  },
+  "files_reviewed": 54,
+  "timestamp": "2026-09-01T21:45:00-03:00"
+}
