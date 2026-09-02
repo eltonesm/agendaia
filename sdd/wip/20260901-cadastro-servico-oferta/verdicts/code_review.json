@@ -1,0 +1,30 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1
+  },
+  "minor_findings": [
+    {
+      "file": "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
+      "issue": "durationMinutes era int primitivo com padrao 0 no construtor vazio; zero nao e duracao valida, entao a primeira visita ao formulario pre-preenchia '0' em vez de mostrar o campo vazio com o placeholder '30'.",
+      "status": "fixed",
+      "fix": "Campo trocado para Integer (null por padrao) com @NotNull + @Positive. bufferMinutes ficou como int (zero e valor legitimo e comum ali, UX correta com o padrao atual)."
+    }
+  ],
+  "checklist": {
+    "sem_setter_publico": "OK -- Service e ServiceOffering seguem o regime de Professional/Business: construtor privado, Service.register/ServiceOffering.register estaticos, deactivate() como unico mutador.",
+    "sem_sufixo_impl": "OK -- RegisterServiceHandler, ListServicesHandler, RegisterServiceOfferingHandler, ListServiceOfferingsHandler, ProfessionalDirectoryHandler.",
+    "transacao_so_na_application": "OK -- @Transactional presente apenas nos Handlers; controllers e dominio sem anotacao.",
+    "tenant_nunca_por_parametro": "OK -- todos os UseCases (Register/List de Service e ServiceOffering, ProfessionalDirectory) leem TenantContext.require() internamente, nenhuma assinatura recebe tenant.",
+    "nenhuma_fk_cruzando_contexto": "OK -- V4 migration: service.tenant_id e service_offering.tenant_id sem REFERENCES; service_offering.professional_id sem FK (organization e outro contexto); service_offering.service_id tem FK normal (mesmo contexto, catalog->catalog).",
+    "allowed_dependencies_de_catalog": "OK -- package-info.java de catalog declara {\"organization :: api\", \"shared\", \"platform\"}; verificado com ModuleStructureTest.verify() passando apos duas correcoes (faltavam shared e platform inicialmente, ambos Type.OPEN mas exigidos na whitelist mesmo assim -- documentado em PATTERNS.md).",
+    "codigo_morto_ou_duplicado": "Nenhum encontrado. ServiceRepository.existsByIdAndTenantId e existsByTenantIdAndName sao usados (RegisterServiceOfferingHandler e RegisterServiceHandler respectivamente). RegisterServiceOfferingHandler e ListServiceOfferingsHandler duplicam a chamada professionalDirectory.listActive() mas em metodos diferentes (escrita valida, leitura projeta nome) -- nao e duplicacao de logica, e uso legitimo do mesmo port de leitura.",
+    "excecoes_de_dominio": "OK -- ServiceNameAlreadyUsedException, ProfessionalNotFoundException, ServiceNotFoundException, ServiceOfferingAlreadyExistsException estendem DomainException, todas com field() setado; mensagem de ProfessionalNotFoundException e ServiceNotFoundException e identica para 'nao existe' e 'e de outro tenant' (AC-1 do TASK-007, nao vaza informacao entre tenants).",
+    "testes": "243+ testes cobrindo dominio puro (ServiceTest, ServiceOfferingTest, MoneyTest), aplicacao com mocks (RegisterService/ListServices/RegisterServiceOffering/ListServiceOfferingsHandlerTest, ProfessionalDirectoryHandlerTest), web isolada (@WebMvcTest para os dois controllers), integracao com Testcontainers (ServiceOfferingRegistrationIT, CrossTenantIsolationIT estendido)."
+  },
+  "files_reviewed": 54,
+  "timestamp": "2026-09-01T21:43:00-03:00"
+}
