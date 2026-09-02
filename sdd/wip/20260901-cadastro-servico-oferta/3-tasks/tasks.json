@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 9,
+    "done": 10,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -245,7 +245,7 @@
       "id": "TASK-010",
       "title": "Link do painel para as novas telas",
       "description": "Dashboard passa a linkar para /admin/servicos e /admin/ofertas, completando a promessa 'cadastrar seus profissionais e servicos' desde a TODO-001.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Low",
       "depends_on": ["TASK-008", "TASK-009"],
