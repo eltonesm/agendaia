@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 0,
+    "done": 3,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -29,7 +29,7 @@
       "id": "TASK-001",
       "title": "Money em shared, com teste puro",
       "description": "record Money(long cents), fabrica Money.reais(BigDecimal), metodo format() devolvendo 'R$ 30,00'. Sem soma, subtracao ou comparacao (DD-3).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Low",
       "depends_on": [],
@@ -51,7 +51,7 @@
       "id": "TASK-002",
       "title": "Migration V4: tabelas service e service_offering",
       "description": "Duas tabelas conforme a spec tecnica. Nenhuma FK aponta para fora de catalog -- tenant_id incluido (DD-2). service_offering.service_id tem FK normal (mesmo contexto); professional_id e UUID solto.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": [],
@@ -71,7 +71,7 @@
       "id": "TASK-003",
       "title": "organization/api: ProfessionalDirectory",
       "description": "Primeiro pacote api real do projeto. Interface ProfessionalDirectory.listActive(), sem parametro (DD-1), record ProfessionalRef(id, name), e o Handler que implementa lendo TenantContext e delegando a ProfessionalRepository.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": [],
