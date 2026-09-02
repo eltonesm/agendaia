@@ -5,11 +5,15 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.agendaia.TestcontainersConfiguration;
+import com.agendaia.catalog.domain.ServiceOfferingRepository;
+import com.agendaia.catalog.domain.ServiceRepository;
 import com.agendaia.organization.domain.Business;
 import com.agendaia.organization.domain.BusinessRepository;
+import com.agendaia.organization.domain.Professional;
 import com.agendaia.organization.domain.ProfessionalRepository;
 import com.agendaia.organization.domain.User;
 import com.agendaia.organization.domain.UserRepository;
@@ -67,6 +71,8 @@ class CrossTenantIsolationIT {
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private ProfessionalRepository professionalRepository;
+    @Autowired private ServiceRepository serviceRepository;
+    @Autowired private ServiceOfferingRepository serviceOfferingRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -74,6 +80,8 @@ class CrossTenantIsolationIT {
 
     @BeforeEach
     void semearDoisTenants() {
+        serviceOfferingRepository.deleteAllInBatch();
+        serviceRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
@@ -210,5 +218,38 @@ class CrossTenantIsolationIT {
         assertThat(joao.tenantId()).isEqualTo(barbearia.tenantId());
         assertThat(maria.tenantId()).isEqualTo(salao.tenantId());
         assertThat(joao.tenantId()).isNotEqualTo(maria.tenantId());
+    }
+
+    @Test
+    @DisplayName(
+            "E2E-3 (cadastro-servico-oferta): oferta forjada com professionalId de outro tenant é recusada")
+    void ofertaForjadaComProfissionalDeOutroTenantERecusada() throws Exception {
+        var profissionalDaMaria =
+                professionalRepository.saveAndFlush(Professional.register(salao.tenantId(), "Ana, funcionária da Maria"));
+
+        mockMvc.perform(post("/admin/servicos")
+                        .with(csrf())
+                        .session(entrarComo("joao@exemplo.com"))
+                        .param("name", "Corte de Cabelo"))
+                .andExpect(status().is3xxRedirection());
+        var servicoDoJoao = serviceRepository.findByTenantIdAndActiveTrueOrderByNameAsc(barbearia.id()).getFirst();
+
+        // Requisição forjada: professionalId de um profissional que não aparece
+        // no dropdown do tenant do João — não há chave estrangeira que impeça
+        // isso no banco (DD-2 da spec técnica), a garantia é de aplicação.
+        mockMvc.perform(post("/admin/ofertas")
+                        .with(csrf())
+                        .session(entrarComo("joao@exemplo.com"))
+                        .param("serviceId", servicoDoJoao.id().toString())
+                        .param("professionalId", profissionalDaMaria.id().toString())
+                        .param("durationMinutes", "30")
+                        .param("price", "30.00")
+                        .param("bufferMinutes", "0"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("form", "professionalId"));
+
+        assertThat(serviceOfferingRepository.findByTenantIdAndActiveTrueOrderByCreatedAtAsc(barbearia.id()))
+                .isEmpty();
+        assertThat(serviceOfferingRepository.count()).isZero();
     }
 }

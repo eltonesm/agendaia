@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 11,
+    "done": 12,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -279,7 +279,7 @@
       "id": "TASK-012",
       "title": "Extensao do isolamento entre tenants (E2E-3)",
       "description": "CrossTenantIsolationIT ganha um caso para ServiceOffering: tenant A tenta cadastrar oferta usando professionalId do tenant B (requisicao forjada, nao pelo dropdown) e e recusado.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-011"],
