@@ -1,0 +1,102 @@
+<!doctype html>
+<!--/*
+  Cadastro e lista de ofertas, numa tela só (DD-4).
+
+  Sem serviço ou sem profissional cadastrado, a tela linka para a tela de
+  pré-requisito em vez de mostrar um dropdown vazio (AC-1/AC-2 do TASK-009).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Ofertas')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 34rem">
+
+  <h1 class="h4 mb-1">Ofertas</h1>
+  <p class="text-body-secondary mb-4">
+    Quem executa cada serviço, com preço e duração próprios.
+  </p>
+
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(servicos)}">
+    Cadastre um <a th:href="@{/admin/servicos}">serviço</a> antes de criar uma oferta.
+  </div>
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(profissionais)}">
+    Cadastre um <a th:href="@{/admin/profissionais}">profissional</a> antes de criar uma oferta.
+  </div>
+
+  <form th:if="${not #lists.isEmpty(servicos) and not #lists.isEmpty(profissionais)}"
+        th:action="@{/admin/ofertas}" th:object="${form}" method="post" novalidate class="mb-4">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="serviceId" class="form-label">Serviço</label>
+      <select id="serviceId" th:field="*{serviceId}"
+              class="form-select" th:classappend="${#fields.hasErrors('serviceId')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="servico : ${servicos}" th:value="${servico.id}" th:text="${servico.name}">Serviço</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('serviceId')}" th:errors="*{serviceId}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="professionalId" class="form-label">Profissional</label>
+      <select id="professionalId" th:field="*{professionalId}"
+              class="form-select" th:classappend="${#fields.hasErrors('professionalId')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="profissional : ${profissionais}" th:value="${profissional.id}"
+                th:text="${profissional.name}">Profissional</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('professionalId')}"
+           th:errors="*{professionalId}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="durationMinutes" class="form-label">Duração (minutos)</label>
+      <input type="number" id="durationMinutes" th:field="*{durationMinutes}" min="1" step="1"
+             class="form-control" th:classappend="${#fields.hasErrors('durationMinutes')} ? 'is-invalid'"
+             placeholder="30">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('durationMinutes')}"
+           th:errors="*{durationMinutes}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="price" class="form-label">Preço (R$)</label>
+      <input type="number" id="price" th:field="*{price}" min="0" step="0.01"
+             class="form-control" th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'"
+             placeholder="30.00">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="bufferMinutes" class="form-label">Intervalo após o atendimento (minutos)</label>
+      <input type="number" id="bufferMinutes" th:field="*{bufferMinutes}" min="0" step="1"
+             class="form-control" th:classappend="${#fields.hasErrors('bufferMinutes')} ? 'is-invalid'"
+             placeholder="0">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('bufferMinutes')}"
+           th:errors="*{bufferMinutes}">erro</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(ofertas)}">
+    <li class="list-group-item" th:each="oferta : ${ofertas}">
+      <strong th:text="${oferta.serviceName}">Serviço</strong>
+      com <span th:text="${oferta.professionalName}">Profissional</span> —
+      <span th:text="${oferta.durationMinutes}">30</span> min,
+      <span th:text="${oferta.priceFormatted}">R$ 30,00</span>
+    </li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(ofertas)}">
+    Nenhuma oferta cadastrada ainda.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

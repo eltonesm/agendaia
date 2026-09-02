@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 8,
+    "done": 9,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -221,7 +221,7 @@
       "id": "TASK-009",
       "title": "Tela e controller de /admin/ofertas",
       "description": "GET+POST numa tela so. Dropdowns de servico e profissional; sem nenhum dos dois cadastrados, mostra chamada explicando o pre-requisito em vez de dropdown vazio.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-007"],
