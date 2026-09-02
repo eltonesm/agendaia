@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 10,
+    "done": 11,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -261,7 +261,7 @@
       "id": "TASK-011",
       "title": "Testes de integracao dos cenarios E2E-1 e E2E-2",
       "description": "ServiceOfferingRegistrationIT com Postgres real via Testcontainers: cadastro completo servico+oferta, e oferta duplicada recusada.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-010"],
