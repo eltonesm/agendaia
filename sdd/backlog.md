@@ -32,19 +32,6 @@ passa por `/sdd.start`.
 ## 📋 TODOs
 
 
-### TODO-003: Cadastro de serviço e oferta
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-01
-- **Origin**: revisão arquitetural
-- **Context**: Introduz `ServiceOffering` — serviço por profissional, com duração, preço e intervalo próprios. Primeira referência cruzando contexto por UUID solto, sem chave estrangeira.
-- **Affected Files**: `catalog`
-- **Complexity**: Medium
-- **Feature**: `sdd/wip/20260901-cadastro-servico-oferta/`
-
----
-
 ### TODO-004: Horário do estabelecimento, jornada e bloqueios
 - **Priority**: High
 - **Status**: pending
@@ -451,6 +438,21 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-003: Cadastro de serviço e oferta
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Resolved**: 2026-09-01
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260901-cadastro-servico-oferta/`
+- **Origin**: revisão arquitetural
+- **Context**: Primeiro código de `catalog` (`Service`, `ServiceOffering`) e primeiro pacote `api` real do projeto (`organization.api.ProfessionalDirectory`). 15 tasks, 282 testes, 90,0% de cobertura de instruções. Entregou duas telas (`/admin/servicos`, `/admin/ofertas`, DD-4) e o primeiro caso de uso que atravessa contexto de verdade: `RegisterServiceOfferingHandler` valida `professionalId` contra `organization.api` antes de gravar (DD-1, BR-8), sem FK nenhuma garantindo isso no banco (DD-2, estendido para incluir `tenant_id` em toda tabela fora de `organization`). `Money` nasce em `shared` (DD-3).
+- **Decisões tomadas antes da spec**: as 4 perguntas em aberto do `meta.md` foram delegadas ao critério do assistente — operação única em `organization.api` (`listActive()`, sem parâmetro), validação obrigatória de `professionalId` no cadastro de oferta, `service.name` único por tenant, `Money` como `long cents` sem aritmética.
+- **Defeito revelado**: declarar `allowedDependencies` no `package-info.java` de um contexto vira whitelist explícita — `shared` e `platform`, mesmo sendo `Type.OPEN`, precisaram ser adicionados à lista de `catalog` explicitamente, ou `ModuleStructureTest` falha. Documentado em `PATTERNS.md` para não se repetir nos próximos contextos.
+- **Achado da revisão de código**: `durationMinutes` do formulário de oferta era `int` primitivo com padrão 0, pré-preenchendo "0" na primeira visita em vez de mostrar o campo vazio — corrigido para `Integer` (nulo por padrão).
+
+---
 
 ### TODO-002: Cadastro de profissional
 - **Priority**: High

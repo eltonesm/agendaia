@@ -205,12 +205,12 @@ stages:
     final_tasks_count: 15
 
   implementation:
-    started: null
-    completed: null
-    status: pending
-    execution_strategy: null
-    total_tasks: 0
-    completed_tasks: 0
+    started: 2026-09-01
+    completed: 2026-09-01
+    status: completed
+    execution_strategy: batched
+    total_tasks: 15
+    completed_tasks: 15
 ```
 
 ---
@@ -233,9 +233,9 @@ execution_strategy:
 
 ```yaml
 metrics:
-  timeline: { estimated_days: null, actual_days: null, variance_percent: null }
+  timeline: { estimated_days: null, actual_days: 1, variance_percent: null }
   effort: { estimated_hours: null, actual_hours: null, variance_percent: null }
-  quality: { test_coverage: null, tests_total: null, tests_passing: null, linter_errors: 0, type_errors: 0 }
+  quality: { test_coverage: "90.0% de instrucoes, 72.2% de ramos", tests_total: 282, tests_passing: 282, linter_errors: 0, type_errors: 0 }
   velocity: { avg_hours_per_task: null, estimation_accuracy: null }
 ```
 
