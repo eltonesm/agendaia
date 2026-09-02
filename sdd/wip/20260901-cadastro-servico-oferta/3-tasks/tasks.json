@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 6,
+    "done": 7,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -168,7 +168,7 @@
       "id": "TASK-007",
       "title": "Casos de uso de cadastro e listagem de ServiceOffering, com validacao cruzando contexto",
       "description": "RegisterServiceOfferingUseCase/Handler chama ProfessionalDirectory.listActive() e recusa professionalId fora da lista (DD-1, BR-8) antes de gravar. Tambem confere que o service pertence ao tenant e que nao ha oferta duplicada (BR-7).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "High",
       "depends_on": ["TASK-005", "TASK-003", "TASK-001"],
