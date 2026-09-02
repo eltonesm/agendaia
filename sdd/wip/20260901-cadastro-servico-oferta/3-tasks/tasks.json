@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 5,
+    "done": 6,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -140,7 +140,7 @@
       "id": "TASK-006",
       "title": "Casos de uso de cadastro e listagem de Service",
       "description": "RegisterServiceUseCase/Handler e ListServicesUseCase/Handler, mesmo padrao de tenant implicito (TenantContext.require(), nunca parametro) das duas features anteriores.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-004"],

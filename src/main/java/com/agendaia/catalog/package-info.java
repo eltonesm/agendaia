@@ -13,7 +13,7 @@
  */
 @ApplicationModule(
         displayName = "Catalog",
-        allowedDependencies = {"organization :: api", "shared"})
+        allowedDependencies = {"organization :: api", "shared", "platform"})
 package com.agendaia.catalog;
 
 import org.springframework.modulith.ApplicationModule;
