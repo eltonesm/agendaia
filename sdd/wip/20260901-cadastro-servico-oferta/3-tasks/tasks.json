@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 7,
+    "done": 8,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -198,7 +198,7 @@
       "id": "TASK-008",
       "title": "Tela e controller de /admin/servicos",
       "description": "GET+POST numa tela so (DD-4, mesmo padrao da TODO-002): lista + formulario de servico.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-006"],
