@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 13,
+    "done": 15,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -313,7 +313,7 @@
       "id": "TASK-014",
       "title": "Revisao de performance",
       "description": "Foco nos indices novos (tenant_id, service_id) e em ProfessionalDirectory.listActive() nao virar N+1.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-012"],
@@ -330,7 +330,7 @@
       "id": "TASK-015",
       "title": "Revisao de seguranca",
       "description": "Foco no isolamento entre catalog e organization sem FK -- a garantia e de aplicacao, precisa estar realmente la.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-012"],

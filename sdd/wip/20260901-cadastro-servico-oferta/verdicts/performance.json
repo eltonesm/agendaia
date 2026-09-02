@@ -1,0 +1,24 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "checks": {
+    "professional_directory_listactive_nao_e_n_plus_1": "OK -- unico ponto de chamada por classe: RegisterServiceOfferingHandler.register() (1x), ListServiceOfferingsHandler.list() (1x, resultado guardado em Map antes do stream de ofertas), ServiceOfferingController.carregarListas() (1x por GET ou POST com erro). Nenhuma chamada dentro de loop por oferta -- confirmado via grep, unica ocorrencia de listActive() por metodo.",
+    "list_services_batch_fetch": "OK -- ListServiceOfferingsHandler resolve nomes de servico via serviceRepository.findAllById(idsDeServico) em lote (uma consulta para todos os ids distintos), nao uma consulta por oferta.",
+    "indices_da_migration_v4": "service_tenant_idx e service_offering_tenant_idx cobrem todas as consultas atuais (todas filtram por tenant_id). service_offering_service_idx nao e usado por nenhuma consulta da aplicacao hoje -- e decisao da spec tecnica aprovada (nao da implementacao), fica como recomendacao para reavaliar se nao ganhar uso em feature futura (ex.: listar ofertas de um servico especifico).",
+    "sem_findAll_sem_paginacao": "OK -- nenhum uso de findAll() sem filtro introduzido nesta feature.",
+    "sem_concatenacao_de_string_em_loop": "OK -- nenhum += de String dentro de loop."
+  },
+  "recommendations": [
+    {
+      "observation": "service_offering_service_idx (V4 migration) nao e exercido por nenhuma query atual -- todas as consultas existentes filtram por tenant_id, nao por service_id isolado.",
+      "suggestion": "Reavaliar necessidade quando uma feature futura precisar filtrar ofertas por service_id sem tenant_id (hoje nao existe esse caso de uso)."
+    }
+  ],
+  "patterns_checked": ["n+1", "regex", "string_concat", "unbounded_collections", "memory_leaks", "missing_indexes"],
+  "timestamp": "2026-09-01T21:44:00-03:00"
+}
