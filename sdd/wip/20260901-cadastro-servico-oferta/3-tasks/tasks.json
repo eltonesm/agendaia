@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 15,
-    "done": 3,
+    "done": 5,
     "by_layer": { "1": 12, "2": 0, "3": 3 },
     "by_complexity": { "Low": 3, "Medium": 10, "High": 2 }
   },
@@ -95,7 +95,7 @@
       "id": "TASK-004",
       "title": "Entidade Service com repositorio e testes puros",
       "description": "Mesmo regime CRUD de organization (ADR 0002): construtor privado, fabrica estatica, sem setter. Nome unico por tenant (BR-1).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-002"],
@@ -117,7 +117,7 @@
       "id": "TASK-005",
       "title": "Entidade ServiceOffering com repositorio e testes puros",
       "description": "Guarda price como long internamente (priceCents), expoe Money via accessor -- mesmo padrao de TenantId em Professional (campo raw, tipo rico so na borda). Sem setter.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-002", "TASK-001"],

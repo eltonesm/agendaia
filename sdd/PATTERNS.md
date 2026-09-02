@@ -29,6 +29,14 @@
 - A dependência é **declarada**, não inferida: `allowedDependencies` no
   `package-info.java` do contexto, e `@NamedInterface("api")` no pacote `api`.
   Dependência nova exige editar essa lista — e aí aparece no diff.
+- **Declarar `allowedDependencies` inclui `shared` na lista, mesmo `shared`
+  sendo `Type.OPEN`.** `allowedDependencies` é uma whitelist explícita do
+  módulo que declara — `Type.OPEN` no lado de `shared` só dispensa quem
+  **não** declara `allowedDependencies` nenhuma (contexto sem restrição
+  nenhuma). O primeiro contexto a declarar essa lista (`catalog`, na
+  TODO-003) esqueceu `shared` e quebrou `ModuleStructureTest` com
+  `TenantId`/`UuidV7`/`Money` como "dependência não permitida" — mensagem de
+  erro não menciona `shared` como caso especial, só lista os alvos aceitos.
 - Why: com um único módulo Maven (ADR 0001), nada físico impede o import. A
   fronteira existe porque o Spring Modulith a verifica no build (ADR 0010).
 
