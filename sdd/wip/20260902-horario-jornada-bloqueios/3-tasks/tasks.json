@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 9,
+    "done": 10,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -239,7 +239,7 @@
       "id": "TASK-010",
       "title": "Tela e controller de /admin/jornadas",
       "description": "GET+POST numa tela so. Dropdown de profissional; sem nenhum profissional cadastrado, mostra chamada explicando o pre-requisito em vez de dropdown vazio.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-007"],
