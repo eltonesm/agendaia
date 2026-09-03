@@ -1,0 +1,82 @@
+<!doctype html>
+<!--/*
+  Cadastro e lista de bloqueios, numa tela só (DD-1).
+
+  Ao contrário de /admin/jornadas, o formulário aparece mesmo sem nenhum
+  profissional cadastrado — um bloqueio do estabelecimento inteiro (feriado,
+  fechamento) não depende de profissional nenhum (DD-3).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Bloqueios')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 34rem">
+
+  <h1 class="h4 mb-1">Bloqueios</h1>
+  <p class="text-body-secondary mb-4">
+    Folgas de um profissional específico, ou fechamentos que valem para todo
+    o estabelecimento (feriado, reforma).
+  </p>
+
+  <form th:action="@{/admin/bloqueios}" th:object="${form}" method="post" novalidate class="mb-4">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="professionalId" class="form-label">Profissional</label>
+      <select id="professionalId" th:field="*{professionalId}"
+              class="form-select" th:classappend="${#fields.hasErrors('professionalId')} ? 'is-invalid'">
+        <option value="">Todos os profissionais (estabelecimento inteiro)</option>
+        <option th:each="profissional : ${profissionais}" th:value="${profissional.id}"
+                th:text="${profissional.name}">Profissional</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('professionalId')}"
+           th:errors="*{professionalId}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="startsAt" class="form-label">Início</label>
+      <input type="datetime-local" id="startsAt" th:field="*{startsAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('startsAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('startsAt')}" th:errors="*{startsAt}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="endsAt" class="form-label">Fim</label>
+      <input type="datetime-local" id="endsAt" th:field="*{endsAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('endsAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('endsAt')}" th:errors="*{endsAt}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="reason" class="form-label">Motivo (opcional)</label>
+      <input type="text" id="reason" th:field="*{reason}"
+             class="form-control" th:classappend="${#fields.hasErrors('reason')} ? 'is-invalid'"
+             placeholder="Consulta médica">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}">erro</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(bloqueios)}">
+    <li class="list-group-item" th:each="bloqueio : ${bloqueios}">
+      <strong th:text="${bloqueio.professionalName} ?: 'Estabelecimento inteiro'">Profissional</strong> —
+      <span th:text="${bloqueio.startsAt}">2026-12-25T00:00:00Z</span> até
+      <span th:text="${bloqueio.endsAt}">2026-12-26T00:00:00Z</span>
+      <span th:if="${bloqueio.reason}" th:text="'(' + ${bloqueio.reason} + ')'">(motivo)</span>
+    </li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(bloqueios)}">
+    Nenhum bloqueio cadastrado ainda.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
