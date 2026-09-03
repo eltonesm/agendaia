@@ -1,0 +1,405 @@
+{
+  "feature": "horario-jornada-bloqueios",
+  "from_backlog": "TODO-004",
+  "generated_at": "2026-09-02",
+  "spec_language": "pt",
+
+  "local_config": {
+    "postgresql": "container",
+    "postgresql_note": "Mesmo compose.yaml e Testcontainers ja usados pelas TODO-001/002/003. Nenhuma infraestrutura nova.",
+    "kvs": null,
+    "bigqueue": null
+  },
+
+  "adaptations": [
+    "Dockerfile e /ping NAO gerados: infraestrutura ja existe desde a Fase 0.",
+    "Layer 2 vazia: nao ha servicos de plataforma interna neste projeto.",
+    "generate-ids.sh e validate-tasks.sh nao existem nesta instalacao: IDs gerados manualmente, tasks.json conferido a mao contra a spec tecnica aprovada."
+  ],
+
+  "stats": {
+    "total": 17,
+    "done": 0,
+    "by_layer": { "1": 14, "2": 0, "3": 3 },
+    "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
+  },
+
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Migration V5: tabelas business_operating_hours, work_schedule, time_off",
+      "description": "Tres tabelas conforme a spec tecnica. tenant_id e professional_id com FK normal (mesmo contexto organization, diferente de catalog). CHECK de intervalo valido nas tres.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": [],
+      "files": ["src/main/resources/db/migration/V5__organization_create_operating_hours_schedule_and_timeoff.sql"],
+      "acceptance_criteria": [
+        "AC-1: business_operating_hours.tenant_id e work_schedule.tenant_id/professional_id com REFERENCES normal (mesmo contexto)",
+        "AC-2: time_off.professional_id nulavel, sem NOT NULL",
+        "AC-3: CHECK closes_at > opens_at (business_operating_hours), ends_at > starts_at (work_schedule e time_off)",
+        "AC-4: indice composto (professional_id, day_of_week) em work_schedule",
+        "GATE: aplicacao sobe contra o compose e o Flyway registra a V5 como aplicada"
+      ],
+      "references": ["US-1", "US-3", "US-5"],
+      "design_decisions": ["DD-2", "DD-3"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "ProfessionalRepository ganha existsByIdAndTenantId()",
+      "description": "Metodo novo no repositorio ja existente (TODO-002), usado por RegisterWorkScheduleHandler e RegisterTimeOffHandler para validar professionalId antes de gravar (BR-8). Mesmo padrao de ServiceRepository.existsByIdAndTenantId (TODO-003).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/organization/application/port/out/ProfessionalRepository.java"],
+      "acceptance_criteria": [
+        "AC-1: novo metodo derived query, sem implementacao manual",
+        "GATE: ./mvnw compile verde"
+      ],
+      "references": ["US-3", "US-5"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-003",
+      "title": "Entidade BusinessOperatingHours com repositorio e testes puros",
+      "description": "Mesmo regime CRUD de organization (ADR 0002): construtor privado, fabrica estatica, sem setter. closesAt > opensAt validado no dominio.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/BusinessOperatingHours.java",
+        "src/main/java/com/agendaia/organization/application/port/out/BusinessOperatingHoursRepository.java",
+        "src/test/java/com/agendaia/organization/domain/BusinessOperatingHoursTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por BusinessOperatingHours.register(tenantId, dayOfWeek, opensAt, closesAt), construtor privado",
+        "AC-2: closesAt <= opensAt lanca IllegalArgumentException",
+        "AC-3: id UUIDv7 gerado na aplicacao",
+        "GATE: ./mvnw test verde; nenhuma regra de ArchUnit violada"
+      ],
+      "references": ["US-1"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-004",
+      "title": "Entidade WorkSchedule com repositorio e testes puros",
+      "description": "Mesmo regime CRUD. endsAt > startsAt validado no dominio. Repositorio ganha consulta por (tenantId, professionalId, dayOfWeek, active) para a checagem de sobreposicao (DD-2).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/WorkSchedule.java",
+        "src/main/java/com/agendaia/organization/application/port/out/WorkScheduleRepository.java",
+        "src/test/java/com/agendaia/organization/domain/WorkScheduleTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por WorkSchedule.register(tenantId, professionalId, dayOfWeek, startsAt, endsAt), construtor privado",
+        "AC-2: endsAt <= startsAt lanca IllegalArgumentException",
+        "AC-3: WorkScheduleRepository tem findByTenantIdAndProfessionalIdAndDayOfWeekAndActiveTrue",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "Entidade TimeOff com repositorio e testes puros",
+      "description": "Mesmo regime CRUD. professionalId anulavel (DD-3). endsAt > startsAt validado no dominio.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/organization/domain/TimeOff.java",
+        "src/main/java/com/agendaia/organization/application/port/out/TimeOffRepository.java",
+        "src/test/java/com/agendaia/organization/domain/TimeOffTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: criacao por TimeOff.register(tenantId, professionalId (nullable), startsAt, endsAt, reason)",
+        "AC-2: endsAt <= startsAt lanca IllegalArgumentException",
+        "AC-3: professionalId nulo e aceito -- representa bloqueio do estabelecimento inteiro",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-5"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Casos de uso de cadastro e listagem de BusinessOperatingHours",
+      "description": "RegisterBusinessOperatingHoursUseCase/Handler e ListBusinessOperatingHoursUseCase/Handler, tenant sempre via TenantContext.require(), nunca parametro.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-003"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/RegisterBusinessOperatingHoursUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/RegisteredBusinessOperatingHours.java",
+        "src/main/java/com/agendaia/organization/application/port/in/ListBusinessOperatingHoursUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/BusinessOperatingHoursView.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessOperatingHoursCommand.java",
+        "src/main/java/com/agendaia/organization/application/RegisterBusinessOperatingHoursHandler.java",
+        "src/main/java/com/agendaia/organization/application/ListBusinessOperatingHoursHandler.java",
+        "src/test/java/com/agendaia/organization/application/RegisterBusinessOperatingHoursHandlerTest.java",
+        "src/test/java/com/agendaia/organization/application/ListBusinessOperatingHoursHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: nenhum dos dois casos de uso aceita tenant como parametro",
+        "AC-2: @Transactional so no handler de cadastro; readOnly no de listagem",
+        "GATE: ./mvnw test verde; ArchitectureTest confirma UseCase como interface"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Casos de uso de cadastro e listagem de WorkSchedule, com validacao de sobreposicao e de profissional",
+      "description": "RegisterWorkScheduleHandler verifica professionalId contra o tenant (BR-8) e recusa faixa sobreposta a outra do mesmo profissional no mesmo dia (BR-3, DD-2) antes de gravar. ListWorkSchedulesHandler resolve o nome do profissional na projecao.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "High",
+      "depends_on": ["TASK-004", "TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/RegisterWorkScheduleUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/RegisteredWorkSchedule.java",
+        "src/main/java/com/agendaia/organization/application/port/in/ListWorkSchedulesUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/WorkScheduleView.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterWorkScheduleCommand.java",
+        "src/main/java/com/agendaia/organization/domain/exception/WorkScheduleOverlapException.java",
+        "src/main/java/com/agendaia/organization/domain/exception/ProfessionalNotFoundException.java",
+        "src/main/java/com/agendaia/organization/application/RegisterWorkScheduleHandler.java",
+        "src/main/java/com/agendaia/organization/application/ListWorkSchedulesHandler.java",
+        "src/test/java/com/agendaia/organization/application/RegisterWorkScheduleHandlerTest.java",
+        "src/test/java/com/agendaia/organization/application/ListWorkSchedulesHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: professionalId que nao existe ou e de outro tenant recusa com erro de campo, mesma mensagem generica para os dois casos",
+        "AC-2: faixa sobreposta a outra do mesmo profissional no mesmo dia e recusada; faixas encostadas (fim de uma = inicio da outra) sao aceitas",
+        "AC-3: teste unitario com ProfessionalRepository mockado confirma a validacao sem precisar de banco",
+        "AC-4: ListWorkSchedulesHandler resolve nome do profissional para a projecao (WorkScheduleView), nao id cru",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Casos de uso de cadastro e listagem de TimeOff, com validacao de profissional quando presente",
+      "description": "RegisterTimeOffHandler valida professionalId contra o tenant SO quando informado (BR-8); professionalId ausente grava normalmente (DD-3). ListTimeOffHandler resolve o nome do profissional, ou indica 'estabelecimento inteiro' quando ausente.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-005", "TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/application/port/in/RegisterTimeOffUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/RegisteredTimeOff.java",
+        "src/main/java/com/agendaia/organization/application/port/in/ListTimeOffUseCase.java",
+        "src/main/java/com/agendaia/organization/application/port/in/TimeOffView.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterTimeOffCommand.java",
+        "src/main/java/com/agendaia/organization/application/RegisterTimeOffHandler.java",
+        "src/main/java/com/agendaia/organization/application/ListTimeOffHandler.java",
+        "src/test/java/com/agendaia/organization/application/RegisterTimeOffHandlerTest.java",
+        "src/test/java/com/agendaia/organization/application/ListTimeOffHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: professionalId nulo grava sem validacao de profissional (vale para o estabelecimento inteiro)",
+        "AC-2: professionalId presente e invalido (outro tenant ou inexistente) e recusado com erro de campo",
+        "AC-3: ListTimeOffHandler.list() devolve TimeOffView.professionalName nulo quando o bloqueio e do estabelecimento inteiro",
+        "GATE: ./mvnw test verde"
+      ],
+      "references": ["US-5", "US-6"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Tela e controller de /admin/horario-funcionamento",
+      "description": "GET+POST numa tela so (DD-1, mesmo padrao das features anteriores): lista + formulario de faixa de funcionamento.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-006"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/BusinessOperatingHoursController.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterBusinessOperatingHoursRequest.java",
+        "src/main/resources/templates/admin/horario-funcionamento.html",
+        "src/test/java/com/agendaia/organization/adapter/in/web/BusinessOperatingHoursControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: GET mostra lista + formulario; POST valido redireciona (PRG)",
+        "AC-2: POST invalido (closesAt <= opensAt) devolve a MESMA tela com a lista recarregada",
+        "AC-3: controller nao injeta repositorio nem entidade JPA",
+        "GATE: @WebMvcTest cobre as situacoes e o token CSRF"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "Tela e controller de /admin/jornadas",
+      "description": "GET+POST numa tela so. Dropdown de profissional; sem nenhum profissional cadastrado, mostra chamada explicando o pre-requisito em vez de dropdown vazio.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-007"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/WorkScheduleController.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterWorkScheduleRequest.java",
+        "src/main/resources/templates/admin/jornadas.html",
+        "src/test/java/com/agendaia/organization/adapter/in/web/WorkScheduleControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: sem profissional cadastrado, a tela linka para /admin/profissionais em vez de dropdown vazio",
+        "AC-2: POST invalido (intervalo invalido, sobreposicao, profissional de outro tenant) devolve a MESMA tela com a lista recarregada",
+        "AC-3: lista agrupa faixas por profissional e dia",
+        "GATE: @WebMvcTest cobre as situacoes"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "Tela e controller de /admin/bloqueios",
+      "description": "GET+POST numa tela so. Campo de profissional com opcao explicita 'estabelecimento inteiro' (valor vazio no dropdown).",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-008"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/TimeOffController.java",
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterTimeOffRequest.java",
+        "src/main/resources/templates/admin/bloqueios.html",
+        "src/test/java/com/agendaia/organization/adapter/in/web/TimeOffControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: dropdown de profissional inclui a opcao 'Todos os profissionais' (valor vazio)",
+        "AC-2: POST invalido (intervalo invalido, profissional de outro tenant) devolve a MESMA tela com a lista recarregada",
+        "AC-3: lista distingue visualmente bloqueio de profissional especifico do que vale para todos",
+        "GATE: @WebMvcTest cobre as situacoes"
+      ],
+      "references": ["US-5", "US-6"],
+      "design_decisions": ["DD-1", "DD-3"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "Links do painel para as tres novas telas",
+      "description": "Dashboard passa a linkar para /admin/horario-funcionamento, /admin/jornadas e /admin/bloqueios, mesmo padrao da TASK-010 da TODO-003.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Low",
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
+      "files": ["src/main/resources/templates/admin/dashboard.html"],
+      "acceptance_criteria": [
+        "AC-1: os tres links aparecem no painel",
+        "GATE: ./mvnw verify verde, nenhum teste de dashboard quebrado"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-013",
+      "title": "Testes de integracao dos cenarios E2E-1 e E2E-2",
+      "description": "HorarioJornadaBloqueioRegistrationIT com Postgres real via Testcontainers: cadastro completo dos tres agregados, e sobreposicao de jornada recusada.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-012"],
+      "files": ["src/test/java/com/agendaia/organization/HorarioJornadaBloqueioRegistrationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 confirma horario de funcionamento, jornada (com almoco -- duas faixas) e dois bloqueios (um de profissional, um do estabelecimento) cadastrados",
+        "AC-2: E2E-2 confirma que a segunda faixa sobreposta e recusada, nenhuma segunda linha gravada",
+        "AC-3: usa Postgres real via Testcontainers",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-014",
+      "title": "Extensao do isolamento entre tenants (E2E-3)",
+      "description": "CrossTenantIsolationIT ganha um caso para os tres agregados novos: tenant A cadastra horario/jornada/bloqueio, tenant B nao ve nada disso nas proprias listas.",
+      "status": "pending",
+      "layer": 1,
+      "complexity": "Medium",
+      "depends_on": ["TASK-013"],
+      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "acceptance_criteria": [
+        "AC-1: dado cadastrado pelo tenant A nao aparece nas listas do tenant B",
+        "AC-2: nenhum registro gravado com tenant_id diferente do dono da sessao",
+        "GATE: ./mvnw verify verde"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Code review",
+      "description": "Revisao de codigo sobre o diff da feature. Portao bloqueante.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-014"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: nenhum achado de corretude em aberto",
+        "AC-2: conformidade com PATTERNS.md: sem setter, sem Impl, transacao so na application, tenant nunca por parametro, repositorio em application.port.out",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-016",
+      "title": "Revisao de performance",
+      "description": "Foco no indice composto (professional_id, day_of_week) de work_schedule e na consulta de sobreposicao nao virar N+1.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-014"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: consulta de sobreposicao usa o indice composto, confirmado por EXPLAIN",
+        "AC-2: nenhuma consulta a ProfessionalRepository em laco",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-017",
+      "title": "Revisao de seguranca",
+      "description": "Foco no isolamento entre tenants via chave estrangeira normal (mesmo contexto, diferente da TODO-003) e na consistencia de mensagem de erro para profissional invalido.",
+      "status": "pending",
+      "layer": 3,
+      "complexity": "Low",
+      "depends_on": ["TASK-014"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: RegisterWorkScheduleHandler e RegisterTimeOffHandler validam professionalId antes de qualquer INSERT",
+        "AC-2: mensagem de erro identica para profissional inexistente e profissional de outro tenant",
+        "AC-3: CSRF ligado nos tres formularios novos",
+        "GATE: revisao concluida sem pendencia bloqueante"
+      ],
+      "references": [],
+      "design_decisions": []
+    }
+  ],
+
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002"],
+        "level_1": ["TASK-003", "TASK-004", "TASK-005"],
+        "level_2": ["TASK-006", "TASK-007", "TASK-008"],
+        "level_3": ["TASK-009", "TASK-010", "TASK-011"],
+        "level_4": ["TASK-012"],
+        "level_5": ["TASK-013"],
+        "level_6": ["TASK-014"]
+      },
+      "3": {
+        "level_0": ["TASK-015", "TASK-016", "TASK-017"]
+      }
+    }
+  }
+}
