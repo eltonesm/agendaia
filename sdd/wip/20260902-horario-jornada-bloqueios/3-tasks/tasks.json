@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 13,
+    "done": 14,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -319,7 +319,7 @@
       "id": "TASK-014",
       "title": "Extensao do isolamento entre tenants (E2E-3)",
       "description": "CrossTenantIsolationIT ganha um caso para os tres agregados novos: tenant A cadastra horario/jornada/bloqueio, tenant B nao ve nada disso nas proprias listas.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-013"],
