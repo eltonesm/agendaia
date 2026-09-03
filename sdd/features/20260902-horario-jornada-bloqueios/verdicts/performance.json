@@ -1,0 +1,25 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "checks": {
+    "professional_repository_sem_n_mais_1": "OK -- confirmado por grep: RegisterWorkScheduleHandler e RegisterTimeOffHandler chamam professionalRepository.existsByIdAndTenantId() uma vez por requisicao (nao em loop). ListWorkSchedulesHandler e ListTimeOffHandler chamam professionalRepository.findAllById() uma vez, em lote, com os ids distintos coletados do stream de faixas/bloqueios -- nao uma consulta por linha.",
+    "indice_composto_work_schedule": "OK -- work_schedule_professional_day_idx (professional_id, day_of_week) casa exatamente com o filtro de findByTenantIdAndProfessionalIdAndDayOfWeekAndActiveTrue (leftmost columns), a consulta que roda a cada cadastro de jornada para checar sobreposicao (BR-3/DD-2).",
+    "workschedule_repository_lista_geral": "findByTenantIdAndActiveTrueOrderByProfessionalIdAscDayOfWeekAscStartsAtAsc usa work_schedule_tenant_idx (tenant_id) -- ordenacao por professionalId/dayOfWeek/startsAt acontece em memoria apos o filtro por indice, aceitavel dado o volume esperado (poucas faixas por profissional).",
+    "sem_findAll_sem_paginacao": "OK -- nenhum uso introduzido nesta feature.",
+    "sem_concatenacao_de_string_em_loop": "OK.",
+    "sem_regex_em_caminho_quente": "OK -- nenhum uso de regex nesta feature."
+  },
+  "recommendations": [
+    {
+      "observation": "work_schedule_professional_day_idx tem tenant_id fora do indice; a filtragem por tenant_id acontece como residual pos-scan do indice (professional_id, day_of_week). Como professional_id ja e implicitamente escopado a um unico tenant (FK normal, mesmo contexto), isso nao chega a ser um problema pratico no volume esperado (poucas faixas por profissional).",
+      "suggestion": "Se o volume crescer muito (milhares de faixas por profissional, improvavel neste dominio), considerar indice (tenant_id, professional_id, day_of_week)."
+    }
+  ],
+  "patterns_checked": ["n+1", "missing_indexes", "unbounded_collections", "regex", "string_concat"],
+  "timestamp": "2026-09-02T23:11:00-03:00"
+}

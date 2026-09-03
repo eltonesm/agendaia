@@ -73,6 +73,9 @@ class CrossTenantIsolationIT {
     @Autowired private ProfessionalRepository professionalRepository;
     @Autowired private ServiceRepository serviceRepository;
     @Autowired private ServiceOfferingRepository serviceOfferingRepository;
+    @Autowired private com.agendaia.organization.application.port.out.BusinessOperatingHoursRepository businessOperatingHoursRepository;
+    @Autowired private com.agendaia.organization.application.port.out.WorkScheduleRepository workScheduleRepository;
+    @Autowired private com.agendaia.organization.application.port.out.TimeOffRepository timeOffRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -82,6 +85,9 @@ class CrossTenantIsolationIT {
     void semearDoisTenants() {
         serviceOfferingRepository.deleteAllInBatch();
         serviceRepository.deleteAllInBatch();
+        timeOffRepository.deleteAllInBatch();
+        workScheduleRepository.deleteAllInBatch();
+        businessOperatingHoursRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
@@ -251,5 +257,59 @@ class CrossTenantIsolationIT {
         assertThat(serviceOfferingRepository.findByTenantIdAndActiveTrueOrderByCreatedAtAsc(barbearia.id()))
                 .isEmpty();
         assertThat(serviceOfferingRepository.count()).isZero();
+    }
+
+    @Test
+    @DisplayName(
+            "E2E-3 (horario-jornada-bloqueios): horario, jornada e bloqueio de um tenant nao aparecem para o outro")
+    void horarioJornadaEBloqueioNaoAparecemParaOOutroTenant() throws Exception {
+        var professionalDoJoao =
+                professionalRepository.saveAndFlush(Professional.register(barbearia.tenantId(), "Pedro, funcionário do João"));
+
+        var sessaoDoJoao = entrarComo("joao@exemplo.com");
+        mockMvc.perform(post("/admin/horario-funcionamento")
+                        .with(csrf())
+                        .session(sessaoDoJoao)
+                        .param("dayOfWeek", "MONDAY")
+                        .param("opensAt", "08:00")
+                        .param("closesAt", "18:00"))
+                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(post("/admin/jornadas")
+                        .with(csrf())
+                        .session(sessaoDoJoao)
+                        .param("professionalId", professionalDoJoao.id().toString())
+                        .param("dayOfWeek", "MONDAY")
+                        .param("startsAt", "08:00")
+                        .param("endsAt", "12:00"))
+                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(post("/admin/bloqueios")
+                        .with(csrf())
+                        .session(sessaoDoJoao)
+                        .param("professionalId", "")
+                        .param("startsAt", "2026-12-25T00:00")
+                        .param("endsAt", "2026-12-26T00:00")
+                        .param("reason", "Natal"))
+                .andExpect(status().is3xxRedirection());
+
+        var sessaoDaMaria = entrarComo("maria@exemplo.com");
+        // Não verifica o texto do dia da semana aqui: o <select> do formulário
+        // sempre lista os sete dias como opção estática, dado ou não —
+        // "segunda-feira" apareceria mesmo com a lista vazia. A ausência de
+        // dado é verificada direto no repositório, ao final do teste.
+        mockMvc.perform(get("/admin/horario-funcionamento").session(sessaoDaMaria)).andExpect(status().isOk());
+        mockMvc.perform(get("/admin/jornadas").session(sessaoDaMaria))
+                .andExpect(status().isOk())
+                .andExpect(content().string(Matchers.not(Matchers.containsString("Pedro, funcionário do João"))));
+        mockMvc.perform(get("/admin/bloqueios").session(sessaoDaMaria))
+                .andExpect(status().isOk())
+                .andExpect(content().string(Matchers.not(Matchers.containsString("Natal"))));
+
+        assertThat(businessOperatingHoursRepository.findByTenantIdAndActiveTrueOrderByDayOfWeekAscOpensAtAsc(
+                        salao.id()))
+                .isEmpty();
+        assertThat(workScheduleRepository.findByTenantIdAndActiveTrueOrderByProfessionalIdAscDayOfWeekAscStartsAtAsc(
+                        salao.id()))
+                .isEmpty();
+        assertThat(timeOffRepository.findByTenantIdAndActiveTrueOrderByStartsAtDesc(salao.id())).isEmpty();
     }
 }

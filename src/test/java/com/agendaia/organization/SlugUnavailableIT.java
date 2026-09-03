@@ -42,10 +42,18 @@ class SlugUnavailableIT {
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private com.agendaia.organization.application.port.out.ProfessionalRepository professionalRepository;
+    @Autowired private com.agendaia.organization.application.port.out.BusinessOperatingHoursRepository businessOperatingHoursRepository;
+    @Autowired private com.agendaia.organization.application.port.out.WorkScheduleRepository workScheduleRepository;
+    @Autowired private com.agendaia.organization.application.port.out.TimeOffRepository timeOffRepository;
 
     @BeforeEach
     void limpar() {
-        // professional tem FK para business (TODO-002) — precisa sair primeiro.
+        // professional e business_operating_hours têm FK para business
+        // (TODO-002/004); work_schedule e time_off têm FK para professional
+        // (TODO-004) — todos precisam sair primeiro.
+        timeOffRepository.deleteAllInBatch();
+        workScheduleRepository.deleteAllInBatch();
+        businessOperatingHoursRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();

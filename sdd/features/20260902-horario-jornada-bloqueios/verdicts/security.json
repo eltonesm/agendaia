@@ -1,0 +1,22 @@
+{
+  "skill": "sdd-code-reviewer",
+  "mode": "security",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checklist": {
+    "validacao_antes_do_insert": "OK -- RegisterWorkScheduleHandler valida professionalId (existsByIdAndTenantId) e a sobreposicao (overlaps contra faixas existentes) antes de chamar saveAndFlush. RegisterTimeOffHandler valida professionalId (quando presente) antes de saveAndFlush. Nenhum caminho grava antes de validar.",
+    "mensagem_identica_profissional_inexistente_vs_outro_tenant": "OK -- ProfessionalNotFoundException tem mensagem fixa unica ('Profissional nao encontrado.') para os dois casos; o handler nao distingue 'id nao existe' de 'id existe em outro tenant' -- so pergunta se existsByIdAndTenantId(id, tenantDaSessao).",
+    "csrf_ligado_nos_tres_formularios": "OK -- SecurityConfig nao desabilita CSRF. Confirmado por teste: BusinessOperatingHoursControllerTest, WorkScheduleControllerTest e TimeOffControllerTest tem semCsrfERecusado() verificando 403 sem token, todos passando.",
+    "isolamento_por_fk_normal_mesmo_contexto": "Confirmado na migration V5: business_operating_hours.tenant_id, work_schedule.tenant_id/professional_id e time_off.tenant_id tem REFERENCES normal (business/professional), diferente de catalog (TODO-003) que usa UUID solto por ser outro contexto. A garantia de isolamento aqui e reforcada duplamente: pela FK (o banco recusa um professional_id que nao existe em nenhum tenant) e pela checagem de aplicacao existsByIdAndTenantId (o banco sozinho nao impediria um professional_id que existe, so em outro tenant -- a FK nao sabe de tenant). E-2E-3 (extensao do CrossTenantIsolationIT) exercita isso contra Postgres real.",
+    "sem_hardcoded_secrets": "OK -- grep por password=\"/secret=\" nos arquivos novos de organization: nenhuma ocorrencia.",
+    "sql_injection": "OK -- todas as consultas novas sao Spring Data JPA derived queries, totalmente parametrizadas. Nenhum @Query nativo, nenhuma concatenacao de string em SQL.",
+    "xss_nos_templates_novos": "OK -- horario-funcionamento.html, jornadas.html, bloqueios.html usam apenas th:text/th:field/th:value (escape automatico). Nenhuma ocorrencia de th:utext.",
+    "erro_de_negocio_nao_vira_500": "OK -- ProfessionalNotFoundException e WorkScheduleOverlapException sao capturadas nos controllers (catch DomainException) e viram erro de campo (200 + BindingResult), nunca propagam para o GlobalExceptionHandler como 500."
+  },
+  "files_reviewed": 56,
+  "timestamp": "2026-09-02T23:12:00-03:00"
+}

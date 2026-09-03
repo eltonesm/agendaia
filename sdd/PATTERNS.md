@@ -454,6 +454,14 @@ templates/
   TODO-001 que já existiam — `DataIntegrityViolationException` só aparece
   quando a classe errada roda depois da que criou a linha referenciada,
   então pode passar despercebido localmente e falhar só na ordem do CI.
+- **Aconteceu de novo na TODO-004**, apesar da regra já estar escrita aqui:
+  `work_schedule`/`time_off → professional` e `business_operating_hours →
+  business` quebraram a limpeza de **cinco** ITs de três features anteriores
+  (`LoginIT`, `RegistrationIT`, `SlugUnavailableIT`, `ProfessionalRegistrationIT`,
+  `CrossTenantIsolationIT`) de uma vez — só apareceu no `./mvnw verify`
+  completo, não ao rodar a IT nova isolada com `-Dtest=`. **Rodar o `grep`
+  antes de escrever a task de migration, não depois de ver o erro** — é
+  exatamente o que esta entrada já pedia, e foi pulado mesmo assim.
 
 ## Observabilidade
 

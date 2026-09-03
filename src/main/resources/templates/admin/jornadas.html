@@ -1,0 +1,89 @@
+<!doctype html>
+<!--/*
+  Cadastro e lista de jornada, numa tela só (DD-1).
+
+  Almoço recorrente é modelado como duas faixas no mesmo dia — não há campo
+  de almoço separado. Sem profissional cadastrado, linka para
+  /admin/profissionais em vez de mostrar um dropdown vazio.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Jornadas')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 34rem">
+
+  <h1 class="h4 mb-1">Jornadas</h1>
+  <p class="text-body-secondary mb-4">
+    Quando cada profissional trabalha. Duas faixas no mesmo dia representam
+    o intervalo de almoço.
+  </p>
+
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(profissionais)}">
+    Cadastre um <a th:href="@{/admin/profissionais}">profissional</a> antes de declarar uma jornada.
+  </div>
+
+  <form th:if="${not #lists.isEmpty(profissionais)}"
+        th:action="@{/admin/jornadas}" th:object="${form}" method="post" novalidate class="mb-4">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="professionalId" class="form-label">Profissional</label>
+      <select id="professionalId" th:field="*{professionalId}"
+              class="form-select" th:classappend="${#fields.hasErrors('professionalId')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="profissional : ${profissionais}" th:value="${profissional.id}"
+                th:text="${profissional.name}">Profissional</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('professionalId')}"
+           th:errors="*{professionalId}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="dayOfWeek" class="form-label">Dia da semana</label>
+      <select id="dayOfWeek" th:field="*{dayOfWeek}"
+              class="form-select" th:classappend="${#fields.hasErrors('dayOfWeek')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="dia : ${diasDaSemana}" th:value="${dia}"
+                th:text="${dia.getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).of('pt', 'BR'))}">Dia</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('dayOfWeek')}" th:errors="*{dayOfWeek}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="startsAt" class="form-label">Início</label>
+      <input type="time" id="startsAt" th:field="*{startsAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('startsAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('startsAt')}" th:errors="*{startsAt}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="endsAt" class="form-label">Fim</label>
+      <input type="time" id="endsAt" th:field="*{endsAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('endsAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('endsAt')}" th:errors="*{endsAt}">erro</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(faixas)}">
+    <li class="list-group-item" th:each="faixa : ${faixas}">
+      <strong th:text="${faixa.professionalName}">Profissional</strong> —
+      <span th:text="${faixa.dayOfWeek.getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).of('pt', 'BR'))}">Dia</span>,
+      <span th:text="${faixa.startsAt}">08:00</span> às <span th:text="${faixa.endsAt}">18:00</span>
+    </li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(faixas)}">
+    Nenhuma jornada cadastrada ainda.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
