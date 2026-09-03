@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-02
 **Last Updated**: 2026-09-02
-**Current Stage**: functional
+**Current Stage**: technical
 
 > **Sobre o modo brownfield aqui**: `organization` já tem `Business`, `User`
 > e `Professional` implementados e testados (TODO-001/002). Esta feature
@@ -176,11 +176,11 @@ auto_generated:
 stages:
   functional:
     started: 2026-09-02
-    completed: null
-    status: in_progress
+    completed: 2026-09-02
+    status: approved
     owner: Elton Marques
-    approved_by: null
-    approved_at: null
+    approved_by: Elton Marques
+    approved_at: 2026-09-03T01:17:35Z
     iterations: 0
 
   technical:
