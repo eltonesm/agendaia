@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 0,
+    "done": 2,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -29,7 +29,7 @@
       "id": "TASK-001",
       "title": "Migration V5: tabelas business_operating_hours, work_schedule, time_off",
       "description": "Tres tabelas conforme a spec tecnica. tenant_id e professional_id com FK normal (mesmo contexto organization, diferente de catalog). CHECK de intervalo valido nas tres.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": [],
@@ -48,7 +48,7 @@
       "id": "TASK-002",
       "title": "ProfessionalRepository ganha existsByIdAndTenantId()",
       "description": "Metodo novo no repositorio ja existente (TODO-002), usado por RegisterWorkScheduleHandler e RegisterTimeOffHandler para validar professionalId antes de gravar (BR-8). Mesmo padrao de ServiceRepository.existsByIdAndTenantId (TODO-003).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Low",
       "depends_on": [],
