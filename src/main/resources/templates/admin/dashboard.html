@@ -31,9 +31,15 @@
   <div class="alert alert-secondary" role="status">
     <strong>Próximo passo:</strong>
     <a th:href="@{/admin/profissionais}">cadastrar seus profissionais</a>,
-    <a th:href="@{/admin/servicos}">seus serviços</a>
-    e <a th:href="@{/admin/ofertas}">suas ofertas</a>. Até lá, o link acima
-    ainda não mostra horários.
+    <a th:href="@{/admin/servicos}">seus serviços</a>,
+    <a th:href="@{/admin/ofertas}">suas ofertas</a>,
+    <a th:href="@{/admin/horario-funcionamento}">seu horário de funcionamento</a>
+    e <a th:href="@{/admin/jornadas}">a jornada de cada profissional</a>. Até
+    lá, o link acima ainda não mostra horários.
+  </div>
+
+  <div class="mt-2">
+    <a th:href="@{/admin/bloqueios}" class="link-secondary small">Gerenciar folgas e feriados</a>
   </div>
 
 </main>

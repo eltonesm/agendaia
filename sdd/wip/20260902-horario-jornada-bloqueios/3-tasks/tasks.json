@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 11,
+    "done": 12,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -285,7 +285,7 @@
       "id": "TASK-012",
       "title": "Links do painel para as tres novas telas",
       "description": "Dashboard passa a linkar para /admin/horario-funcionamento, /admin/jornadas e /admin/bloqueios, mesmo padrao da TASK-010 da TODO-003.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Low",
       "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
