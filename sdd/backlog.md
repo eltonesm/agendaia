@@ -32,19 +32,6 @@ passa por `/sdd.start`.
 ## 📋 TODOs
 
 
-### TODO-004: Horário do estabelecimento, jornada e bloqueios
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-02
-- **Origin**: revisão arquitetural
-- **Context**: Os dados que alimentam o cálculo de disponibilidade. `BusinessOperatingHours`, `WorkSchedule` e `TimeOff`. Feriado é um `TimeOff` de dia inteiro. Sem estes dados a disponibilidade não tem de onde sair.
-- **Affected Files**: `organization`
-- **Complexity**: Medium
-- **Feature**: `sdd/wip/20260902-horario-jornada-bloqueios/`
-
----
-
 ### TODO-005: Consultar horários disponíveis
 - **Priority**: High
 - **Status**: pending
@@ -384,12 +371,12 @@ passa por `/sdd.start`.
 
 ---
 
-### IDEA-011: Navegação em sidebar no admin
+### IDEA-015: Navegação em sidebar no admin
 - **Priority**: Low
 - **Status**: pending
 - **Created**: 2026-09-01
 - **Origin**: protótipo de referência (React/Gemini, trazido pelo dono)
-- **Context**: Sidebar fixa no desktop (logo + nome do estabelecimento, itens de menu com ícone) em vez da navbar simples atual. Hoje a navbar comporta as 3 telas que existem (profissionais, serviços, ofertas) sem apertar; sidebar compensa quando houver mais itens (agenda, configurações, horário de funcionamento).
+- **Context**: Sidebar fixa no desktop (logo + nome do estabelecimento, itens de menu com ícone) em vez da navbar simples atual. A navbar comportou as 3 telas de organization e agora também horário de funcionamento, jornadas e bloqueios (TODO-004) sem apertar; sidebar compensa quando houver mais itens (agenda, configurações).
 - **Potential Impact**: Usabilidade em telas com mais opções de menu
 - **Notes**: Gatilho — quando o número de telas de admin crescer o suficiente para a navbar atual ficar apertada (provável a partir de TODO-005/006)
 
@@ -451,6 +438,24 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-004: Horário do estabelecimento, jornada e bloqueios
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Started**: 2026-09-02
+- **Resolved**: 2026-09-02
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260902-horario-jornada-bloqueios/`
+- **Origin**: revisão arquitetural
+- **Context**: Terceiro e quarto agregados novos de `organization` (`BusinessOperatingHours`, `WorkSchedule`, `TimeOff`), sem tocar `Business`/`User`/`Professional` existentes. 17 tasks, 305 testes no projeto inteiro, 89,3% de cobertura de instrução. Entregou três telas (`/admin/horario-funcionamento`, `/admin/jornadas`, `/admin/bloqueios`) e a regra de sobreposição de jornada (BR-3): duas faixas do mesmo profissional no mesmo dia não podem se sobrepor, com intervalo meio-aberto `[)` — faixas encostadas representam o almoço, não sobreposição.
+- **Decisões tomadas antes da spec**: sem validação cruzada entre `WorkSchedule` e `BusinessOperatingHours` (BR-4); sobreposição de faixas dentro do mesmo `WorkSchedule` é bloqueada (BR-3).
+- **Diferente da TODO-003**: `Professional` aqui é do **mesmo contexto** (`organization`), então o isolamento entre tenants em `professional_id` usa chave estrangeira normal, reforçada por `existsByIdAndTenantId` na aplicação — não validação via `api` de outro contexto.
+- **Achado da revisão de código**: `filter(id -> id != null)` em vez do idiomático `Objects::nonNull` em `ListTimeOffHandler` — corrigido.
+- **Refatoração incidental**: antes desta feature, as interfaces de `Repository` de `organization` e `catalog` foram movidas de `domain` para `application.port.out` (Clean Architecture — repositório é porta de saída, não parte do modelo), documentado na amendment de 2026-09-02 da ADR 0002. TODO-004 já nasceu seguindo o padrão novo.
+- **Gotcha recorrente (2ª vez, já estava em PATTERNS.md)**: FK nova quebrou a ordem de limpeza de 5 ITs pré-existentes compartilhando o mesmo container Testcontainers — mesma classe de erro que a TODO-002 já havia deixado documentada, e que se repetiu apesar disso.
+
+---
 
 ### TODO-003: Cadastro de serviço e oferta
 - **Priority**: High

@@ -348,6 +348,13 @@ sobreposição (DD-2) não varrer a tabela inteira.
 
 ## Implementation Locations
 
+> **Nota (2026-09-02, pós-implementação)**: a validação "fim ≤ início" não
+> virou uma `InvalidTimeRangeException` de domínio capturada no controller
+> como planejado aqui — acabou implementada como `@AssertTrue isValidRange()`
+> no Bean Validation de cada `RegisterXRequest`, mais simples para uma regra
+> só de comparação de campos sem estado de domínio envolvido. O critério de
+> aceite (erro de campo, sem gravar, nunca 500) é cumprido do mesmo jeito.
+
 ```
 src/main/java/com/agendaia/organization/
 ├── domain/
@@ -355,7 +362,6 @@ src/main/java/com/agendaia/organization/
 │   ├── WorkSchedule.java
 │   ├── TimeOff.java
 │   └── exception/
-│       ├── InvalidTimeRangeException.java
 │       ├── WorkScheduleOverlapException.java
 │       └── ProfessionalNotFoundException.java
 ├── application/
