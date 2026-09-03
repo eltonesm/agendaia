@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 5,
+    "done": 8,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -130,7 +130,7 @@
       "id": "TASK-006",
       "title": "Casos de uso de cadastro e listagem de BusinessOperatingHours",
       "description": "RegisterBusinessOperatingHoursUseCase/Handler e ListBusinessOperatingHoursUseCase/Handler, tenant sempre via TenantContext.require(), nunca parametro.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Low",
       "depends_on": ["TASK-003"],
@@ -157,7 +157,7 @@
       "id": "TASK-007",
       "title": "Casos de uso de cadastro e listagem de WorkSchedule, com validacao de sobreposicao e de profissional",
       "description": "RegisterWorkScheduleHandler verifica professionalId contra o tenant (BR-8) e recusa faixa sobreposta a outra do mesmo profissional no mesmo dia (BR-3, DD-2) antes de gravar. ListWorkSchedulesHandler resolve o nome do profissional na projecao.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "High",
       "depends_on": ["TASK-004", "TASK-002"],
@@ -188,7 +188,7 @@
       "id": "TASK-008",
       "title": "Casos de uso de cadastro e listagem de TimeOff, com validacao de profissional quando presente",
       "description": "RegisterTimeOffHandler valida professionalId contra o tenant SO quando informado (BR-8); professionalId ausente grava normalmente (DD-3). ListTimeOffHandler resolve o nome do profissional, ou indica 'estabelecimento inteiro' quando ausente.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-005", "TASK-002"],
