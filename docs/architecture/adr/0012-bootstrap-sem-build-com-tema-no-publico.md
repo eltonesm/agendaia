@@ -59,3 +59,19 @@ Se a página pública ficar lenta em conexão móvel medida de verdade, ou se o 
 crescer a ponto de estar lutando contra o Bootstrap em vez de usá-lo, trocar por
 CSS próprio só na superfície pública — mantendo Bootstrap no admin. A separação
 entre as duas superfícies já existe e torna essa troca contida.
+
+## Amendment — 2026-09-01: exceção pontual de cor no admin
+
+"O admin usa Bootstrap como vem" ganhou uma exceção pequena: paleta indigo
+(`--bs-primary`) e raio de borda um pouco maior (`--bs-border-radius`), via
+`fragments/layout.html`, mesma técnica de sobrescrever `--bs-*` descrita acima
+— só que aplicada em escala mínima (cor e raio, não tipografia/sombra/layout
+inteiro) e só nas classes que as telas atuais realmente usam.
+
+Motivação: o dono trouxe um protótipo de referência (React, feito no Gemini,
+fora do projeto) com essa paleta, e pediu para aplicar o que já existe hoje.
+Não abre precedente para recriar o protótipo inteiro — a decisão original
+continua valendo para o resto: **sem** menu lateral fixo, **sem** cards de
+KPI (dependem de `scheduling`, que não existe), **sem** rebuild de SASS.
+Ver `sdd/backlog.md`: IDEA-009 (dashboard/relatórios) e IDEA-011 (navegação
+em sidebar) registram o que ficou de fora, para quando fizer sentido puxar.

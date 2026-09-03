@@ -365,7 +365,7 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
-- **Context**: Logo, imagem, slogan, cores.
+- **Context**: Logo, imagem, slogan, cores. A "camada de tema" do ADR 0012 é o mecanismo técnico (sobrescreve `--bs-*`); esta ideia é o que entra nela quando `/b/{slug}` existir (TODO-006/007). Considerar aqui também: o estabelecimento escolher um tema claro/escuro padrão para os visitantes da própria página (hoje só existe alternância claro/escuro por navegador no admin — TODO-003).
 - **Potential Impact**: Percepção de valor
 - **Notes**: Gatilho — depois da validação
 
@@ -376,9 +376,20 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
-- **Context**: Agendamentos do dia, faturamento, cancelamentos, falta, ociosidade.
+- **Context**: Agendamentos do dia, faturamento, cancelamentos, falta, ociosidade. Referência visual: protótipo React (Gemini, fora do projeto) trazido pelo dono em 2026-09-01 — cards de métrica com ícone colorido (agendamentos de hoje, próximo cliente, atendidos hoje, receita estimada), lista da agenda do dia com badge de status, card de "atendimento atual" em destaque. Não implementável ainda: todo esse conteúdo depende de `Appointment` (`scheduling`, não existe no código).
 - **Potential Impact**: Retenção
 - **Notes**: Gatilho — depois da validação. Parte do dado vem de DEBT-008
+
+---
+
+### IDEA-011: Navegação em sidebar no admin
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-01
+- **Origin**: protótipo de referência (React/Gemini, trazido pelo dono)
+- **Context**: Sidebar fixa no desktop (logo + nome do estabelecimento, itens de menu com ícone) em vez da navbar simples atual. Hoje a navbar comporta as 3 telas que existem (profissionais, serviços, ofertas) sem apertar; sidebar compensa quando houver mais itens (agenda, configurações, horário de funcionamento).
+- **Potential Impact**: Usabilidade em telas com mais opções de menu
+- **Notes**: Gatilho — quando o número de telas de admin crescer o suficiente para a navbar atual ficar apertada (provável a partir de TODO-005/006)
 
 ---
 
