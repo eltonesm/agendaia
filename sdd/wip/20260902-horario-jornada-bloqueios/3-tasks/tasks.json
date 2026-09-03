@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 14,
+    "done": 17,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -336,7 +336,7 @@
       "id": "TASK-015",
       "title": "Code review",
       "description": "Revisao de codigo sobre o diff da feature. Portao bloqueante.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-014"],
@@ -353,7 +353,7 @@
       "id": "TASK-016",
       "title": "Revisao de performance",
       "description": "Foco no indice composto (professional_id, day_of_week) de work_schedule e na consulta de sobreposicao nao virar N+1.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-014"],
@@ -370,7 +370,7 @@
       "id": "TASK-017",
       "title": "Revisao de seguranca",
       "description": "Foco no isolamento entre tenants via chave estrangeira normal (mesmo contexto, diferente da TODO-003) e na consistencia de mensagem de erro para profissional invalido.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "complexity": "Low",
       "depends_on": ["TASK-014"],

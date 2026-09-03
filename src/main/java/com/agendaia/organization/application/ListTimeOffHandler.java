@@ -8,6 +8,7 @@ import com.agendaia.organization.domain.Professional;
 import com.agendaia.organization.domain.TimeOff;
 import com.agendaia.platform.tenant.TenantContext;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class ListTimeOffHandler implements ListTimeOffUseCase {
 
         var idsDeProfissional = bloqueios.stream()
                 .map(TimeOff::professionalId)
-                .filter(id -> id != null)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
         var nomesDeProfissional = professionalRepository.findAllById(idsDeProfissional).stream()

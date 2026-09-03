@@ -1,0 +1,31 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1
+  },
+  "minor_findings": [
+    {
+      "file": "src/main/java/com/agendaia/organization/application/ListTimeOffHandler.java",
+      "issue": "filter(id -> id != null) em vez do idiomatico Objects::nonNull.",
+      "status": "fixed",
+      "fix": "Trocado para filter(Objects::nonNull)."
+    }
+  ],
+  "checklist": {
+    "sem_setter_publico": "OK -- BusinessOperatingHours, WorkSchedule, TimeOff seguem o regime de Professional/Service: construtor privado, register() estatico, deactivate() como unico mutador.",
+    "sem_sufixo_impl": "OK -- RegisterBusinessOperatingHoursHandler, ListBusinessOperatingHoursHandler, RegisterWorkScheduleHandler, ListWorkSchedulesHandler, RegisterTimeOffHandler, ListTimeOffHandler.",
+    "transacao_so_na_application": "OK -- @Transactional presente apenas nos Handlers; controllers e dominio sem anotacao.",
+    "tenant_nunca_por_parametro": "OK -- todos os seis UseCases leem TenantContext.require() internamente, nenhuma assinatura recebe tenant.",
+    "repositorio_em_application_port_out": "OK -- as tres interfaces novas (BusinessOperatingHoursRepository, WorkScheduleRepository, TimeOffRepository) moram em application.port.out desde a criacao, seguindo a decisao de 2026-09-02. domain so tem Entity/exception.",
+    "logica_de_sobreposicao_workschedule_br3_dd2": "Verificada: WorkSchedule.overlaps() usa intervalo meio-aberto (a<d && c<b) -- faixas encostadas (fim=inicio) corretamente NAO contam como sobreposicao (mecanismo do almoco), faixa contida dentro de outra e detectada, faixa parcialmente sobreposta em qualquer direcao e detectada. Consulta ao banco busca so as faixas do mesmo profissional+dia (indice composto), comparacao real e em memoria -- sem N+1, sem falso negativo encontrado nos casos testados.",
+    "validacao_condicional_timeoff_dd3": "Verificada: RegisterTimeOffHandler so chama professionalRepository.existsByIdAndTenantId quando command.professionalId() != null (curto-circuito). ListTimeOffHandler filtra nulos antes do findAllById em lote, TimeOffView.professionalName fica null para bloqueio geral -- nenhum bug de borda encontrado.",
+    "xss": "OK -- nenhum th:utext nos quatro templates novos, so th:text/th:field (escape automatico do Thymeleaf).",
+    "csrf": "OK -- SecurityConfig nao desabilita CSRF; os tres controllers tem teste confirmando 403 sem token.",
+    "testes": "Dominio puro (BusinessOperatingHoursTest, WorkScheduleTest, TimeOffTest), aplicacao com mocks (6 Handlers x Register/List), web isolada (@WebMvcTest nos 3 controllers), integracao com Testcontainers (HorarioJornadaBloqueioRegistrationIT + extensao do CrossTenantIsolationIT)."
+  },
+  "files_reviewed": 56,
+  "timestamp": "2026-09-02T23:10:00-03:00"
+}
