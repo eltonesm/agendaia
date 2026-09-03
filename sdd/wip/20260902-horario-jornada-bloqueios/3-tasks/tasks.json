@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 2,
+    "done": 5,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -64,7 +64,7 @@
       "id": "TASK-003",
       "title": "Entidade BusinessOperatingHours com repositorio e testes puros",
       "description": "Mesmo regime CRUD de organization (ADR 0002): construtor privado, fabrica estatica, sem setter. closesAt > opensAt validado no dominio.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
@@ -86,7 +86,7 @@
       "id": "TASK-004",
       "title": "Entidade WorkSchedule com repositorio e testes puros",
       "description": "Mesmo regime CRUD. endsAt > startsAt validado no dominio. Repositorio ganha consulta por (tenantId, professionalId, dayOfWeek, active) para a checagem de sobreposicao (DD-2).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
@@ -108,7 +108,7 @@
       "id": "TASK-005",
       "title": "Entidade TimeOff com repositorio e testes puros",
       "description": "Mesmo regime CRUD. professionalId anulavel (DD-3). endsAt > startsAt validado no dominio.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
