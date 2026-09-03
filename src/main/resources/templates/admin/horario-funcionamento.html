@@ -1,0 +1,70 @@
+<!doctype html>
+<!--/*
+  Cadastro e lista de horário de funcionamento, numa tela só (DD-1).
+
+  Várias faixas por dia são permitidas; dia sem nenhuma faixa é dia fechado
+  (BR-1) — não existe um botão "fechar o dia" nesta tela.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Horário de funcionamento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 30rem">
+
+  <h1 class="h4 mb-1">Horário de funcionamento</h1>
+  <p class="text-body-secondary mb-4">
+    Quando o seu estabelecimento funciona. Várias faixas no mesmo dia são
+    permitidas — dia sem nenhuma faixa é dia fechado.
+  </p>
+
+  <form th:action="@{/admin/horario-funcionamento}" th:object="${form}" method="post" novalidate class="mb-4">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="dayOfWeek" class="form-label">Dia da semana</label>
+      <select id="dayOfWeek" th:field="*{dayOfWeek}"
+              class="form-select" th:classappend="${#fields.hasErrors('dayOfWeek')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="dia : ${diasDaSemana}" th:value="${dia}"
+                th:text="${dia.getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).of('pt', 'BR'))}">Dia</option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('dayOfWeek')}" th:errors="*{dayOfWeek}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="opensAt" class="form-label">Abertura</label>
+      <input type="time" id="opensAt" th:field="*{opensAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('opensAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('opensAt')}" th:errors="*{opensAt}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="closesAt" class="form-label">Fechamento</label>
+      <input type="time" id="closesAt" th:field="*{closesAt}"
+             class="form-control" th:classappend="${#fields.hasErrors('closesAt')} ? 'is-invalid'">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('closesAt')}" th:errors="*{closesAt}">erro</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(faixas)}">
+    <li class="list-group-item" th:each="faixa : ${faixas}">
+      <strong th:text="${faixa.dayOfWeek.getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).of('pt', 'BR'))}">Dia</strong>
+      — <span th:text="${faixa.opensAt}">08:00</span> às <span th:text="${faixa.closesAt}">18:00</span>
+    </li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(faixas)}">
+    Nenhuma faixa cadastrada ainda. Cadastre a primeira acima.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

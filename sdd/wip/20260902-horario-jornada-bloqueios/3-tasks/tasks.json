@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 8,
+    "done": 9,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -216,7 +216,7 @@
       "id": "TASK-009",
       "title": "Tela e controller de /admin/horario-funcionamento",
       "description": "GET+POST numa tela so (DD-1, mesmo padrao das features anteriores): lista + formulario de faixa de funcionamento.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-006"],
