@@ -6,10 +6,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.agendaia.catalog.application.port.out.ServiceOfferingRepository;
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.catalog.domain.Service;
 import com.agendaia.catalog.domain.ServiceOffering;
-import com.agendaia.catalog.domain.ServiceOfferingRepository;
-import com.agendaia.catalog.domain.ServiceRepository;
 import com.agendaia.organization.api.ProfessionalDirectory;
 import com.agendaia.organization.api.ProfessionalRef;
 import com.agendaia.platform.tenant.TenantContext;

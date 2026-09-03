@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.agendaia.TestcontainersConfiguration;
 import com.agendaia.organization.adapter.in.web.request.RegistrationRequest;
-import com.agendaia.organization.domain.BusinessRepository;
-import com.agendaia.organization.domain.UserRepository;
+import com.agendaia.organization.application.port.out.BusinessRepository;
+import com.agendaia.organization.application.port.out.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class SlugUnavailableIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private com.agendaia.organization.domain.ProfessionalRepository professionalRepository;
+    @Autowired private com.agendaia.organization.application.port.out.ProfessionalRepository professionalRepository;
 
     @BeforeEach
     void limpar() {

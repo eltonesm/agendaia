@@ -1,11 +1,12 @@
-package com.agendaia.catalog.domain;
+package com.agendaia.catalog.application.port.out;
 
+import com.agendaia.catalog.domain.ServiceOffering;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repositório da oferta.
+ * Porta de saída da oferta.
  *
  * <p>Toda consulta desta feature é por tenant — não existe, e não deveria
  * existir, um {@code findAll()} sem filtro.

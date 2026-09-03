@@ -10,14 +10,41 @@
 - Em `scheduling` (core): domínio em Java puro, entidade JPA como classe
   separada, mapeamento explícito entre as duas, casos de uso com portas.
 - Em `organization`, `catalog` e `customer` (suporte): a entidade JPA **é** o
-  modelo. Sem classe espelho, sem mapper, sem porta de saída — o caso de uso
-  fala direto com o repositório Spring Data.
+  modelo. Sem classe espelho, sem mapper, sem adapter de persistência — o caso
+  de uso fala direto com a interface do Spring Data.
 - Não aplique o regime completo em contexto de suporte "por consistência".
 - Não deixe anotação de framework vazar para `scheduling.domain`.
 - Why: dez arquivos para cadastrar um serviço com nome e preço é cerimônia sem
   retorno. A atenção vai para onde existe invariante. Ver ADR 0002.
 - Promoção de contexto de suporte ao regime completo acontece quando ele
   acumula a terceira regra de negócio de verdade — e é mudança local.
+
+**Repositório é porta de saída, não modelo — mora em `application.port.out`,
+nunca em `domain`** (revisto em 2026-09-02, ver ADR 0002):
+- `domain` guarda só Entity, Value Object, enum e exceção de domínio. Nunca
+  uma interface que existe por causa de persistência.
+- A interface `XRepository extends JpaRepository<...>` mora em
+  `<contexto>.application.port.out`, ao lado de `application.port.in` (onde
+  já vivem as interfaces de `UseCase`) — os dois lados do mesmo desenho de
+  portas, entrada e saída.
+- Em contexto de suporte, isso **não** introduz adapter nem mapper: a porta
+  de saída já é a interface do Spring Data, igual a antes — só o pacote
+  mudou, de `domain` para `application.port.out`. O ADR 0002 continua valendo
+  (entidade JPA é o modelo); o que mudou é só onde a *interface* de acesso a
+  ela mora.
+- Em `scheduling` (regime completo), a porta de saída em
+  `application.port.out` é implementada por um adapter em
+  `adapter.out.persistence` que faz o mapeamento — aí sim como Clean
+  Architecture/hexagonal clássica prevê.
+- Why: Eric Evans (DDD, 2003) trata Repository como padrão de domínio, mas a
+  prática moderna de hexagonal architecture em Java — ver o buckpal de Tom
+  Hombergs (`Get Your Hands Dirty on Clean Architecture`), referência mais
+  citada da comunidade — separa: `domain` é só modelo puro, e o repositório é
+  `application/port/out`, ao lado de `port/in`. `domain` nunca conhece
+  persistência, nem como interface.
+- ArchUnit trava isso: `dominio_de_suporte_nao_conhece_spring` em
+  `ArchitectureTest.java` — domínio de contexto de suporte pode importar
+  `jakarta.persistence` (anotação da entidade), nunca `org.springframework`.
 
 **Fronteira entre contextos**:
 - Um contexto só importa o pacote `api` de outro: `com.agendaia.catalog.api`.

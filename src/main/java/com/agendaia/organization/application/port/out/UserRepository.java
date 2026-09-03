@@ -1,11 +1,12 @@
-package com.agendaia.organization.domain;
+package com.agendaia.organization.application.port.out;
 
+import com.agendaia.organization.domain.User;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repositório do usuário do painel.
+ * Porta de saída do usuário do painel.
  *
  * <p>O e-mail é único no sistema inteiro, não por tenant (BR-1): uma pessoa com
  * dois estabelecimentos precisa de dois e-mails. Por isso as consultas por

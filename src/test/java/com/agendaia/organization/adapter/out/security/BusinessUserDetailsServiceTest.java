@@ -7,10 +7,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.agendaia.organization.application.port.out.BusinessRepository;
+import com.agendaia.organization.application.port.out.UserRepository;
 import com.agendaia.organization.domain.Business;
-import com.agendaia.organization.domain.BusinessRepository;
 import com.agendaia.organization.domain.User;
-import com.agendaia.organization.domain.UserRepository;
 import com.agendaia.platform.security.AuthenticatedUser;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;

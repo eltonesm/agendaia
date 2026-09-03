@@ -8,10 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.agendaia.organization.application.command.RegisterBusinessCommand;
+import com.agendaia.organization.application.port.out.BusinessRepository;
+import com.agendaia.organization.application.port.out.UserRepository;
 import com.agendaia.organization.domain.Business;
-import com.agendaia.organization.domain.BusinessRepository;
 import com.agendaia.organization.domain.User;
-import com.agendaia.organization.domain.UserRepository;
 import com.agendaia.organization.domain.exception.EmailAlreadyUsedException;
 import com.agendaia.organization.domain.exception.SlugUnavailableException;
 import org.junit.jupiter.api.BeforeEach;

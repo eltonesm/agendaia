@@ -46,6 +46,25 @@ class ArchitectureTest {
                     milissegundos sem subir Spring nem banco. Contextos de suporte \
                     não têm essa restrição — neles a entidade JPA É o modelo.""");
 
+    /**
+     * Contextos de suporte podem ter a entidade JPA como modelo (ADR 0002), mas
+     * repositório não é modelo — é porta de saída, e mora em
+     * {@code application.port.out} (ver PATTERNS.md). Domínio conhece
+     * {@code jakarta.persistence} pelas anotações da entidade; nunca Spring.
+     */
+    @ArchTest
+    static final ArchRule dominio_de_suporte_nao_conhece_spring = noClasses()
+            .that()
+            .resideInAnyPackage("..organization.domain..", "..catalog.domain..", "..customer.domain..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("org.springframework..")
+            .because("""
+                    repositório é porta de saída, não parte do modelo — mora em \
+                    application.port.out, nunca em domain (ver PATTERNS.md). \
+                    Domain conhece jakarta.persistence pelas anotações da entidade, \
+                    nunca Spring.""");
+
     @ArchTest
     static final ArchRule application_nao_conhece_adapter = noClasses()
             .that()

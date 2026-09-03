@@ -1,11 +1,12 @@
-package com.agendaia.organization.domain;
+package com.agendaia.organization.application.port.out;
 
+import com.agendaia.organization.domain.Professional;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repositório do profissional.
+ * Porta de saída do profissional.
  *
  * <p>Toda consulta desta feature é por tenant — não existe, e não deveria
  * existir, um {@code findAll()} sem filtro.

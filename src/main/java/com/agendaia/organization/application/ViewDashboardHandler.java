@@ -2,7 +2,7 @@ package com.agendaia.organization.application;
 
 import com.agendaia.organization.application.port.in.DashboardView;
 import com.agendaia.organization.application.port.in.ViewDashboardUseCase;
-import com.agendaia.organization.domain.BusinessRepository;
+import com.agendaia.organization.application.port.out.BusinessRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

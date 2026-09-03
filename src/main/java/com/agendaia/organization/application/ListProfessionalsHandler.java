@@ -2,7 +2,7 @@ package com.agendaia.organization.application;
 
 import com.agendaia.organization.application.port.in.ListProfessionalsUseCase;
 import com.agendaia.organization.application.port.in.ProfessionalView;
-import com.agendaia.organization.domain.ProfessionalRepository;
+import com.agendaia.organization.application.port.out.ProfessionalRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import java.util.List;
 import org.springframework.stereotype.Service;

@@ -10,11 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.agendaia.TestcontainersConfiguration;
+import com.agendaia.organization.application.port.out.BusinessRepository;
+import com.agendaia.organization.application.port.out.ProfessionalRepository;
+import com.agendaia.organization.application.port.out.UserRepository;
 import com.agendaia.organization.domain.Business;
-import com.agendaia.organization.domain.BusinessRepository;
-import com.agendaia.organization.domain.ProfessionalRepository;
 import com.agendaia.organization.domain.User;
-import com.agendaia.organization.domain.UserRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

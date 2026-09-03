@@ -1,7 +1,7 @@
 package com.agendaia.organization.adapter.out.security;
 
-import com.agendaia.organization.domain.BusinessRepository;
-import com.agendaia.organization.domain.UserRepository;
+import com.agendaia.organization.application.port.out.BusinessRepository;
+import com.agendaia.organization.application.port.out.UserRepository;
 import com.agendaia.platform.security.AuthenticatedUser;
 import java.util.Locale;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -2,7 +2,7 @@ package com.agendaia.catalog.application;
 
 import com.agendaia.catalog.application.port.in.ListServicesUseCase;
 import com.agendaia.catalog.application.port.in.ServiceView;
-import com.agendaia.catalog.domain.ServiceRepository;
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import java.util.List;
 import org.springframework.stereotype.Service;

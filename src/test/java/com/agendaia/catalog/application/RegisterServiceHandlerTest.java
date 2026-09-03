@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.agendaia.catalog.application.command.RegisterServiceCommand;
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.catalog.domain.Service;
-import com.agendaia.catalog.domain.ServiceRepository;
 import com.agendaia.catalog.domain.exception.ServiceNameAlreadyUsedException;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.shared.TenantId;

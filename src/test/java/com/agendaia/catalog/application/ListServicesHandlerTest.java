@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.catalog.domain.Service;
-import com.agendaia.catalog.domain.ServiceRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.UuidV7;

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.agendaia.organization.application.command.RegisterProfessionalCommand;
+import com.agendaia.organization.application.port.out.ProfessionalRepository;
 import com.agendaia.organization.domain.Professional;
-import com.agendaia.organization.domain.ProfessionalRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.UuidV7;

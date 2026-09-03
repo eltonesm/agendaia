@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.agendaia.catalog.application.command.RegisterServiceOfferingCommand;
+import com.agendaia.catalog.application.port.out.ServiceOfferingRepository;
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.catalog.domain.ServiceOffering;
-import com.agendaia.catalog.domain.ServiceOfferingRepository;
-import com.agendaia.catalog.domain.ServiceRepository;
 import com.agendaia.catalog.domain.exception.ProfessionalNotFoundException;
 import com.agendaia.catalog.domain.exception.ServiceNotFoundException;
 import com.agendaia.catalog.domain.exception.ServiceOfferingAlreadyExistsException;
