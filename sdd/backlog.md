@@ -34,12 +34,14 @@ passa por `/sdd.start`.
 
 ### TODO-004: Horário do estabelecimento, jornada e bloqueios
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-02
 - **Origin**: revisão arquitetural
 - **Context**: Os dados que alimentam o cálculo de disponibilidade. `BusinessOperatingHours`, `WorkSchedule` e `TimeOff`. Feriado é um `TimeOff` de dia inteiro. Sem estes dados a disponibilidade não tem de onde sair.
 - **Affected Files**: `organization`
 - **Complexity**: Medium
+- **Feature**: `sdd/wip/20260902-horario-jornada-bloqueios/`
 
 ---
 
