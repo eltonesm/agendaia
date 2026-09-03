@@ -47,12 +47,21 @@ class ProfessionalRegistrationIT {
     @Autowired private BusinessRepository businessRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private ProfessionalRepository professionalRepository;
+    @Autowired private com.agendaia.organization.application.port.out.BusinessOperatingHoursRepository businessOperatingHoursRepository;
+    @Autowired private com.agendaia.organization.application.port.out.WorkScheduleRepository workScheduleRepository;
+    @Autowired private com.agendaia.organization.application.port.out.TimeOffRepository timeOffRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
 
     @BeforeEach
     void semear() throws Exception {
+        // work_schedule/time_off (FK para professional, TODO-004) e
+        // business_operating_hours (FK para business, TODO-004) precisam
+        // sair antes — o container é compartilhado entre os ITs.
+        timeOffRepository.deleteAllInBatch();
+        workScheduleRepository.deleteAllInBatch();
+        businessOperatingHoursRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();

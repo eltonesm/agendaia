@@ -73,6 +73,9 @@ class CrossTenantIsolationIT {
     @Autowired private ProfessionalRepository professionalRepository;
     @Autowired private ServiceRepository serviceRepository;
     @Autowired private ServiceOfferingRepository serviceOfferingRepository;
+    @Autowired private com.agendaia.organization.application.port.out.BusinessOperatingHoursRepository businessOperatingHoursRepository;
+    @Autowired private com.agendaia.organization.application.port.out.WorkScheduleRepository workScheduleRepository;
+    @Autowired private com.agendaia.organization.application.port.out.TimeOffRepository timeOffRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -82,6 +85,9 @@ class CrossTenantIsolationIT {
     void semearDoisTenants() {
         serviceOfferingRepository.deleteAllInBatch();
         serviceRepository.deleteAllInBatch();
+        timeOffRepository.deleteAllInBatch();
+        workScheduleRepository.deleteAllInBatch();
+        businessOperatingHoursRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();

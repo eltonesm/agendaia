@@ -19,7 +19,7 @@
 
   "stats": {
     "total": 17,
-    "done": 12,
+    "done": 13,
     "by_layer": { "1": 14, "2": 0, "3": 3 },
     "by_complexity": { "Low": 4, "Medium": 10, "High": 3 }
   },
@@ -301,7 +301,7 @@
       "id": "TASK-013",
       "title": "Testes de integracao dos cenarios E2E-1 e E2E-2",
       "description": "HorarioJornadaBloqueioRegistrationIT com Postgres real via Testcontainers: cadastro completo dos tres agregados, e sobreposicao de jornada recusada.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-012"],
