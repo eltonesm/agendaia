@@ -26,14 +26,14 @@ class ModuleStructureTest {
             ApplicationModules.of(AgendaIaApplication.class);
 
     @Test
-    @DisplayName("os seis contextos são reconhecidos como módulos")
+    @DisplayName("os sete contextos são reconhecidos como módulos")
     void osContextosSaoModulos() {
         // Modulith 2.x trocou getName() por getIdentifier().
         var nomes = MODULOS.stream().map(m -> m.getIdentifier().toString()).toList();
 
         assertThat(nomes)
                 .containsExactlyInAnyOrder(
-                        "shared", "platform", "organization", "catalog", "scheduling", "customer");
+                        "shared", "platform", "organization", "catalog", "scheduling", "customer", "billing");
     }
 
     @Test

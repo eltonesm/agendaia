@@ -192,25 +192,36 @@ precise saber que `billing` existe.
 usado por `TenantContextFilter`/`LayoutAdvice`, só que a partir de outro
 pacote.
 
-### DD-5: `organization.api.BusinessDirectory.listAll()` não filtra por tenant — exceção documentada
+### DD-5: `organization.api.BusinessDirectory` não lê `TenantContext` — dois métodos, dois motivos diferentes
 
-**Contexto**: o operador precisa ver **todos** os estabelecimentos; ele
-não tem tenant para filtrar por.
+**Contexto**: `billing` precisa de dado de `Business` em dois cenários
+diferentes, nenhum dos dois encaixando no padrão "lê tenant da sessão" que
+`ProfessionalDirectory`/`AvailabilityDirectory` usam.
 
-**Decisão**: novo método em `organization.api`, deliberadamente sem
-`TenantContext.require()` interno — diferente de `ProfessionalDirectory`/
-`AvailabilityDirectory`, que sempre leem tenant da sessão. `BusinessRef`
-carrega só `tenantId`, `name`, `slug`, `createdAt` — nenhum dado sensível
-(sem e-mail de dono, sem senha). Único chamador desta operação é
-`billing.application.BillingAccountService`, que só roda atrás do login
-isolado do operador (DD-3) — nenhum caminho de um tenant chega a este
-método.
+**Decisão**: `BusinessDirectory` ganha dois métodos, cada um sem
+`TenantContext.require()` interno, por um motivo diferente:
+- `listAll()` — para o painel do operador, que **não tem** tenant nenhum.
+  Só chamado por código atrás do login isolado do operador (DD-3).
+- `find(UUID tenantId)` — para `BillingAccountService` resolver a data de
+  cadastro de **um único** estabelecimento, ao criar a conta de cobrança
+  sob demanda (DD-2/get-or-create). Aqui o chamador é o
+  `AccessGuardFilter`, que roda depois de `TenantContextFilter` já ter
+  resolvido a sessão do dono — o `tenantId` passado é sempre
+  `TenantContext.require().value()`, nunca um valor arbitrário do
+  requisitante. Foi descoberto durante a implementação (TASK-005) que
+  `listAll()` sozinho não bastava: usá-lo aqui obrigaria buscar **todos**
+  os estabelecimentos a cada bloqueio recém-criado, e (mais importante)
+  contradiria a garantia de "só o operador chama isto" que `listAll()`
+  documenta.
+
+`BusinessRef` carrega só `tenantId`, `name`, `slug`, `createdAt` —
+nenhum dado sensível (sem e-mail de dono, sem senha) nos dois casos.
 
 **Trade-offs Accepted**: quebra, de propósito e documentado, a convenção
 "toda operação de `api` lê tenant da sessão" — primeira exceção do
-projeto. Aceitável porque `Business` já é "a tabela de tenants" (mesma
-exceção que `BusinessRepository` já assume internamente) e o dado exposto
-é o mínimo necessário para o painel.
+projeto, agora com duas variantes. Aceitável porque `Business` já é "a
+tabela de tenants" (mesma exceção que `BusinessRepository` já assume
+internamente) e o dado exposto é o mínimo necessário nos dois casos.
 
 ### DD-6: `trialEndsAt` imutável ao lado de `accessValidUntil` mutável
 

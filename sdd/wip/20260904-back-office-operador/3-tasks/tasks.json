@@ -4,13 +4,13 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Migration V6 nesta feature (billing_account). Credenciais do operador e chave/QR Pix e numero de WhatsApp vem de application.yaml/variaveis de ambiente, nunca de banco."
   },
-  "stats": { "total": 15, "done": 0, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 5, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
       "title": "Amendment do glossario e architecture-haiku",
       "description": "Liberar Plano/Assinatura/Pagamento na lista de termos banidos do glossario (docs/domain/glossary.md), com a definicao exata usada nesta feature (accessValidUntil, trialEndsAt, AccessStatus). Adicionar nota equivalente em docs/architecture/architecture-haiku.md removendo a exclusao de 'planos' (gateway de pagamento continua fora de escopo, so o conceito de prazo/status muda).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": ["docs/domain/glossary.md", "docs/architecture/architecture-haiku.md"],
@@ -25,7 +25,7 @@
       "id": "TASK-002",
       "title": "billing: dominio, migration e porta de saida",
       "description": "Migration V6 (billing_account: id, tenant_id unico, trial_ends_at, access_valid_until, created_at, updated_at, indice por tenant_id). BillingAccount (regime CRUD, ADR 0002): startTrial() estatico, extendUntil() valida data futura, statusOn(LocalDate) implementa BR-2 (TRIAL/PAID/GRACE_PERIOD/BLOCKED). AccessStatus enum. BillingAccountRepository. package-info.java com allowedDependencies explicito (organization :: api, shared, platform).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -49,7 +49,7 @@
       "id": "TASK-003",
       "title": "organization.api.BusinessDirectory (sem filtro de tenant)",
       "description": "Novo metodo em BusinessRepository (findAllByOrderByCreatedAtAsc, sem filtro de tenant -- mesma excecao ja documentada na classe). BusinessDirectory.listAll() -> List<BusinessRef>, deliberadamente sem TenantContext.require() interno (DD-5). BusinessRef(tenantId, name, slug, createdAt). BusinessDirectoryHandler implementando a interface.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -69,8 +69,8 @@
     {
       "id": "TASK-004",
       "title": "platform.security: login isolado do operador",
-      "description": "OperatorSecurityConfig com segundo SecurityFilterChain (@Order(1), securityMatcher(\"/operador/**\")), InMemoryUserDetailsManager com um unico usuario (username/password-hash de application.yaml/variavel de ambiente, BR-7). formLogin proprio (/operador/login), logout proprio. Cadeia existente (SecurityConfig) recua para @Order(2), sem mudanca de comportamento para /admin/**.",
-      "status": "pending",
+      "description": "OperatorSecurityConfig com segundo SecurityFilterChain (@Order(1), securityMatcher(\"/operador/**\")), InMemoryUserDetailsManager com um unico usuario (username/password-hash de application.yaml/variavel de ambiente, BR-7). formLogin proprio (/operador/login), logout proprio. Cadeia existente (SecurityConfig) recua para @Order(2), sem mudanca de comportamento para /admin/**. Corrigido efeito colateral: dois beans UserDetailsService no contexto exigiram @Qualifier explicito em SecurityConfig.filterChain e em RegistrationController (que ja injetava UserDetailsService por tipo).",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -90,8 +90,8 @@
     {
       "id": "TASK-005",
       "title": "billing.application.BillingAccountService",
-      "description": "Get-or-create de BillingAccount por tenantId (cria com startTrial usando organization.api.BusinessDirectory quando nao existe -- cobre BR-8). statusFor(tenantId): AccessStatus. listForOperator(): List<EstablishmentView>, cruzando BusinessDirectory.listAll() com BillingAccountRepository em lote (sem N+1). extendUntil(tenantId, novaData): aplica BR-3.",
-      "status": "pending",
+      "description": "Get-or-create de BillingAccount por tenantId (cria com startTrial usando organization.api.BusinessDirectory quando nao existe -- cobre BR-8). statusFor(tenantId): AccessStatus. listForOperator(): List<EstablishmentView>, cruzando BusinessDirectory.listAll() com BillingAccountRepository em lote (sem N+1). extendUntil(tenantId, novaData): aplica BR-3. Ajuste durante a implementacao: BusinessDirectory ganhou find(UUID) alem de listAll(), para o get-or-create de um unico tenant nao depender da listagem completa (DD-5 atualizado na spec tecnica).",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-003"],
       "files": [

@@ -44,7 +44,14 @@ class RegistrationControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockitoBean private RegisterBusinessUseCase registerBusiness;
-    @MockitoBean private UserDetailsService userDetailsService;
+
+    // Nome explícito: RegistrationController agora pede o UserDetailsService
+    // por @Qualifier("businessUserDetailsService") -- desde que a conta do
+    // operador existe, há dois beans desse tipo no contexto completo
+    // (back-office-operador, TODO-009), e a injeção por tipo deixou de ser
+    // suficiente.
+    @MockitoBean(name = "businessUserDetailsService")
+    private UserDetailsService userDetailsService;
     // Espiao, nao mock: o mock devolveria null em loadDeferredContext e o
     // SecurityContextHolderFilter exige um Supplier nao-nulo — a propria
     // cadeia de filtros quebraria. Com spy o comportamento e real e a

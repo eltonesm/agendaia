@@ -67,6 +67,15 @@ contexto de notificação · outbox.
 Cada um tem um gatilho registrado no [backlog](../../sdd/backlog.md) que o
 traria de volta. Nenhum entra por antecipação.
 
+> **Nota (TODO-009, 2026-09-04)**: a exclusão de "gateway de pagamento" e
+> "planos Free/Pro/Premium" continua valendo integralmente — nenhum dos
+> dois foi construído. O que a TODO-009 introduziu foi só o **prazo de
+> acesso** por estabelecimento (`BillingAccount.accessValidUntil`, ver
+> glossário, "Contexto Billing"): trial de 30 dias e marcação manual de
+> pagamento recebido por fora (Pix), sem nenhuma cobrança automática, sem
+> preço diferenciado por plano. É a decisão nova que o glossário já
+> prometia antes de liberar `Plano`/`Assinatura`/`Pagamento`.
+
 **Preparado, mas desligado:** o endpoint de métricas do Prometheus é exposto
 desde o início, mas o servidor Prometheus e o Grafana só sobem quando houver o
 que observar — eles disputam memória com o Postgres na mesma VPS. O cache segue
