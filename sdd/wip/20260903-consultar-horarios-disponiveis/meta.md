@@ -212,17 +212,37 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-03
+    completed: 2026-09-03
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-04T01:18:56Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 12
+    iterations: 0
+    final_tasks_count: 12
 
   implementation:
     started: null
     completed: null
     status: pending
-    execution_strategy: null
-    total_tasks: null
+    execution_strategy: batched
+    total_tasks: 12
     completed_tasks: 0
+```
+
+---
+
+## Execution Strategy
+
+```yaml
+execution_strategy:
+  type: batched
+  chosen_date: 2026-09-03
+  estimated_agent_time: null
+  estimated_tokens: null
+  actual_agent_time: null
+  rationale: "Batched por nivel de dependencia. Dois pontos de paralelismo (TASK-001/004; TASK-002/003/005), cadeia sequencial de fundo: TimeRange -> dominio/apis -> orquestracao -> testes -> qualidade."
 ```
 
 ---

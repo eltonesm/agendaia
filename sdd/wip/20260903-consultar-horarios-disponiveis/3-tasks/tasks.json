@@ -1,0 +1,243 @@
+{
+  "feature": "consultar-horarios-disponiveis",
+  "local_config": {
+    "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
+    "note": "Sem migration nesta feature - nenhuma tabela nova (ver spec tecnica, secao Existing Data & Migrations)."
+  },
+  "stats": { "total": 12, "done": 0, "by_layer": { "1": 9, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "shared.TimeRange (value object de intervalo)",
+      "description": "Criar com overlaps/intersect/subtract, mesma semantica meio-aberta [) de WorkSchedule.overlaps(). Cobrir com TimeRangeTest: faixas encostadas, bloqueio no meio, bloqueio cobrindo a faixa inteira, faixas disjuntas.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/shared/TimeRange.java", "src/test/java/com/agendaia/shared/TimeRangeTest.java"],
+      "acceptance_criteria": [
+        "AC-1: overlaps() usa intervalo meio-aberto [) - faixas encostadas nao se sobrepoem",
+        "AC-2: intersect() retorna Optional vazio quando nao ha sobreposicao",
+        "AC-3: subtract() retorna 0, 1 ou 2 pedacos dependendo de onde o bloqueio cai",
+        "GATE: ./mvnw test -Dtest=TimeRangeTest passa"
+      ],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "WorkSchedule.overlaps() delega a TimeRange",
+      "description": "Refactor mecanico: substituir a formula inline por TimeRange.overlaps(). Mesmo comportamento, sem caso de teste novo - WorkScheduleTest (TODO-004) precisa continuar passando sem alteracao.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": ["src/main/java/com/agendaia/organization/domain/WorkSchedule.java"],
+      "acceptance_criteria": [
+        "AC-1: WorkSchedule.overlaps() delega a TimeRange, sem duplicar a formula",
+        "AC-2: WorkScheduleTest existente passa sem nenhuma alteracao no arquivo de teste",
+        "GATE: ./mvnw test -Dtest=WorkScheduleTest passa"
+      ],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "scheduling.domain: AvailableSlot, SlotCalculator e excecoes",
+      "description": "Java puro (sem Spring/JPA). AvailableSlot (record), SlotCalculator com o pipeline BR-2 (intersecao) -> BR-3 (grade fixa de 10 min, ADR 0006) -> BR-4 (filtro por duracao+buffer). Excecoes AvailabilityQueryOutOfRangeException e ServiceOfferingNotFoundException. Declarar allowedDependencies em scheduling/package-info.java (DD-1: organization :: api, catalog :: api, shared, platform - todos explicitos, mesmo gotcha da TODO-003).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/package-info.java",
+        "src/main/java/com/agendaia/scheduling/domain/AvailableSlot.java",
+        "src/main/java/com/agendaia/scheduling/domain/SlotCalculator.java",
+        "src/main/java/com/agendaia/scheduling/domain/exception/AvailabilityQueryOutOfRangeException.java",
+        "src/main/java/com/agendaia/scheduling/domain/exception/ServiceOfferingNotFoundException.java",
+        "src/test/java/com/agendaia/scheduling/domain/SlotCalculatorTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: nenhuma classe em scheduling.domain importa org.springframework ou jakarta.persistence",
+        "AC-2: SlotCalculator gera candidatos a cada 10 minutos dentro de cada janela livre",
+        "AC-3: candidato so e valido se [candidato, candidato+duracao+buffer) couber inteiro numa unica janela",
+        "AC-4: SlotCalculatorTest cobre multiplas janelas no dia, bloqueio no meio, oferta maior que a janela",
+        "GATE: ./mvnw test -Dtest=SlotCalculatorTest passa",
+        "GATE: ArchitectureTest continua verde (regra de dominio sem Spring/JPA)"
+      ],
+      "references": ["US-1", "US-2", "US-3", "BR-1", "BR-2", "BR-3", "BR-4"],
+      "design_decisions": ["DD-1", "DD-2"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "catalog.api novo: ServiceOfferingDirectory",
+      "description": "Primeiro pacote api de catalog (DD-3). Interface ServiceOfferingDirectory.find(UUID) -> Optional<ServiceOfferingRef>, implementada por ServiceOfferingDirectoryHandler (tenant via TenantContext, nunca por parametro). Novo metodo findByTenantIdAndIdAndActiveTrue em ServiceOfferingRepository.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/catalog/package-info.java",
+        "src/main/java/com/agendaia/catalog/api/package-info.java",
+        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/agendaia/catalog/api/ServiceOfferingRef.java",
+        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java",
+        "src/main/java/com/agendaia/catalog/application/port/out/ServiceOfferingRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: find() retorna vazio para id inexistente ou de outro tenant, nunca lanca excecao",
+        "AC-2: ServiceOfferingRef carrega professionalId, durationMinutes, bufferMinutes",
+        "GATE: ModuleStructureTest continua verde"
+      ],
+      "references": ["BR-7"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "organization.api.AvailabilityDirectory",
+      "description": "Tres operacoes: operatingHoursFor(DayOfWeek), workScheduleFor(UUID, DayOfWeek), blocksFor(UUID, LocalDate) - todas retornando List<TimeRange> (shared), tenant sempre via TenantContext.require(). blocksFor converte TimeOff (Instant) para TimeRange recortado ao dia local via ZoneId.systemDefault() - unico ponto do projeto que faz essa conversao. Novo metodo em BusinessOperatingHoursRepository (derived) e em TimeOffRepository (@Query JPQL, DD-5, para o caso 'profissional especifico OU bloqueio geral').",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/organization/api/AvailabilityDirectory.java",
+        "src/main/java/com/agendaia/organization/application/AvailabilityDirectoryHandler.java",
+        "src/main/java/com/agendaia/organization/application/port/out/BusinessOperatingHoursRepository.java",
+        "src/main/java/com/agendaia/organization/application/port/out/TimeOffRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: blocksFor recorta um TimeOff que comeca antes ou termina depois da data consultada para as bordas [00:00, 24:00) do dia",
+        "AC-2: blocksFor inclui bloqueios do profissional especifico E bloqueios gerais (professionalId nulo)",
+        "AC-3: os tres metodos leem tenant via TenantContext.require(), nunca por parametro",
+        "GATE: ./mvnw test -Dtest=ArchitectureTest passa (dominio_de_suporte_nao_conhece_spring nao se aplica aqui - AvailabilityDirectoryHandler fica em application, nao em domain)"
+      ],
+      "references": ["BR-2", "BR-6"],
+      "design_decisions": ["DD-4", "DD-5"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "scheduling.application: GetAvailableSlotsUseCase",
+      "description": "GetAvailableSlotsQuery(serviceOfferingId, date) + Handler que orquestra: valida horizonte de 30 dias (BR-5, DD-7 - overload package-private com 'hoje' explicito para teste), busca oferta via catalog.api (BR-7), busca horario/jornada/bloqueio via organization.api, chama SlotCalculator, mapeia List<TimeRange> + date em List<AvailableSlot>.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-003", "TASK-004", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/port/in/GetAvailableSlotsUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/GetAvailableSlotsQuery.java",
+        "src/main/java/com/agendaia/scheduling/application/GetAvailableSlotsHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: data fora de [hoje, hoje+30 dias] lanca AvailabilityQueryOutOfRangeException, nunca lista vazia",
+        "AC-2: serviceOfferingId inexistente ou de outro tenant lanca ServiceOfferingNotFoundException",
+        "AC-3: professionalId nunca e recebido como parametro do caller - vem sempre da ServiceOfferingRef",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-4", "BR-5", "BR-7", "BR-8"],
+      "design_decisions": ["DD-6", "DD-7"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "GetAvailableSlotsHandlerTest (mocks)",
+      "description": "Testa a orquestracao isoladamente, com catalog.api e organization.api mockados: horizonte de 30 dias (dentro, no limite, fora por cima, fora por baixo), oferta nao encontrada, combinacao correta de TimeRange retornado pelo SlotCalculator com a data da query para formar AvailableSlot.startsAt/endsAt (LocalDateTime).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-006"],
+      "files": ["src/test/java/com/agendaia/scheduling/application/GetAvailableSlotsHandlerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: casos de borda do horizonte (hoje, hoje+30, hoje+31, ontem) cobertos",
+        "AC-2: ServiceOfferingNotFoundException coberto quando catalog.api retorna Optional vazio",
+        "GATE: ./mvnw test -Dtest=GetAvailableSlotsHandlerTest passa"
+      ],
+      "references": ["US-4", "BR-5", "BR-7"],
+      "design_decisions": ["DD-6", "DD-7"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Teste de integracao de AvailabilityDirectoryHandler",
+      "description": "Testcontainers, dado real de BusinessOperatingHours/WorkSchedule/TimeOff (organization). Foco na conversao Instant -> TimeRange recortada ao dia (blocksFor): TimeOff que comeca no dia anterior e termina no meio do dia consultado; TimeOff que cobre o dia inteiro; bloqueio geral (professionalId nulo) aparecendo junto com o especifico do profissional.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-005"],
+      "files": ["src/test/java/com/agendaia/organization/application/AvailabilityDirectoryHandlerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: TimeOff que cruza a meia-noite e recortado corretamente para as bordas do dia consultado",
+        "AC-2: bloqueio geral (professionalId nulo) aparece junto com o bloqueio do profissional especifico na mesma lista",
+        "GATE: ./mvnw verify -Dtest=AvailabilityDirectoryHandlerTest passa (perfil de integracao)"
+      ],
+      "references": ["BR-2", "BR-6"],
+      "design_decisions": ["DD-4", "DD-5"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "ConsultarDisponibilidadeIT (E2E-1 a E2E-4)",
+      "description": "Testcontainers, ponta a ponta: seeda Business/Professional/ServiceOffering/BusinessOperatingHours/WorkSchedule/TimeOff reais e chama GetAvailableSlotsUseCase diretamente (sem camada web, conforme decisao da spec funcional). Cobre os 4 cenarios da spec: caminho feliz com grade de 10 min, bloqueio do profissional, feriado do estabelecimento zerando todos os profissionais, isolamento entre tenants.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-006"],
+      "files": ["src/test/java/com/agendaia/scheduling/ConsultarDisponibilidadeIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 - grade de 10 min respeitando o intervalo de almoco (duas faixas de WorkSchedule)",
+        "AC-2: E2E-2 - bloqueio do profissional remove so a janela bloqueada",
+        "AC-3: E2E-3 - feriado do estabelecimento (TimeOff sem profissional) zera todos os profissionais",
+        "AC-4: E2E-4 - professionalId/serviceOfferingId de outro tenant lanca ServiceOfferingNotFoundException",
+        "GATE: ./mvnw verify -Dtest=ConsultarDisponibilidadeIT passa"
+      ],
+      "references": ["E2E-1", "E2E-2", "E2E-3", "E2E-4"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-010",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: sem setter publico, sem sufixo Impl, transacao so em application, tenant nunca por parametro (incluindo atraves da fronteira api), scheduling.domain realmente livre de Spring/JPA, DD-1 a DD-7 refletidas no codigo.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-011",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: confirmar que AvailabilityDirectory faz exatamente tres consultas por chamada (sem N+1), que os indices existentes da TODO-004 cobrem as consultas novas, e que SlotCalculator opera em memoria sobre listas pequenas sem complexidade desnecessaria.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-012",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: isolamento entre tenants na fronteira api (organization.api e catalog.api nunca recebem tenantId por parametro), @Query JPQL de TimeOffRepository totalmente parametrizada (DD-5, sem risco de injecao), sem segredo hardcoded.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-7"],
+      "design_decisions": ["DD-5"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-004"],
+        "level_1": ["TASK-002", "TASK-003", "TASK-005"],
+        "level_2": ["TASK-006"],
+        "level_3": ["TASK-007", "TASK-008", "TASK-009"]
+      },
+      "3": {
+        "level_0": ["TASK-010", "TASK-011", "TASK-012"]
+      }
+    }
+  }
+}
