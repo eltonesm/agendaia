@@ -76,7 +76,7 @@ migration:
   service_type: postgresql
   branch_name: null
   branch_status: pending
-  migration_files: []
+  migration_files: ["V6__billing_create_billing_account.sql"]
 ```
 
 > Escopo de dado esperado, a confirmar na spec técnica: trial/status de
@@ -210,9 +210,13 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-04
+    completed: 2026-09-04
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-04T02:26:20Z
+    mcpqueried: false
+    services_count: 0
 
   tasks:
     started: null
