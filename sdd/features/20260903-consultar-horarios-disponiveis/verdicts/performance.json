@@ -1,0 +1,28 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "checks": {
+    "sem_loop_antes_das_tres_consultas": "OK -- confirmado por leitura de GetAvailableSlotsHandler.handle(query, hoje): validarHorizonte (puro), depois exatamente uma chamada a serviceOfferingDirectory.find, uma a operatingHoursFor, uma a workScheduleFor e uma a blocksFor, sem loop envolvendo nenhuma delas. O mapeamento final (candidatos.stream().map(...)) e sobre a lista ja calculada em memoria por SlotCalculator, nao dispara consulta nova por item.",
+    "operatingHoursFor_usa_indice_existente": "OK -- findByTenantIdAndDayOfWeekAndActiveTrue usa business_operating_hours_tenant_idx (tenant_id); filtro residual por day_of_week/active pos-scan, aceitavel dado que a tabela tem poucas linhas por tenant (mesma tabela e mesmo raciocinio da TODO-004).",
+    "workScheduleFor_reaproveita_indice_da_todo004": "OK -- findByTenantIdAndProfessionalIdAndDayOfWeekAndActiveTrue e o MESMO metodo ja usado por RegisterWorkScheduleHandler (checagem de sobreposicao, BR-3 da TODO-004), que ja usa work_schedule_professional_day_idx (professional_id, day_of_week). Nenhum indice novo necessario, nenhuma consulta nova introduzida -- reaproveitamento direto.",
+    "findOverlapping_filtra_de_forma_aceitavel": "OK -- a nova @Query filtra por tenant_id (time_off_tenant_idx), active, intervalo de tempo (startsAt/endsAt) e professional_id/IS NULL. Indices existentes (time_off_tenant_idx, time_off_professional_idx) cobrem parcialmente; o restante e filtro residual sobre uma tabela de bloqueios, que por natureza do dominio (excecao, nao rotina) tem poucas linhas por tenant. Sem indice composto novo necessario no volume do MVP.",
+    "slotcalculator_complexidade_aceitavel": "OK -- intersectAll e O(faixas_empresa x faixas_jornada), tipicamente 1-3 faixas de cada lado (poucos intervalos por dia, nunca centenas); subtractAll itera bloqueios x janelas livres, mesma ordem de grandeza; gerarCandidatos produz no maximo ~144 candidatos por janela de 24h na grade de 10 min. Todas as listas de entrada vem de tabelas pequenas por tenant+dia -- nenhum loop aninhado sobre colecao potencialmente grande.",
+    "sem_n_mais_1": "OK -- nenhum repositorio e chamado dentro de um loop em nenhum arquivo novo desta feature.",
+    "sem_findAll_sem_filtro": "OK -- nenhum uso introduzido nesta feature.",
+    "sem_regex_em_caminho_quente": "OK -- nenhum uso de regex nesta feature.",
+    "sem_concatenacao_de_string_em_loop": "OK."
+  },
+  "recommendations": [
+    {
+      "observation": "time_off_professional_idx (professional_id) e time_off_tenant_idx (tenant_id) sao indices separados, nao um composto (tenant_id, professional_id) -- a nova consulta findOverlapping usa um dos dois como entrada e filtra o resto de forma residual.",
+      "suggestion": "Se o volume de bloqueios por tenant crescer muito (improvavel neste dominio -- bloqueio e excecao, nao rotina), considerar um indice composto (tenant_id, professional_id, starts_at). Mesma classe de recomendacao ja registrada no verdict de performance da TODO-004 para work_schedule_professional_day_idx."
+    }
+  ],
+  "patterns_checked": ["n+1", "missing_indexes", "unbounded_collections", "regex", "string_concat"],
+  "timestamp": "2026-09-04T01:48:00Z"
+}

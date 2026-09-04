@@ -1,6 +1,7 @@
 package com.agendaia.organization.domain;
 
 import com.agendaia.shared.TenantId;
+import com.agendaia.shared.TimeRange;
 import com.agendaia.shared.UuidV7;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -159,9 +160,12 @@ public class WorkSchedule {
      * Sobreposição no tempo com outra faixa, sentido meio-aberto {@code [)} —
      * faixas encostadas (fim de uma igual ao início da outra) não se
      * sobrepõem. É o mecanismo do intervalo de almoço.
+     *
+     * <p>Delega a {@link TimeRange} (consultar-horarios-disponiveis, TODO-005)
+     * — mesma fórmula que já estava aqui, agora reutilizável.
      */
     public boolean overlaps(WorkSchedule outra) {
-        return this.startsAt.isBefore(outra.endsAt) && outra.startsAt.isBefore(this.endsAt);
+        return new TimeRange(this.startsAt, this.endsAt).overlaps(new TimeRange(outra.startsAt, outra.endsAt));
     }
 
     @Override

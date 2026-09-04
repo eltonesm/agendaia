@@ -11,8 +11,17 @@
  * milissegundos, sem subir Spring nem banco.
  *
  * <p>Outros contextos só podem importar {@code com.agendaia.scheduling.api}.
+ *
+ * <p>{@code allowedDependencies} declarado explicitamente desde o primeiro
+ * commit real deste contexto (consultar-horarios-disponiveis, DD-1): uma vez
+ * declarada, a lista vira whitelist mesmo para módulo {@code Type.OPEN} —
+ * {@code shared} e {@code platform} precisam estar aqui, ou
+ * {@code ModuleStructureTest} falha (mesmo gotcha da TODO-003, documentado em
+ * {@code PATTERNS.md}).
  */
-@ApplicationModule(displayName = "Scheduling (core)")
+@ApplicationModule(
+        displayName = "Scheduling (core)",
+        allowedDependencies = {"organization :: api", "catalog :: api", "shared", "platform"})
 package com.agendaia.scheduling;
 
 import org.springframework.modulith.ApplicationModule;
