@@ -1,0 +1,76 @@
+<!doctype html>
+<!--/*
+  Painel do operador (US-1/US-2/US-5) -- fora do modelo de tenant: quem
+  está aqui não é dono de nenhum estabelecimento, então não reaproveita a
+  navbar do admin (que mostra businessName e link para /admin/dashboard,
+  coisas que não fazem sentido para o operador).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Operador')}"></head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-4">
+  <div class="container">
+    <span class="navbar-brand fw-semibold">AgendaIA · Operador</span>
+    <form th:action="@{/operador/logout}" method="post" class="m-0">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Sair</button>
+    </form>
+  </div>
+</nav>
+
+<main class="container" style="max-width: 60rem">
+
+  <h1 class="h4 mb-3">Estabelecimentos</h1>
+
+  <div class="alert alert-danger" th:if="${erroTenantId}">
+    Data inválida para o estabelecimento selecionado — precisa ser uma data futura.
+  </div>
+
+  <div class="alert alert-secondary" th:if="${#lists.isEmpty(estabelecimentos)}">
+    Nenhum estabelecimento cadastrado ainda.
+  </div>
+
+  <div class="table-responsive" th:unless="${#lists.isEmpty(estabelecimentos)}">
+    <table class="table align-middle">
+      <thead>
+      <tr>
+        <th>Estabelecimento</th>
+        <th>Modelo</th>
+        <th>Cadastro</th>
+        <th>Status</th>
+        <th>Válido até</th>
+        <th>Marcar prazo</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="e : ${estabelecimentos}">
+        <td>
+          <div th:text="${e.name()}">Nome</div>
+          <div class="small text-body-secondary" th:text="${e.slug()}">slug</div>
+        </td>
+        <td>Padrão</td>
+        <td th:text="${#temporals.format(e.createdAt(), 'dd/MM/yyyy')}">01/01/2026</td>
+        <td>
+          <span class="badge text-bg-info" th:if="${e.status().name() == 'TRIAL'}">Em teste</span>
+          <span class="badge text-bg-success" th:if="${e.status().name() == 'PAID'}">Pago</span>
+          <span class="badge text-bg-warning" th:if="${e.status().name() == 'GRACE_PERIOD'}">Em carência</span>
+          <span class="badge text-bg-danger" th:if="${e.status().name() == 'BLOCKED'}">Bloqueado</span>
+        </td>
+        <td th:text="${#temporals.format(e.accessValidUntil(), 'dd/MM/yyyy')}">01/01/2026</td>
+        <td>
+          <form th:action="@{'/operador/estabelecimentos/' + ${e.tenantId()} + '/prazo'}"
+                method="post" class="d-flex gap-2">
+            <input type="date" name="accessValidUntil" class="form-control form-control-sm" required>
+            <button type="submit" class="btn btn-sm btn-primary text-nowrap">Marcar pago</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

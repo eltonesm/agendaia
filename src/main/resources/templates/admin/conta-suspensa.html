@@ -1,0 +1,33 @@
+<!doctype html>
+<!--/*
+  Tela de bloqueio (BR-4/US-4) -- para onde AccessGuardFilter redireciona
+  quando a carência vence sem pagamento marcado. Usa o layout normal do
+  admin (navbar com o botão de WhatsApp, BR-5) -- o dono continua
+  autenticado, só o conteúdo das outras páginas fica indisponível.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Conta suspensa')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 40rem">
+
+  <h1 class="h4 mb-3">Sua conta está suspensa</h1>
+
+  <p class="text-body-secondary">
+    O período de acesso do seu estabelecimento venceu e o prazo de
+    regularização também já passou. Fale com a gente para reativar o
+    acesso.
+  </p>
+
+  <a class="btn btn-primary"
+     th:href="${'https://wa.me/' + operadorWhatsapp}"
+     target="_blank" rel="noopener">
+    Falar no WhatsApp
+  </a>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

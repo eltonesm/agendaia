@@ -39,6 +39,20 @@ public class BillingAccountService {
         return getOrCreate(tenantId).statusOn(LocalDate.now());
     }
 
+    /**
+     * Usado por {@code AccessGuardFilter}: status mais a data em que a
+     * carência termina, numa consulta só — evita uma segunda ida ao banco
+     * quando {@code BillingBannerAdvice} precisa do mesmo dado na mesma
+     * requisição.
+     */
+    @Transactional
+    public AccessSnapshot snapshotFor(UUID tenantId) {
+        var conta = getOrCreate(tenantId);
+        return new AccessSnapshot(conta.statusOn(LocalDate.now()), conta.graceEndsOn());
+    }
+
+    public record AccessSnapshot(AccessStatus status, LocalDate graceEndsAt) {}
+
     /** BR-3/DD-7: marcar pagamento e estender prazo são a mesma ação. */
     @Transactional
     public void extendUntil(UUID tenantId, LocalDate newDate) {

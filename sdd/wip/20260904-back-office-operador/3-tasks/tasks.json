@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Migration V6 nesta feature (billing_account). Credenciais do operador e chave/QR Pix e numero de WhatsApp vem de application.yaml/variaveis de ambiente, nunca de banco."
   },
-  "stats": { "total": 15, "done": 5, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 8, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -110,8 +110,8 @@
     {
       "id": "TASK-006",
       "title": "billing.adapter.in.web: AccessGuardFilter e BillingBannerAdvice",
-      "description": "AccessGuardFilter (OncePerRequestFilter, @Order logo apos TenantContextFilter): age so em /admin/**, calcula status via BillingAccountService, redireciona para /admin/conta-suspensa se BLOCKED (exceto a propria rota de conta-suspensa e logout), guarda o status como atributo de requisicao. BillingBannerAdvice (@ControllerAdvice): @ModelAttribute nulo quando nao ha carencia, populado a partir do atributo de requisicao do filtro (sem segunda consulta).",
-      "status": "pending",
+      "description": "AccessGuardFilter (OncePerRequestFilter, @Order logo apos TenantContextFilter): age so em /admin/**, calcula status via BillingAccountService, redireciona para /admin/conta-suspensa se BLOCKED (exceto a propria rota de conta-suspensa e logout), guarda o status como atributo de requisicao. BillingBannerAdvice (@ControllerAdvice): @ModelAttribute nulo quando nao ha carencia, populado a partir do atributo de requisicao do filtro (sem segunda consulta). BillingAccountService ganhou snapshotFor() (status + data de fim de carencia numa consulta so) e BillingAccount ganhou graceEndsOn().",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-005"],
       "files": [
@@ -131,8 +131,8 @@
     {
       "id": "TASK-007",
       "title": "Painel do operador e tela de conta suspensa",
-      "description": "OperatorPanelController: GET /operador/painel (lista via BillingAccountService.listForOperator), POST /operador/estabelecimentos/{tenantId}/prazo (extendUntil, BR-3, PRG). SuspendedAccountController: GET /admin/conta-suspensa. Templates operador/login.html, operador/painel.html, admin/conta-suspensa.html (com link de WhatsApp -- numero via config, BR-5/US-6).",
-      "status": "pending",
+      "description": "OperatorPanelController: GET /operador/painel (lista via BillingAccountService.listForOperator), POST /operador/estabelecimentos/{tenantId}/prazo (extendUntil, BR-3, PRG). SuspendedAccountController: GET /admin/conta-suspensa. Templates operador/login.html, operador/painel.html, admin/conta-suspensa.html (com link de WhatsApp -- numero via config, BR-5/US-6). Verificado manualmente com a app rodando: login do operador com credencial de dev, painel lista os dois estabelecimentos do piloto com status TRIAL, acesso sem sessao redireciona para /operador/login.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-004", "TASK-005"],
       "files": [
@@ -155,7 +155,7 @@
       "id": "TASK-008",
       "title": "Layout compartilhado: banner de carencia e botao de WhatsApp",
       "description": "fragments/layout.html ganha: (1) banner fixo mostrando a data limite quando BillingBannerAdvice indicar carencia (BR-4/US-3), com QR code/chave Pix (config do operador, mesma para todos os tenants); (2) botao de WhatsApp sempre visivel, em toda pagina do admin, inclusive na tela de conta suspensa (BR-5/US-6). Numero de WhatsApp e chave Pix vem de application.yaml/variavel de ambiente.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
       "files": ["src/main/resources/templates/fragments/layout.html", "src/main/resources/application.yaml"],

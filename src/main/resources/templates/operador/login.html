@@ -1,0 +1,45 @@
+<!doctype html>
+<!--/*
+  Entrada no painel do operador.
+
+  Rota inteiramente separada de /login (BR-6, DD-3): credencial própria,
+  nascida por configuração, nunca por formulário (BR-7) -- este formulário
+  só existe para digitar a credencial que já existe, nunca para criar uma.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Operador')}"></head>
+<body>
+
+<main class="container py-5" style="max-width: 24rem">
+
+  <h1 class="h3 mb-4">Painel do operador</h1>
+
+  <div class="alert alert-danger" th:if="${param.erro}">
+    Usuário ou senha incorretos.
+  </div>
+
+  <div class="alert alert-success" th:if="${param.saiu}">
+    Você saiu da sua conta.
+  </div>
+
+  <form th:action="@{/operador/login}" method="post">
+    <div class="mb-3">
+      <label for="username" class="form-label">Usuário</label>
+      <input type="text" id="username" name="username" class="form-control"
+             autocomplete="username" required autofocus>
+    </div>
+
+    <div class="mb-4">
+      <label for="password" class="form-label">Senha</label>
+      <input type="password" id="password" name="password" class="form-control"
+             autocomplete="current-password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+  </form>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

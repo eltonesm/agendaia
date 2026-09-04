@@ -112,8 +112,12 @@ public class BillingAccount {
         if (!today.isAfter(accessValidUntil)) {
             return accessValidUntil.isAfter(trialEndsAt) ? AccessStatus.PAID : AccessStatus.TRIAL;
         }
-        var fimDaCarencia = accessValidUntil.plusDays(GRACE_PERIOD_DAYS);
-        return today.isAfter(fimDaCarencia) ? AccessStatus.BLOCKED : AccessStatus.GRACE_PERIOD;
+        return today.isAfter(graceEndsOn()) ? AccessStatus.BLOCKED : AccessStatus.GRACE_PERIOD;
+    }
+
+    /** Último dia em que o acesso ainda funciona sem bloqueio, mesmo vencido (BR-4). */
+    public LocalDate graceEndsOn() {
+        return accessValidUntil.plusDays(GRACE_PERIOD_DAYS);
     }
 
     public UUID id() {
