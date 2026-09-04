@@ -34,12 +34,14 @@ passa por `/sdd.start`.
 
 ### TODO-005: Consultar horários disponíveis
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-03
 - **Origin**: revisão arquitetural
 - **Context**: O cálculo do core, ainda sem escrita. Interseção de horário da empresa com jornada, menos bloqueios e agendamentos, filtrada por quem comporta duração mais intervalo. Grade fixa de 10 min (ADR 0006). É a feature mais importante do projeto e a mais barata de errar cedo.
 - **Affected Files**: `scheduling`
 - **Complexity**: High
+- **Feature**: `sdd/wip/20260903-consultar-horarios-disponiveis/`
 
 ---
 
