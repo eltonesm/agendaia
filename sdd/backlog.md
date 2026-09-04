@@ -32,19 +32,6 @@ passa por `/sdd.start`.
 ## 📋 TODOs
 
 
-### TODO-005: Consultar horários disponíveis
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-03
-- **Origin**: revisão arquitetural
-- **Context**: O cálculo do core, ainda sem escrita. Interseção de horário da empresa com jornada, menos bloqueios e agendamentos, filtrada por quem comporta duração mais intervalo. Grade fixa de 10 min (ADR 0006). É a feature mais importante do projeto e a mais barata de errar cedo.
-- **Affected Files**: `scheduling`
-- **Complexity**: High
-- **Feature**: `sdd/wip/20260903-consultar-horarios-disponiveis/`
-
----
-
 ### TODO-009: Back-office do operador — estabelecimentos, trial e pagamento
 - **Priority**: High
 - **Status**: pending
@@ -464,6 +451,22 @@ passa por `/sdd.start`.
 
 ## ✅ Resolved Items
 
+### TODO-005: Consultar horários disponíveis
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Started**: 2026-09-03
+- **Resolved**: 2026-09-04
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260903-consultar-horarios-disponiveis/`
+- **Origin**: revisão arquitetural
+- **Context**: Primeiro código real de `scheduling` — o core domain do projeto, com regime completo de Clean Architecture (ADR 0002): domínio Java puro, sem Spring nem JPA. 12 tasks, 337 testes no projeto inteiro, 90,4% de cobertura de instrução. A feature só calcula (`BusinessOperatingHours` ∩ `WorkSchedule` − `TimeOff`, grade fixa de 10 min do ADR 0006) — não persiste nada, não tem tela, não tem controller. `Appointment` e a exclusion constraint do ADR 0005 ficam para a TODO-006, quando houver escrita de verdade para proteger.
+- **Decisões tomadas antes da spec**: `Appointment` fica fora desta feature (TODO-006 quem cria); critério de aceite é suíte de testes, sem endpoint interno; horizonte máximo de consulta de 30 dias.
+- **Nasceu aqui**: `shared.TimeRange` (value object de intervalo, reaproveitado por `WorkSchedule.overlaps()` da TODO-004 — refactor mecânico, mesmo comportamento) e o primeiro pacote `catalog.api` (`ServiceOfferingDirectory`), além de `organization.api.AvailabilityDirectory`.
+- **Sem gotcha novo**: diferente das quatro features anteriores, esta aplicou corretamente desde o primeiro commit a lição já documentada em `PATTERNS.md` sobre `allowedDependencies` virar whitelist — declarado completo (`organization :: api`, `catalog :: api`, `shared`, `platform`) de uma vez.
+
+---
+
 ### TODO-004: Horário do estabelecimento, jornada e bloqueios
 - **Priority**: High
 - **Status**: resolved
@@ -651,4 +654,4 @@ passa por `/sdd.start`.
 
 ## Last Updated
 
-2026-09-03 — TODO-009 (back-office do operador) adicionada, sequenciada após TODO-005; IDEA-001 atualizada com o pedido de lembrete pré-atendimento; IDEA-016 (cliente avalia o atendimento) criada.
+2026-09-04 — TODO-005 (consultar-horarios-disponiveis) resolvida e arquivada.
