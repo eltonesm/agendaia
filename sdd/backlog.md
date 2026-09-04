@@ -15,7 +15,7 @@ cada item existe porque torna o seguinte mais barato:
 
 ```
 andaime          ✅ concluído — Fase 0 fechada em 2026-08-30
-features do MVP  TODO-001 → 002 → 003 → 004 → 005 → 006 → 007 → 008
+features do MVP  TODO-001 → 002 → 003 → 004 → 005 → 009 → 006 → 007 → 008
 produção         TODO-106 (quando existir VPS)
 ```
 
@@ -40,6 +40,18 @@ passa por `/sdd.start`.
 - **Context**: O cálculo do core, ainda sem escrita. Interseção de horário da empresa com jornada, menos bloqueios e agendamentos, filtrada por quem comporta duração mais intervalo. Grade fixa de 10 min (ADR 0006). É a feature mais importante do projeto e a mais barata de errar cedo.
 - **Affected Files**: `scheduling`
 - **Complexity**: High
+
+---
+
+### TODO-009: Back-office do operador — estabelecimentos, trial e pagamento
+- **Priority**: High
+- **Status**: pending
+- **Created**: 2026-09-03
+- **Origin**: revisão arquitetural — pedido do dono da plataforma em 2026-09-03
+- **Context**: Hoje não existe nenhuma visão de quem opera o AgendaIA (você) sobre os estabelecimentos cadastrados — quantos existem, qual o status de pagamento, quem está em trial. Isso é uma "decisão nova" de propósito: o glossário bane `Plano`, `Assinatura` e `Pagamento` do MVP justamente até que exista essa decisão — esta TODO é ela. Painel do operador (fora de `/admin/**`, que é do dono do estabelecimento — o operador não é um tenant) lista cada `Business` com nome, slug, data de cadastro, "modelo" (campo para plano futuro; só um valor fixo no MVP) e status: trial, vencido (aguardando pagamento), bloqueado, pago. Trial automático de 30 dias corridos a partir do cadastro (retroativo ao piloto existente, calculado a partir do `created_at` dele). Ao vencer o trial, entra em carência de 5 dias corridos: o admin do dono passa a mostrar um aviso fixo com QR code/chave Pix, sem bloquear nada ainda. Se ninguém marcar pagamento até o fim da carência (dia 35), o sistema bloqueia `/admin/**` sozinho, redirecionando para uma tela "conta suspensa" com link de WhatsApp de suporte. O operador pode, a qualquer momento, marcar como pago (Pix recebido por fora, sem gateway nesta feature — ver IDEA de gateway abaixo) ou estender o prazo manualmente, para cobrir exceções sem precisar que tudo seja automático. Inclui também um botão de WhatsApp no admin do dono do estabelecimento, para dúvidas e sugestões — mesma técnica `wa.me` que a TODO-007 já vai usar do lado do cliente, aqui apontando para o número do operador; cobre o pedido de canal de feedback do dono sem precisar de tela ou tabela nova (decisão: WhatsApp é canal suficiente no MVP).
+- **Affected Files**: contexto novo (nome a decidir na spec técnica — ex. `billing`), `organization` (`Business` ganha dados de trial/status), `platform` (novo tipo de sessão, do operador, fora do modelo de tenant), `docs/domain/glossary.md` (amendment liberando `Plano`/`Assinatura`/`Pagamento`)
+- **Complexity**: High
+- **Notes**: Perguntas em aberto para a spec funcional: nome exato do "modelo"/plano (provável só um valor fixo tipo "Padrão" no MVP); se o vencimento também notifica o operador proativamente ou se ele só vê no próprio painel; como autenticar o operador (role sem `tenant_id` vs. login inteiramente separado). Gateway de pagamento (Stripe/Mercado Pago assinatura) fica para quando o volume de clientes justificar — cobrar por fora é a decisão para o MVP.
 
 ---
 
@@ -277,9 +289,9 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-08-29
 - **Origin**: escopo deliberadamente excluído do MVP
-- **Context**: Cortado por não ter consumidor no MVP. `AppointmentBooked` já é registrado no agregado, então o contexto nasce com evento pronto.
+- **Context**: Cortado por não ter consumidor no MVP. `AppointmentBooked` já é registrado no agregado, então o contexto nasce com evento pronto. **Atualizado em 2026-09-03**: inclui também o pedido do dono de um alerta 10-20 min antes do atendimento, para cliente e profissional, para reduzir esquecimento. Tem custo real e duas dependências duras: (1) WhatsApp Business API (Cloud API/BSP) ou SMS cobram por mensagem e exigem número comercial verificado + aprovação de template para mensagem proativa (não é resposta a uma conversa iniciada pelo cliente) — e-mail seria mais barato mas chega tarde demais para um aviso de minutos antes; (2) não existe `Appointment` para lembrar antes de `scheduling` existir (TODO-005/006/008), nem job agendado para disparar o alerta na hora certa.
 - **Potential Impact**: Redução de falta
-- **Notes**: Gatilho — quando o piloto mostrar falta por esquecimento
+- **Notes**: Gatilho — quando o piloto mostrar falta por esquecimento, e só depois que TODO-005/006/008 existirem (não há o que lembrar antes disso)
 
 ---
 
@@ -434,6 +446,17 @@ passa por `/sdd.start`.
 - **Context**: O código usa a abstração `@Cacheable` do Spring, então a troca é configuração, não reescrita. Primeiro candidato a cache é a resolução de slug para tenant, que roda em toda visita à página pública e quase nunca muda. Disponibilidade **não** deve ser cacheada — muda a cada agendamento.
 - **Potential Impact**: Latência
 - **Notes**: Gatilho — mais de uma instância da aplicação, ou pressão de memória medida. Antes disso, Redis é um container a mais sem nada para cachear
+
+---
+
+### IDEA-016: Cliente avalia o atendimento
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-03
+- **Origin**: pedido do dono da plataforma em 2026-09-03
+- **Context**: Nota e/ou comentário do cliente sobre o atendimento, para o dono da plataforma evoluir o produto com dado real. Não há o que avaliar antes de existir `Appointment` (`scheduling`, TODO-005/006/008 ainda não existem) — sem atendimento, não há experiência para avaliar. Diferente da avaliação do dono do estabelecimento sobre a própria plataforma AgendaIA, que já está coberta pelo canal de WhatsApp da TODO-009, sem depender disso.
+- **Potential Impact**: Dado de produto, retenção
+- **Notes**: Gatilho — depois que TODO-005/006/008 existirem
 
 ---
 
@@ -626,4 +649,4 @@ passa por `/sdd.start`.
 
 ## Last Updated
 
-2026-08-30 — Fase 0 fechada: andaime concluído e movido para Resolved Items.
+2026-09-03 — TODO-009 (back-office do operador) adicionada, sequenciada após TODO-005; IDEA-001 atualizada com o pedido de lembrete pré-atendimento; IDEA-016 (cliente avalia o atendimento) criada.
