@@ -195,11 +195,11 @@ auto_generated:
 stages:
   functional:
     started: 2026-09-03
-    completed: null
-    status: pending
+    completed: 2026-09-03
+    status: approved
     owner: Elton Marques
-    approved_by: null
-    approved_at: null
+    approved_by: Elton Marques
+    approved_at: 2026-09-04T01:08:24Z
     iterations: 0
 
   technical:
