@@ -1,0 +1,296 @@
+{
+  "feature": "back-office-operador",
+  "local_config": {
+    "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
+    "note": "Migration V6 nesta feature (billing_account). Credenciais do operador e chave/QR Pix e numero de WhatsApp vem de application.yaml/variaveis de ambiente, nunca de banco."
+  },
+  "stats": { "total": 15, "done": 0, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Amendment do glossario e architecture-haiku",
+      "description": "Liberar Plano/Assinatura/Pagamento na lista de termos banidos do glossario (docs/domain/glossary.md), com a definicao exata usada nesta feature (accessValidUntil, trialEndsAt, AccessStatus). Adicionar nota equivalente em docs/architecture/architecture-haiku.md removendo a exclusao de 'planos' (gateway de pagamento continua fora de escopo, so o conceito de prazo/status muda).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["docs/domain/glossary.md", "docs/architecture/architecture-haiku.md"],
+      "acceptance_criteria": [
+        "AC-1: glossario documenta BillingAccount, AccessStatus, trialEndsAt, accessValidUntil com definicoes normativas",
+        "AC-2: nota explicita que gateway de pagamento continua fora de escopo (so o prazo/status foi liberado)"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "billing: dominio, migration e porta de saida",
+      "description": "Migration V6 (billing_account: id, tenant_id unico, trial_ends_at, access_valid_until, created_at, updated_at, indice por tenant_id). BillingAccount (regime CRUD, ADR 0002): startTrial() estatico, extendUntil() valida data futura, statusOn(LocalDate) implementa BR-2 (TRIAL/PAID/GRACE_PERIOD/BLOCKED). AccessStatus enum. BillingAccountRepository. package-info.java com allowedDependencies explicito (organization :: api, shared, platform).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/resources/db/migration/V6__billing_create_billing_account.sql",
+        "src/main/java/com/agendaia/billing/package-info.java",
+        "src/main/java/com/agendaia/billing/domain/BillingAccount.java",
+        "src/main/java/com/agendaia/billing/domain/AccessStatus.java",
+        "src/main/java/com/agendaia/billing/application/port/out/BillingAccountRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: startTrial() grava trialEndsAt = accessValidUntil = registeredOn + 30 dias corridos (BR-1)",
+        "AC-2: extendUntil() recusa data que nao seja estritamente futura",
+        "AC-3: statusOn() cobre os 4 quadrantes de BR-2 (TRIAL, PAID, GRACE_PERIOD, BLOCKED)",
+        "GATE: ./mvnw compile passa",
+        "GATE: ModuleStructureTest continua verde apos declarar allowedDependencies"
+      ],
+      "references": ["BR-1", "BR-2", "BR-3"],
+      "design_decisions": ["DD-1", "DD-6"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "organization.api.BusinessDirectory (sem filtro de tenant)",
+      "description": "Novo metodo em BusinessRepository (findAllByOrderByCreatedAtAsc, sem filtro de tenant -- mesma excecao ja documentada na classe). BusinessDirectory.listAll() -> List<BusinessRef>, deliberadamente sem TenantContext.require() interno (DD-5). BusinessRef(tenantId, name, slug, createdAt). BusinessDirectoryHandler implementando a interface.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/organization/api/BusinessDirectory.java",
+        "src/main/java/com/agendaia/organization/api/BusinessRef.java",
+        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java",
+        "src/main/java/com/agendaia/organization/application/port/out/BusinessRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: BusinessDirectory.listAll() nao chama TenantContext.require() em nenhum lugar (excecao documentada, DD-5)",
+        "AC-2: BusinessRef carrega so tenantId/name/slug/createdAt -- nenhum dado de User (email, senha)",
+        "GATE: ModuleStructureTest continua verde"
+      ],
+      "references": [],
+      "design_decisions": ["DD-5"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "platform.security: login isolado do operador",
+      "description": "OperatorSecurityConfig com segundo SecurityFilterChain (@Order(1), securityMatcher(\"/operador/**\")), InMemoryUserDetailsManager com um unico usuario (username/password-hash de application.yaml/variavel de ambiente, BR-7). formLogin proprio (/operador/login), logout proprio. Cadeia existente (SecurityConfig) recua para @Order(2), sem mudanca de comportamento para /admin/**.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/platform/security/OperatorSecurityConfig.java",
+        "src/main/java/com/agendaia/platform/security/SecurityConfig.java",
+        "src/main/resources/application.yaml"
+      ],
+      "acceptance_criteria": [
+        "AC-1: sessao criada na cadeia do operador nao autentica em /admin/** e vice-versa (BR-6)",
+        "AC-2: principal do operador e o User padrao do Spring Security, nao AuthenticatedUser -- TenantContextFilter nao seta tenant para essa sessao sem nenhuma mudanca nele",
+        "AC-3: nao existe nenhuma rota de cadastro publico de operador (BR-7)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["BR-6", "BR-7"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "billing.application.BillingAccountService",
+      "description": "Get-or-create de BillingAccount por tenantId (cria com startTrial usando organization.api.BusinessDirectory quando nao existe -- cobre BR-8). statusFor(tenantId): AccessStatus. listForOperator(): List<EstablishmentView>, cruzando BusinessDirectory.listAll() com BillingAccountRepository em lote (sem N+1). extendUntil(tenantId, novaData): aplica BR-3.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-002", "TASK-003"],
+      "files": [
+        "src/main/java/com/agendaia/billing/application/BillingAccountService.java",
+        "src/main/java/com/agendaia/billing/application/EstablishmentView.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: get-or-create nunca duplica BillingAccount para o mesmo tenantId em chamadas concorrentes/repetidas",
+        "AC-2: listForOperator busca BillingAccountRepository em lote (findByTenantIdIn), nao em loop por estabelecimento",
+        "AC-3: extendUntil recusa data nao futura (delega a BillingAccount.extendUntil)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["BR-1", "BR-3", "BR-8"],
+      "design_decisions": ["DD-2", "DD-7"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "billing.adapter.in.web: AccessGuardFilter e BillingBannerAdvice",
+      "description": "AccessGuardFilter (OncePerRequestFilter, @Order logo apos TenantContextFilter): age so em /admin/**, calcula status via BillingAccountService, redireciona para /admin/conta-suspensa se BLOCKED (exceto a propria rota de conta-suspensa e logout), guarda o status como atributo de requisicao. BillingBannerAdvice (@ControllerAdvice): @ModelAttribute nulo quando nao ha carencia, populado a partir do atributo de requisicao do filtro (sem segunda consulta).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/billing/adapter/in/web/AccessGuardFilter.java",
+        "src/main/java/com/agendaia/billing/adapter/in/web/BillingBannerAdvice.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: BLOCKED redireciona para /admin/conta-suspensa; a propria rota /admin/conta-suspensa nunca entra em loop de redirecionamento",
+        "AC-2: GRACE_PERIOD nao bloqueia -- segue a cadeia normalmente, so marca o atributo de requisicao",
+        "AC-3: erro ao calcular status loga WARN e segue a requisicao (falha aberta, DD documentado na spec tecnica -- Security)",
+        "AC-4: BillingBannerAdvice nao chama BillingAccountService de novo quando o filtro ja calculou o status nesta requisicao",
+        "GATE: ArchitectureTest continua verde"
+      ],
+      "references": ["BR-4"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "Painel do operador e tela de conta suspensa",
+      "description": "OperatorPanelController: GET /operador/painel (lista via BillingAccountService.listForOperator), POST /operador/estabelecimentos/{tenantId}/prazo (extendUntil, BR-3, PRG). SuspendedAccountController: GET /admin/conta-suspensa. Templates operador/login.html, operador/painel.html, admin/conta-suspensa.html (com link de WhatsApp -- numero via config, BR-5/US-6).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-004", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/billing/adapter/in/web/OperatorPanelController.java",
+        "src/main/java/com/agendaia/billing/adapter/in/web/SuspendedAccountController.java",
+        "src/main/resources/templates/operador/login.html",
+        "src/main/resources/templates/operador/painel.html",
+        "src/main/resources/templates/admin/conta-suspensa.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: painel mostra nome, slug, data de cadastro, modelo e status calculado de cada estabelecimento (US-2)",
+        "AC-2: marcar prazo com data no passado devolve erro de campo, sem gravar",
+        "AC-3: tela de conta suspensa mostra link de WhatsApp (US-4/BR-5)",
+        "AC-4: POST usa csrf() -- sem token, 403"
+      ],
+      "references": ["US-1", "US-2", "US-4", "US-5", "US-6", "BR-3", "BR-5"],
+      "design_decisions": ["DD-3", "DD-7"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Layout compartilhado: banner de carencia e botao de WhatsApp",
+      "description": "fragments/layout.html ganha: (1) banner fixo mostrando a data limite quando BillingBannerAdvice indicar carencia (BR-4/US-3), com QR code/chave Pix (config do operador, mesma para todos os tenants); (2) botao de WhatsApp sempre visivel, em toda pagina do admin, inclusive na tela de conta suspensa (BR-5/US-6). Numero de WhatsApp e chave Pix vem de application.yaml/variavel de ambiente.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-006"],
+      "files": ["src/main/resources/templates/fragments/layout.html", "src/main/resources/application.yaml"],
+      "acceptance_criteria": [
+        "AC-1: banner de carencia aparece em toda pagina do admin quando o model attribute de BillingBannerAdvice nao e nulo, e nao aparece quando e nulo",
+        "AC-2: botao de WhatsApp aparece em toda pagina do admin, independente do status de acesso",
+        "GATE: paginas existentes (TODO-001 a TODO-005) continuam renderizando sem erro"
+      ],
+      "references": ["US-3", "US-6", "BR-4", "BR-5"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "BillingAccountTest (dominio puro)",
+      "description": "Cobrir startTrial (BR-1), extendUntil (validacao de data futura, BR-3) e statusOn nos 4 quadrantes de BR-2, incluindo os limites exatos (accessValidUntil, accessValidUntil+5 dias) e a distincao TRIAL vs PAID (DD-6).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-002"],
+      "files": ["src/test/java/com/agendaia/billing/domain/BillingAccountTest.java"],
+      "acceptance_criteria": [
+        "AC-1: limites exatos de GRACE_PERIOD e BLOCKED cobertos (accessValidUntil, accessValidUntil+5, accessValidUntil+6)",
+        "AC-2: TRIAL vs PAID distinguidos corretamente conforme accessValidUntil > trialEndsAt ou nao",
+        "GATE: ./mvnw test -Dtest=BillingAccountTest passa"
+      ],
+      "references": ["BR-1", "BR-2", "BR-3"],
+      "design_decisions": ["DD-6"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "BillingAccountServiceTest (mocks)",
+      "description": "Get-or-create (cria quando nao existe, reaproveita quando existe), listForOperator cruzando BusinessDirectory mockado com BillingAccountRepository mockado em lote, extendUntil delegando a validacao de data futura.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-005"],
+      "files": ["src/test/java/com/agendaia/billing/application/BillingAccountServiceTest.java"],
+      "acceptance_criteria": [
+        "AC-1: get-or-create nao grava duas vezes para o mesmo tenantId numa mesma chamada",
+        "AC-2: listForOperator chama o repositorio em lote (verify de metodo unico, nao um por estabelecimento)",
+        "GATE: ./mvnw test -Dtest=BillingAccountServiceTest passa"
+      ],
+      "references": ["BR-1", "BR-3", "BR-8"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "Testes web: painel do operador e bloqueio",
+      "description": "OperatorPanelControllerTest (@WebMvcTest): lista, marcar prazo, erro de data no passado, CSRF. AccessGuardFilterTest: BLOCKED redireciona, GRACE_PERIOD segue, TRIAL/PAID seguem sem nenhum efeito.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-006", "TASK-007", "TASK-008"],
+      "files": [
+        "src/test/java/com/agendaia/billing/adapter/in/web/OperatorPanelControllerTest.java",
+        "src/test/java/com/agendaia/billing/adapter/in/web/AccessGuardFilterTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: sem csrf(), POST de marcar prazo devolve 403",
+        "AC-2: AccessGuardFilterTest confirma que /admin/conta-suspensa nunca é redirecionada para si mesma",
+        "GATE: ./mvnw test -Dtest=OperatorPanelControllerTest,AccessGuardFilterTest passa"
+      ],
+      "references": ["US-1", "US-4", "US-5", "BR-4"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "OperadorBackofficeIT (E2E-1 a E2E-5)",
+      "description": "Testcontainers, ponta a ponta: cadastro gera trial (E2E-1), carencia sem bloqueio (E2E-2), bloqueio automatico apos a carencia (E2E-3), marcar como pago libera o acesso (E2E-4), isolamento entre login de operador e login de dono (E2E-5).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-006", "TASK-007", "TASK-008"],
+      "files": ["src/test/java/com/agendaia/billing/OperadorBackofficeIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 a E2E-5 da spec funcional cobertos, cada um com asserção direta (nao só ausência de erro)",
+        "GATE: ./mvnw verify -Dtest=OperadorBackofficeIT passa"
+      ],
+      "references": ["E2E-1", "E2E-2", "E2E-3", "E2E-4", "E2E-5"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-013",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-7 refletidas no codigo, platform continua sem regra de negocio (AccessGuardFilter/BillingBannerAdvice moram em billing), sem setter publico, sem sufixo Impl, transacao so em application.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-014",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: AccessGuardFilter roda em toda requisicao /admin/** sem N+1 (uma consulta indexada por requisicao); listForOperator busca BillingAccountRepository em lote, nao por estabelecimento; BillingBannerAdvice reaproveita o atributo de requisicao do filtro em vez de consultar de novo.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: isolamento total entre login de operador e login de dono (BR-6), conta do operador so por configuracao (BR-7), BusinessDirectory.listAll() so e chamado por codigo atras do login do operador (DD-5), CSRF nos formularios novos, sem segredo hardcoded (credencial/Pix/WhatsApp vem de config, nao de codigo).",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-6", "BR-7"],
+      "design_decisions": ["DD-3", "DD-5"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-003", "TASK-004"],
+        "level_1": ["TASK-005"],
+        "level_2": ["TASK-006", "TASK-007"],
+        "level_3": ["TASK-008"],
+        "level_4": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"]
+      },
+      "3": {
+        "level_0": ["TASK-013", "TASK-014", "TASK-015"]
+      }
+    }
+  }
+}

@@ -219,17 +219,37 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-04
+    completed: 2026-09-04
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-04T02:30:04Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 15
+    iterations: 0
+    final_tasks_count: 15
 
   implementation:
     started: null
     completed: null
     status: pending
-    execution_strategy: null
-    total_tasks: null
+    execution_strategy: batched
+    total_tasks: 15
     completed_tasks: 0
+```
+
+---
+
+## Execution Strategy
+
+```yaml
+execution_strategy:
+  type: batched
+  chosen_date: 2026-09-04
+  estimated_agent_time: null
+  estimated_tokens: null
+  actual_agent_time: null
+  rationale: "Batched por nivel de dependencia. Quatro tarefas independentes no nivel 0 (amendment de docs, dominio billing, organization.api.BusinessDirectory, login isolado do operador), depois cadeia sequencial: service -> filtro/advice -> painel/tela -> layout -> testes -> qualidade."
 ```
 
 ---
