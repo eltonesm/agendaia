@@ -69,11 +69,11 @@ spec_language: pt   # herdado de sdd/PROJECT.md -> language.specs
 
 ```yaml
 migration:
-  detected: true
-  service_name: "agendaia (compose local; VPS na TODO-106)"
-  service_type: postgresql
+  detected: false   # decidido na spec tecnica: nenhuma tabela nova, AvailableSlot nunca persiste
+  service_name: null
+  service_type: null
   branch_name: null
-  branch_status: pending
+  branch_status: null
   migration_files: []
 ```
 
@@ -203,9 +203,13 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-03
+    completed: 2026-09-03
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-04T01:14:57Z
+    mcpqueried: false
+    services_count: 0
 
   tasks:
     started: null
