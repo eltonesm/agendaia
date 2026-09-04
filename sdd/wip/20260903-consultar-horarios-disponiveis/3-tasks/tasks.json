@@ -4,13 +4,13 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Sem migration nesta feature - nenhuma tabela nova (ver spec tecnica, secao Existing Data & Migrations)."
   },
-  "stats": { "total": 12, "done": 0, "by_layer": { "1": 9, "2": 0, "3": 3 } },
+  "stats": { "total": 12, "done": 6, "by_layer": { "1": 9, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
       "title": "shared.TimeRange (value object de intervalo)",
       "description": "Criar com overlaps/intersect/subtract, mesma semantica meio-aberta [) de WorkSchedule.overlaps(). Cobrir com TimeRangeTest: faixas encostadas, bloqueio no meio, bloqueio cobrindo a faixa inteira, faixas disjuntas.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": ["src/main/java/com/agendaia/shared/TimeRange.java", "src/test/java/com/agendaia/shared/TimeRangeTest.java"],
@@ -27,7 +27,7 @@
       "id": "TASK-002",
       "title": "WorkSchedule.overlaps() delega a TimeRange",
       "description": "Refactor mecanico: substituir a formula inline por TimeRange.overlaps(). Mesmo comportamento, sem caso de teste novo - WorkScheduleTest (TODO-004) precisa continuar passando sem alteracao.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": ["src/main/java/com/agendaia/organization/domain/WorkSchedule.java"],
@@ -43,7 +43,7 @@
       "id": "TASK-003",
       "title": "scheduling.domain: AvailableSlot, SlotCalculator e excecoes",
       "description": "Java puro (sem Spring/JPA). AvailableSlot (record), SlotCalculator com o pipeline BR-2 (intersecao) -> BR-3 (grade fixa de 10 min, ADR 0006) -> BR-4 (filtro por duracao+buffer). Excecoes AvailabilityQueryOutOfRangeException e ServiceOfferingNotFoundException. Declarar allowedDependencies em scheduling/package-info.java (DD-1: organization :: api, catalog :: api, shared, platform - todos explicitos, mesmo gotcha da TODO-003).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
@@ -69,7 +69,7 @@
       "id": "TASK-004",
       "title": "catalog.api novo: ServiceOfferingDirectory",
       "description": "Primeiro pacote api de catalog (DD-3). Interface ServiceOfferingDirectory.find(UUID) -> Optional<ServiceOfferingRef>, implementada por ServiceOfferingDirectoryHandler (tenant via TenantContext, nunca por parametro). Novo metodo findByTenantIdAndIdAndActiveTrue em ServiceOfferingRepository.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -92,7 +92,7 @@
       "id": "TASK-005",
       "title": "organization.api.AvailabilityDirectory",
       "description": "Tres operacoes: operatingHoursFor(DayOfWeek), workScheduleFor(UUID, DayOfWeek), blocksFor(UUID, LocalDate) - todas retornando List<TimeRange> (shared), tenant sempre via TenantContext.require(). blocksFor converte TimeOff (Instant) para TimeRange recortado ao dia local via ZoneId.systemDefault() - unico ponto do projeto que faz essa conversao. Novo metodo em BusinessOperatingHoursRepository (derived) e em TimeOffRepository (@Query JPQL, DD-5, para o caso 'profissional especifico OU bloqueio geral').",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
@@ -114,7 +114,7 @@
       "id": "TASK-006",
       "title": "scheduling.application: GetAvailableSlotsUseCase",
       "description": "GetAvailableSlotsQuery(serviceOfferingId, date) + Handler que orquestra: valida horizonte de 30 dias (BR-5, DD-7 - overload package-private com 'hoje' explicito para teste), busca oferta via catalog.api (BR-7), busca horario/jornada/bloqueio via organization.api, chama SlotCalculator, mapeia List<TimeRange> + date em List<AvailableSlot>.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-003", "TASK-004", "TASK-005"],
       "files": [

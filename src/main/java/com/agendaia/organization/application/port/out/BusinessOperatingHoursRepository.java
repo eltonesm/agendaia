@@ -1,6 +1,7 @@
 package com.agendaia.organization.application.port.out;
 
 import com.agendaia.organization.domain.BusinessOperatingHours;
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,7 @@ public interface BusinessOperatingHoursRepository extends JpaRepository<Business
 
     /** Usado na listagem, agrupada por dia da semana no template. */
     List<BusinessOperatingHours> findByTenantIdAndActiveTrueOrderByDayOfWeekAscOpensAtAsc(UUID tenantId);
+
+    /** Usado por {@code AvailabilityDirectory.operatingHoursFor} (consultar-horarios-disponiveis, BR-2). */
+    List<BusinessOperatingHours> findByTenantIdAndDayOfWeekAndActiveTrue(UUID tenantId, DayOfWeek dayOfWeek);
 }
