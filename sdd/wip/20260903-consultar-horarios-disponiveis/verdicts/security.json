@@ -1,0 +1,21 @@
+{
+  "skill": "sdd-code-reviewer",
+  "mode": "security",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checklist": {
+    "isolamento_por_tenantcontext_na_fronteira_api": "OK -- AvailabilityDirectoryHandler (organization) e ServiceOfferingDirectoryHandler (catalog) chamam TenantContext.require() internamente nos tres/um metodo(s), respectivamente. Nenhuma das duas interfaces (AvailabilityDirectory, ServiceOfferingDirectory) declara tenantId como parametro -- confirmado lendo as assinaturas e as implementacoes.",
+    "mensagem_identica_oferta_inexistente_vs_outro_tenant": "OK -- ServiceOfferingDirectoryHandler.find usa findByTenantIdAndIdAndActiveTrue (filtro por tenant da sessao + id), retornando Optional vazio nos dois casos (id nao existe, ou existe em outro tenant). GetAvailableSlotsHandler faz .orElseThrow(ServiceOfferingNotFoundException::new) sem ramificacao -- mesma excecao, mesma mensagem fixa ('Oferta nao encontrada.') para ambos, mesmo raciocinio de ProfessionalNotFoundException (TODO-004). Confirmado por teste (E2E-4 do ConsultarDisponibilidadeIT, oferta de outro tenant).",
+    "query_jpql_parametrizada": "OK -- TimeOffRepository.findOverlapping usa @Query com :tenantId/:professionalId/:dayStart/:dayEnd via @Param, nenhuma concatenacao de string, nenhum SQL nativo. Equivalente em seguranca a uma derived query.",
+    "sem_segredo_hardcoded": "OK -- grep por password/api_key/secret/token/credential nos arquivos novos desta feature (scheduling, shared/TimeRange, catalog/api, organization/api/AvailabilityDirectory + handlers): nenhuma ocorrencia.",
+    "sem_rota_http_nova": "OK -- grep por @RestController/@Controller em com.agendaia.scheduling: nenhuma ocorrencia. Confirma a decisao da spec funcional (Assumptions: 'esta feature nao e exposta por nenhum controller HTTP'). CSRF e XSS nao se aplicam a esta feature; ficam para a TODO-006, quando a pagina publica existir.",
+    "sql_injection": "OK -- todas as consultas novas (findByTenantIdAndDayOfWeekAndActiveTrue, findOverlapping, findByTenantIdAndIdAndActiveTrue) sao parametrizadas -- duas derived queries e uma @Query JPQL nomeada, nenhuma concatenacao.",
+    "erro_de_negocio_nao_vira_500": "OK -- AvailabilityQueryOutOfRangeException e ServiceOfferingNotFoundException estendem DomainException (shared), mesma familia das excecoes de negocio ja tratadas pelo GlobalExceptionHandler do platform nas features anteriores; como nao ha controller nesta feature, a captura em tela e responsabilidade da TODO-006 -- nao ha risco de vazamento de stack trace aqui porque nao ha resposta HTTP produzida por este codigo ainda."
+  },
+  "files_reviewed": 25,
+  "timestamp": "2026-09-04T01:50:00Z"
+}

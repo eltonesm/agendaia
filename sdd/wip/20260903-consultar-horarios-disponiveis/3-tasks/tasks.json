@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Sem migration nesta feature - nenhuma tabela nova (ver spec tecnica, secao Existing Data & Migrations)."
   },
-  "stats": { "total": 12, "done": 9, "by_layer": { "1": 9, "2": 0, "3": 3 } },
+  "stats": { "total": 12, "done": 12, "by_layer": { "1": 9, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -185,7 +185,7 @@
       "id": "TASK-010",
       "title": "Code Review",
       "description": "Skill sdd-code-reviewer sobre toda a feature: sem setter publico, sem sufixo Impl, transacao so em application, tenant nunca por parametro (incluindo atraves da fronteira api), scheduling.domain realmente livre de Spring/JPA, DD-1 a DD-7 refletidas no codigo.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
       "files": [],
@@ -200,7 +200,7 @@
       "id": "TASK-011",
       "title": "Performance Review",
       "description": "Skill sdd-performance-expert: confirmar que AvailabilityDirectory faz exatamente tres consultas por chamada (sem N+1), que os indices existentes da TODO-004 cobrem as consultas novas, e que SlotCalculator opera em memoria sobre listas pequenas sem complexidade desnecessaria.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
       "files": [],
@@ -215,7 +215,7 @@
       "id": "TASK-012",
       "title": "Security Review",
       "description": "Skill sdd-code-reviewer em modo seguranca: isolamento entre tenants na fronteira api (organization.api e catalog.api nunca recebem tenantId por parametro), @Query JPQL de TimeOffRepository totalmente parametrizada (DD-5, sem risco de injecao), sem segredo hardcoded.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
       "files": [],
