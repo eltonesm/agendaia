@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Sem migration nesta feature - nenhuma tabela nova (ver spec tecnica, secao Existing Data & Migrations)."
   },
-  "stats": { "total": 12, "done": 6, "by_layer": { "1": 9, "2": 0, "3": 3 } },
+  "stats": { "total": 12, "done": 9, "by_layer": { "1": 9, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -135,7 +135,7 @@
       "id": "TASK-007",
       "title": "GetAvailableSlotsHandlerTest (mocks)",
       "description": "Testa a orquestracao isoladamente, com catalog.api e organization.api mockados: horizonte de 30 dias (dentro, no limite, fora por cima, fora por baixo), oferta nao encontrada, combinacao correta de TimeRange retornado pelo SlotCalculator com a data da query para formar AvailableSlot.startsAt/endsAt (LocalDateTime).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
       "files": ["src/test/java/com/agendaia/scheduling/application/GetAvailableSlotsHandlerTest.java"],
@@ -151,7 +151,7 @@
       "id": "TASK-008",
       "title": "Teste de integracao de AvailabilityDirectoryHandler",
       "description": "Testcontainers, dado real de BusinessOperatingHours/WorkSchedule/TimeOff (organization). Foco na conversao Instant -> TimeRange recortada ao dia (blocksFor): TimeOff que comeca no dia anterior e termina no meio do dia consultado; TimeOff que cobre o dia inteiro; bloqueio geral (professionalId nulo) aparecendo junto com o especifico do profissional.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-005"],
       "files": ["src/test/java/com/agendaia/organization/application/AvailabilityDirectoryHandlerTest.java"],
@@ -167,7 +167,7 @@
       "id": "TASK-009",
       "title": "ConsultarDisponibilidadeIT (E2E-1 a E2E-4)",
       "description": "Testcontainers, ponta a ponta: seeda Business/Professional/ServiceOffering/BusinessOperatingHours/WorkSchedule/TimeOff reais e chama GetAvailableSlotsUseCase diretamente (sem camada web, conforme decisao da spec funcional). Cobre os 4 cenarios da spec: caminho feliz com grade de 10 min, bloqueio do profissional, feriado do estabelecimento zerando todos os profissionais, isolamento entre tenants.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
       "files": ["src/test/java/com/agendaia/scheduling/ConsultarDisponibilidadeIT.java"],
