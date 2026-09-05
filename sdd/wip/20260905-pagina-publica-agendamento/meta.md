@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-05
 **Last Updated**: 2026-09-05
-**Current Stage**: technical
+**Current Stage**: tasks
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `SlotCalculator` e
 > `GetAvailableSlotsHandler` (TODO-005) — o cálculo de horários disponíveis
@@ -172,9 +172,13 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-05
+    completed: 2026-09-05
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-05T14:14:10Z
+    mcpqueried: false
+    services_count: 0
 
   tasks:
     started: null
