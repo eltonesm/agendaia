@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /** Camada web isolada: os casos de uso são mock, o banco não existe. */
 @WebMvcTest(TimeOffController.class)
 @Import(SecurityConfig.class)
-@WithMockUser
+@WithMockUser(roles = "OWNER")
 class TimeOffControllerTest {
 
     @Autowired private MockMvc mockMvc;

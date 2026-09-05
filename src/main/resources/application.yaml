@@ -57,3 +57,14 @@ agendaia:
   # Em produção vira o domínio real; a variável de ambiente sobrescreve sem
   # precisar reempacotar.
   public-base-url: ${AGENDAIA_PUBLIC_BASE_URL:http://localhost:8080}
+
+  # Conta única do operador da plataforma (BR-7, back-office-operador) --
+  # nunca em banco, nunca por formulário. Os valores abaixo são um usuário
+  # de desenvolvimento local só ("operador-dev-only", hash já em BCrypt);
+  # QUALQUER implantação real precisa sobrescrever as três variáveis de
+  # ambiente com valores próprios, gerados uma vez pelo operador.
+  operador:
+    username: ${AGENDAIA_OPERADOR_USERNAME:operador}
+    password-hash: ${AGENDAIA_OPERADOR_PASSWORD_HASH:$2a$10$zSFQowP01ztnCjjSs4LJMu3i5dvrHCRK/.Zm82i0EYIlciTHxaXz6}
+    whatsapp: ${AGENDAIA_OPERADOR_WHATSAPP:}
+    pix-chave: ${AGENDAIA_OPERADOR_PIX_CHAVE:}

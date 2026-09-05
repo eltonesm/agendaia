@@ -162,5 +162,25 @@ agendamentos, filtrada por quem cabe a duração + intervalo da oferta.
 
 Não existem no MVP e não devem aparecer em código sem decisão nova:
 
-`Plano`, `Assinatura`, `Pagamento`, `Comissão`, `Notificação`, `Lembrete`,
-`ListaDeEspera`, `Encaixe`, `Recurso`/`Sala`, `Permissão`, `Papel`.
+`Comissão`, `Notificação`, `Lembrete`, `ListaDeEspera`, `Encaixe`,
+`Recurso`/`Sala`, `Permissão`, `Papel`.
+
+`Plano`, `Assinatura` e `Pagamento` **saíram desta lista na TODO-009**
+(back-office-operador) — ver seção "Contexto Billing" abaixo. A decisão
+nova prevista aqui foi: acompanhar prazo de acesso por estabelecimento,
+sem gateway de pagamento nenhum. `Assinatura` recorrente de verdade
+(cobrança automática, múltiplos planos com preços) continua fora do MVP.
+
+## Contexto Billing
+
+| Português | Código | Tipo | Definição |
+|---|---|---|---|
+| Conta de cobrança | `BillingAccount` | Raiz de agregado | Uma por estabelecimento. Guarda até quando o acesso é válido — nunca dado de cartão, nunca gateway. |
+| Fim do teste gratuito | `trialEndsAt` | Campo de `BillingAccount` | Gravado uma vez, no cadastro (`createdAt` + 30 dias corridos). Nunca muda depois. |
+| Validade do acesso | `accessValidUntil` | Campo de `BillingAccount` | Data até quando o painel administrativo funciona sem restrição. Começa igual a `trialEndsAt`; o operador substitui por uma data nova ao marcar pagamento ou estender prazo — é a mesma ação para os dois casos. |
+| Status de acesso | `AccessStatus` | Calculado, nunca persistido | `TRIAL` (nunca foi estendido), `PAID` (`accessValidUntil` já foi estendido além de `trialEndsAt`), `GRACE_PERIOD` (venceu, dentro dos 5 dias corridos de carência), `BLOCKED` (venceu a carência). |
+| Operador | — | Sessão sem tenant | Quem opera o AgendaIA (não é dono de nenhum estabelecimento). Login isolado do login de dono; conta única, criada por configuração, nunca por formulário. |
+
+**Gateway de pagamento, planos com preço/recorrência automática e múltiplos
+operadores continuam fora de escopo** — ver
+`docs/architecture/architecture-haiku.md`.

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,7 +43,7 @@ public class RegistrationController {
 
     public RegistrationController(
             RegisterBusinessUseCase registerBusiness,
-            UserDetailsService userDetailsService,
+            @Qualifier("businessUserDetailsService") UserDetailsService userDetailsService,
             SecurityContextRepository securityContextRepository) {
         this.registerBusiness = registerBusiness;
         this.userDetailsService = userDetailsService;

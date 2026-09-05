@@ -276,6 +276,24 @@ com.agendaia.<contexto>
 - Why: quem vem antes lê um `SecurityContextHolder` vazio, e a falha aparece
   como 500 numa rota autenticada, longe da causa.
 
+### Duas `SecurityFilterChain` que compartilham `SecurityContextRepository`: `authenticated()` não isola
+
+- Quando uma segunda cadeia (`@Order` diferente, `securityMatcher`
+  próprio) usa o mesmo bean `SecurityContextRepository` que a primeira —
+  necessário quando alguma das duas precisa autenticar a sessão
+  programaticamente, fora do `formLogin` padrão — as duas leem e escrevem
+  o **mesmo** atributo de sessão. `anyRequest().authenticated()` sozinho
+  não distingue quem autenticou: uma sessão válida na cadeia A passa no
+  gate da cadeia B, mesmo que o principal seja de um tipo/role
+  completamente diferente.
+- Exige `hasRole("X")`/`hasAuthority("X")` explícito nos dois lados, nunca
+  só `authenticated()`, sempre que duas cadeias coexistirem dessa forma.
+- Why: descoberto na TODO-009 (back-office-operador) só ao escrever um
+  teste que **efetivamente tentava cruzar as duas sessões** — testar cada
+  cadeia isolada não pega isso, porque cada uma sozinha parece correta.
+  Sem a correção, uma sessão de dono autenticada em `/admin/**` abriria
+  `/operador/**` e veria dado de todos os tenants.
+
 ## Database Patterns
 
 **Toda tabela de negócio tem `tenant_id`**:
@@ -595,3 +613,8 @@ O que este exemplo demonstra e vale imitar:
 quebras do Boot 4 / Security 7, a ordem de filtro em relação à cadeia do Spring
 Security, a seção "Testes que realmente garantem" e o exemplo de ponta a ponta,
 que estava pendente esperando a primeira fatia vertical (DEBT-004).
+2026-09-05 — promovido o aprendizado da TODO-009 (back-office-operador):
+duas `SecurityFilterChain` que compartilham `SecurityContextRepository`
+precisam de `hasRole`/`hasAuthority` explícito nos dois lados —
+`authenticated()` sozinho deixa uma sessão vazar da cadeia de um papel
+para a do outro.

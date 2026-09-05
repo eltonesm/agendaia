@@ -1,6 +1,7 @@
 package com.agendaia.organization.application.port.out;
 
 import com.agendaia.organization.domain.Business;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,7 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
 
     /** Resolução do tenant pela URL pública, a partir da TODO-006. */
     Optional<Business> findBySlug(String slug);
+
+    /** Usado por {@code BusinessDirectory.listAll()} (back-office-operador, DD-5) — sem filtro de tenant, de propósito. */
+    List<Business> findAllByOrderByCreatedAtAsc();
 }

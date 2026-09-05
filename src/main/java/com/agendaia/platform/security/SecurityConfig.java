@@ -1,8 +1,12 @@
 package com.agendaia.platform.security;
 
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,6 +24,19 @@ import org.springframework.security.web.context.SecurityContextRepository;
  * <p>Rotas públicas são listadas explicitamente; tudo o mais exige sessão. A
  * ordem inversa — proteger só o que se lembra de proteger — deixa endpoint novo
  * exposto por omissão.
+ *
+ * <p>{@code @Order(2)}: recuou de propósito para dar lugar à cadeia do
+ * operador ({@link OperatorSecurityConfig}, {@code @Order(1)},
+ * {@code securityMatcher("/operador/**")}) — as duas nunca se sobrepõem,
+ * mas a ordem precisa estar explícita nos dois lados (back-office-operador,
+ * TODO-009).
+ *
+ * <p><strong>{@code hasRole("OWNER")}, não {@code authenticated()}</strong>
+ * (BR-6/E2E-5): as duas cadeias compartilham o mesmo bean
+ * {@link SecurityContextRepository}, então uma sessão autenticada pela
+ * cadeia do operador passaria no {@code authenticated()} desta também. Só
+ * a authority checada aqui impede que a sessão do operador abra {@code
+ * /admin/**} (e vice-versa em {@link OperatorSecurityConfig}).
  */
 @Configuration
 public class SecurityConfig {
@@ -43,11 +60,29 @@ public class SecurityConfig {
         return new HttpSessionSecurityContextRepository();
     }
 
+    /**
+     * {@code UserDetailsService} explícito de propósito (DD-3 de
+     * back-office-operador): desde que a conta do operador existe, há dois
+     * beans desse tipo no contexto completo, e a resolução automática que o
+     * Spring Boot fazia com um bean só deixou de ser possível.
+     *
+     * <p>Via {@link ObjectProvider}, não injeção direta: várias fatias
+     * {@code @WebMvcTest} desta base importam só {@code SecurityConfig},
+     * sem {@code BusinessUserDetailsService} (que vive em
+     * {@code organization}, fora do que a fatia carrega) — nesses casos o
+     * provider vem vazio, e a cadeia segue sem autenticação DAO configurada,
+     * exatamente como já se comportava antes desta feature existir.
+     */
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository contextRepository)
+    @Order(2)
+    SecurityFilterChain filterChain(
+            HttpSecurity http,
+            SecurityContextRepository contextRepository,
+            @Qualifier("businessUserDetailsService") ObjectProvider<UserDetailsService> userDetailsServiceProvider)
             throws Exception {
-        return http.securityContext(sc -> sc.securityContextRepository(contextRepository))
-                .authorizeHttpRequests(auth -> auth
+        http.securityContext(sc -> sc.securityContextRepository(contextRepository));
+        userDetailsServiceProvider.ifAvailable(http::userDetailsService);
+        return http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/cadastro", "/login", "/error")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico")
@@ -57,7 +92,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**")
                         .permitAll()
                         .anyRequest()
-                        .authenticated())
+                        .hasRole("OWNER"))
                 .formLogin(form -> form
                         // Nossa tela, agora que ela existe. O GET é servido pelo
                         // view controller do WebConfig; o POST, pelo próprio

@@ -35,13 +35,14 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * Camada web isolada: os dois casos de uso são mock, o banco não existe.
  *
- * <p>{@code @WithMockUser} basta aqui — a rota só precisa de UMA sessão
- * autenticada qualquer, e nenhum teste consulta o tipo do principal (ao
- * contrário do cadastro, que autentica programaticamente).
+ * <p>{@code @WithMockUser(roles = "OWNER")} basta aqui — a rota só precisa
+ * de uma sessão autenticada com a authority que {@code /admin/**} exige
+ * (BR-6/E2E-5, back-office-operador), e nenhum teste consulta o tipo do
+ * principal (ao contrário do cadastro, que autentica programaticamente).
  */
 @WebMvcTest(ProfessionalController.class)
 @Import(SecurityConfig.class)
-@WithMockUser
+@WithMockUser(roles = "OWNER")
 class ProfessionalControllerTest {
 
     @Autowired private MockMvc mockMvc;
