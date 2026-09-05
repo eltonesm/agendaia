@@ -320,6 +320,26 @@ mesmo contexto — não atravessa fronteira nenhuma) e um teste existente
 é a mesma classe corrigindo a lacuna que a própria spec funcional da
 TODO-005 já apontava para esta feature.
 
+### DD-11: `recarregarTelaDeHorarios` precisa da data do formulário, não de "hoje"
+
+**Achado durante o teste manual do TASK-010**: a primeira versão de
+`PublicBookingController.confirmar` recarregava a tela de erro sempre
+com `LocalDate.now()`, ignorando a data que o cliente efetivamente
+escolhia (ex.: uma segunda-feira futura). Como a jornada do profissional
+pode não cobrir "hoje", isso fazia a tela de erro mostrar "sem horários
+disponíveis nesta data" — escondendo a mensagem de erro real (ex.:
+`SlotUnavailableException`), porque o bloco de erro global vive dentro
+do `<form>`, e o `<form>` só é renderizado quando a lista de horários não
+está vazia.
+
+**Decisão**: a data escolhida vira um campo `hidden` no formulário de
+confirmação (`horarios.html`), lida via `@RequestParam(name = "data")`
+em `confirmar` e propagada para `recarregarTelaDeHorarios` — a mesma
+data usada para consultar `GetAvailableSlotsUseCase` originalmente é a
+mesma usada para recarregar a tela em caso de erro.
+
+**Trade-offs Accepted**: nenhum — era um bug, não uma escolha de design.
+
 ### DD-9: Teto por telefone (BR-9) contado dentro do handler, nova query em `AppointmentRepository`
 
 **Decisão**:

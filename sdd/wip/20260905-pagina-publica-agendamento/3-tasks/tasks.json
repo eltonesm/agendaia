@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 8, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 10, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -183,8 +183,8 @@
     {
       "id": "TASK-009",
       "title": "PublicBookingController: rotas de leitura (catalogo, profissionais, horarios)",
-      "description": "GET /b/{slug} (lista servicos via ServiceDirectory), GET /b/{slug}/servicos/{serviceId} (lista ofertas via listActiveByService), GET /b/{slug}/ofertas/{offeringId} (lista horarios via GetAvailableSlotsUseCase existente, TODO-005, parametro ?data=). Slug/ids nao resolvidos (TenantContext vazio, ou id de outro tenant) -> ResponseStatusException(NOT_FOUND) ou erro tratado. Templates catalogo.html, profissionais.html, horarios.html.",
-      "status": "pending",
+      "description": "GET /b/{slug} (lista servicos via ServiceDirectory), GET /b/{slug}/servicos/{serviceId} (lista ofertas via listActiveByService), GET /b/{slug}/ofertas/{offeringId} (lista horarios via GetAvailableSlotsUseCase existente, TODO-005, parametro ?data=). Slug/ids nao resolvidos (TenantContext vazio, ou id de outro tenant) -> ResponseStatusException(NOT_FOUND) ou erro tratado. Templates catalogo.html, profissionais.html, horarios.html. Testado manualmente ponta a ponta via curl: catalogo, escolha de profissional e grade de horarios (10 min) todos corretos.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-003", "TASK-007", "TASK-008"],
       "files": [
@@ -206,8 +206,8 @@
     {
       "id": "TASK-010",
       "title": "PublicBookingController: confirmacao (honeypot, rate limit, POST)",
-      "description": "POST /b/{slug}/ofertas/{offeringId}: honeypot (BR-7, campo invisivel via CSS, preenchido = sucesso generico silencioso), BookingRateLimiter (DD-7, ConcurrentHashMap por IP, 5/10min, BR-8), revalida oferta contra o tenant, chama BookAppointmentHandler. PRG para GET /b/{slug}/agendamentos/{id} (tela de sucesso). PublicBookingRequest (nome, telefone, honeypot). Template sucesso.html.",
-      "status": "pending",
+      "description": "POST /b/{slug}/ofertas/{offeringId}: honeypot (BR-7, campo invisivel via CSS, preenchido = sucesso generico silencioso), BookingRateLimiter (DD-7, ConcurrentHashMap por IP, 5/10min, BR-8), revalida oferta contra o tenant, chama BookAppointmentHandler. PRG para GET /b/{slug}/agendamentos/{id} (tela de sucesso, resumo via flash attribute, sem consulta nova). PublicBookingRequest (nome, telefone, honeypot). Template sucesso.html. Achado durante o teste manual (DD-11): recarregarTelaDeHorarios usava LocalDate.now() em vez da data escolhida pelo cliente, escondendo o erro de campo quando a data nao era hoje — corrigido com campo hidden 'data' no formulario. Testado manualmente: caminho feliz, overbooking recusado pela exclusion constraint (mensagem correta ao usuario), honeypot (redirect indistinguivel, nada gravado), rate limit (5/10min por IP confirmado, inclusive nos proprios testes manuais).",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-008", "TASK-009"],
       "files": [
