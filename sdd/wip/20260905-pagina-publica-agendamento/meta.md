@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-05
 **Last Updated**: 2026-09-05
-**Current Stage**: tasks
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `SlotCalculator` e
 > `GetAvailableSlotsHandler` (TODO-005) — o cálculo de horários disponíveis
@@ -181,14 +181,23 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-05
+    completed: 2026-09-05
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-05T14:18:19Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 18
+    iterations: 0
+    final_tasks_count: 18
 
   implementation:
     started: null
     completed: null
     status: pending
+    execution_strategy: batched
+    total_tasks: 18
+    completed_tasks: 0
 ```
 
 ---
@@ -197,8 +206,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null   # decidido no /sdd.plan
-  chosen_date: null
+  type: batched
+  chosen_date: 2026-09-05
+  estimated_agent_time: null
+  estimated_tokens: null
+  actual_agent_time: null
+  rationale: "Batched por nivel de dependencia. Cinco tarefas independentes no nivel 0 (findBySlug, dominio+migration de customer, catalog.api de listagem, dominio Appointment, SecurityConfig), depois cadeia sequencial: persistencia + filtro de tenant -> handler + rotas de leitura -> rota de confirmacao -> testes -> qualidade."
 ```
 
 ---
