@@ -7,8 +7,8 @@
 **Platform**: backend
 **User Profile**: technical
 **Created**: 2026-09-04
-**Last Updated**: 2026-09-04
-**Current Stage**: functional
+**Last Updated**: 2026-09-05
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: o projeto já tem `organization.Business`
 > (o estabelecimento/tenant) e autenticação de dono via `platform.security`.
@@ -230,12 +230,12 @@ stages:
     final_tasks_count: 15
 
   implementation:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-04
+    completed: 2026-09-05
+    status: completed
     execution_strategy: batched
     total_tasks: 15
-    completed_tasks: 0
+    completed_tasks: 15
 ```
 
 ---
@@ -258,9 +258,9 @@ execution_strategy:
 
 ```yaml
 metrics:
-  timeline: { estimated_days: null, actual_days: null, variance_percent: null }
+  timeline: { estimated_days: null, actual_days: 2, variance_percent: null }
   effort: { estimated_hours: null, actual_hours: null, variance_percent: null }
-  quality: { test_coverage: null, tests_total: null, tests_passing: null, linter_errors: 0, type_errors: 0 }
+  quality: { test_coverage: null, tests_total: 34, tests_passing: 34, linter_errors: 0, type_errors: 0 }
   velocity: { avg_hours_per_task: null, estimation_accuracy: null }
 ```
 
@@ -275,8 +275,10 @@ changes:
   tasks_modified: []
   spec_changes:
     functional: []
-    technical: []
-  risks_materialized: []
+    technical:
+      - "DD-5 reescrito durante o TASK-005: BusinessDirectory.find(UUID) foi adicionado alem de listAll(), para o get-or-create de um unico tenant nao depender da listagem completa."
+  risks_materialized:
+    - "As duas cadeias de seguranca (SecurityConfig/OperatorSecurityConfig) compartilham o mesmo SecurityContextRepository e checavam so authenticated(), nao a role — uma sessao autenticada em qualquer uma passava na outra (dono veria o painel do operador). Descoberto ao escrever OperadorBackofficeIT.e2e5 (TASK-012) e corrigido com hasRole(\"OWNER\")/hasRole(\"OPERATOR\") antes do arquivamento."
 ```
 
 ---
