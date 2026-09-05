@@ -30,6 +30,13 @@ import org.springframework.security.web.context.SecurityContextRepository;
  * {@code securityMatcher("/operador/**")}) — as duas nunca se sobrepõem,
  * mas a ordem precisa estar explícita nos dois lados (back-office-operador,
  * TODO-009).
+ *
+ * <p><strong>{@code hasRole("OWNER")}, não {@code authenticated()}</strong>
+ * (BR-6/E2E-5): as duas cadeias compartilham o mesmo bean
+ * {@link SecurityContextRepository}, então uma sessão autenticada pela
+ * cadeia do operador passaria no {@code authenticated()} desta também. Só
+ * a authority checada aqui impede que a sessão do operador abra {@code
+ * /admin/**} (e vice-versa em {@link OperatorSecurityConfig}).
  */
 @Configuration
 public class SecurityConfig {
@@ -85,7 +92,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**")
                         .permitAll()
                         .anyRequest()
-                        .authenticated())
+                        .hasRole("OWNER"))
                 .formLogin(form -> form
                         // Nossa tela, agora que ela existe. O GET é servido pelo
                         // view controller do WebConfig; o POST, pelo próprio

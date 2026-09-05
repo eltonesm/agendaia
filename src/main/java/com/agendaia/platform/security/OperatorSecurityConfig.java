@@ -31,6 +31,13 @@ import org.springframework.security.web.context.SecurityContextRepository;
  * e {@code RegistrationController} (que também injetava
  * {@code UserDetailsService} por tipo, para autenticar a sessão logo após
  * o cadastro) precisou do mesmo qualifier.
+ *
+ * <p><strong>{@code hasRole("OPERATOR")}, não {@code authenticated()}</strong>
+ * (BR-6/E2E-5): as duas cadeias compartilham o mesmo bean
+ * {@link SecurityContextRepository}, então uma sessão autenticada por
+ * qualquer uma delas passaria no {@code authenticated()} da outra. Só a
+ * authority checada aqui impede que a sessão de um dono abra o painel do
+ * operador (e vice-versa em {@link SecurityConfig}).
  */
 @Configuration
 public class OperatorSecurityConfig {
@@ -47,7 +54,7 @@ public class OperatorSecurityConfig {
                         .requestMatchers("/operador/login", "/css/**", "/js/**", "/img/**", "/favicon.ico")
                         .permitAll()
                         .anyRequest()
-                        .authenticated())
+                        .hasRole("OPERATOR"))
                 .formLogin(form -> form
                         .loginPage("/operador/login")
                         .defaultSuccessUrl("/operador/painel", false)

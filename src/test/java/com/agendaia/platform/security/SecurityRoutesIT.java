@@ -64,12 +64,12 @@ class SecurityRoutesIT {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser
+    @org.springframework.security.test.context.support.WithMockUser(roles = "OWNER")
     @DisplayName("página inexistente devolve 404, não 500")
     void paginaInexistenteDevolve404() throws Exception {
-        // Precisa estar autenticado: rota desconhecida cai em
-        // anyRequest().authenticated(), e quem não entrou é mandado ao login
-        // ANTES de chegar ao 404.
+        // Precisa estar autenticado com ROLE_OWNER: rota desconhecida cai em
+        // anyRequest().hasRole("OWNER") (BR-6/E2E-5, back-office-operador), e
+        // quem não entrou é mandado ao login ANTES de chegar ao 404.
         //
         // Regressão do GlobalExceptionHandler: o tratamento genérico engolia as
         // exceções do Spring que já carregam status, e todo 404 virava 500.

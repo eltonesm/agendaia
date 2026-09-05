@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /** Camada web isolada: os casos de uso e o ProfessionalDirectory são mock, o banco não existe. */
 @WebMvcTest(ServiceOfferingController.class)
 @Import(SecurityConfig.class)
-@WithMockUser
+@WithMockUser(roles = "OWNER")
 class ServiceOfferingControllerTest {
 
     @Autowired private MockMvc mockMvc;
