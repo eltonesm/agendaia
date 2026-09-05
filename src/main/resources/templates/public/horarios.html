@@ -1,0 +1,87 @@
+<!doctype html>
+<!--/*
+  Página pública de agendamento — passo 3: escolher horário e confirmar
+  (pagina-publica-agendamento, TODO-006, US-3/US-4/US-7).
+
+  Sem JavaScript (ADR 0007, DD-8 da spec técnica): trocar de data recarrega
+  a página inteira via GET; o horário escolhido é um radio dentro do MESMO
+  formulário que já pede nome/telefone — um único POST por tentativa.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${businessName})}"></head>
+<body>
+
+<header class="bg-body-tertiary border-bottom py-3 mb-4">
+  <div class="container">
+    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
+  </div>
+</header>
+
+<main class="container" style="max-width: 32rem">
+
+  <h1 class="h4 mb-3">Escolha o horário</h1>
+
+  <!--/* Troca de data: GET simples, sem preservar o formulário abaixo — trocar de dia é recomeçar a escolha. */-->
+  <form method="get" th:action="@{/b/{slug}/ofertas/{offeringId}(slug=${slug},offeringId=${offeringId})}" class="d-flex gap-2 mb-4">
+    <input type="date" name="data" class="form-control" th:value="${data}" required>
+    <button type="submit" class="btn btn-outline-secondary text-nowrap">Ver data</button>
+  </form>
+
+  <div class="alert alert-secondary" th:if="${#lists.isEmpty(horarios)}">
+    Sem horários disponíveis nesta data. Tente outra data acima.
+  </div>
+
+  <form th:unless="${#lists.isEmpty(horarios)}"
+        method="post"
+        th:action="@{/b/{slug}/ofertas/{offeringId}(slug=${slug},offeringId=${offeringId})}"
+        th:object="${form}">
+
+    <!--/* Preserva a data escolhida se o formulário voltar com erro (US-3). */-->
+    <input type="hidden" name="data" th:value="${data}">
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <p th:each="erro : ${#fields.globalErrors()}" class="mb-0" th:text="${erro}">Erro</p>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-block">Horário</label>
+      <div class="d-flex flex-wrap gap-2">
+        <div th:each="horario, iter : ${horarios}" class="form-check">
+          <input type="radio" class="btn-check" name="startsAt" autocomplete="off"
+                 th:id="${'horario-' + iter.index}" th:value="${horario.startsAt()}" required>
+          <label class="btn btn-outline-primary btn-sm" th:for="${'horario-' + iter.index}"
+                 th:text="${#temporals.format(horario.startsAt(), 'HH:mm')}">08:00</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Seu nome</label>
+      <input type="text" id="name" th:field="*{name}" class="form-control"
+             th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Erro</div>
+    </div>
+
+    <div class="mb-4">
+      <label for="phone" class="form-label">Seu telefone (com DDD)</label>
+      <input type="tel" id="phone" th:field="*{phone}" class="form-control" placeholder="11999999999"
+             th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'" required>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Erro</div>
+    </div>
+
+    <!--/* BR-7: honeypot — invisível ao humano via CSS, nunca type="hidden" (bot reconhece e ignora). */-->
+    <div style="position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
+      <label for="website">Não preencha este campo</label>
+      <input type="text" id="website" th:field="*{website}" tabindex="-1" autocomplete="off">
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Confirmar agendamento</button>
+  </form>
+
+  <a class="btn btn-link mt-3 ps-0" th:href="@{/b/{slug}(slug=${slug})}">&larr; Voltar</a>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

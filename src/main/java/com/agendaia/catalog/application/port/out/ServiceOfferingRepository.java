@@ -22,4 +22,7 @@ public interface ServiceOfferingRepository extends JpaRepository<ServiceOffering
 
     /** Usado por {@code ServiceOfferingDirectory.find} (consultar-horarios-disponiveis, BR-7). */
     Optional<ServiceOffering> findByTenantIdAndIdAndActiveTrue(UUID tenantId, UUID id);
+
+    /** Usado por {@code ServiceOfferingDirectory.listActiveByService} (pagina-publica-agendamento, TODO-006). */
+    List<ServiceOffering> findByTenantIdAndServiceIdAndActiveTrueOrderByCreatedAtAsc(UUID tenantId, UUID serviceId);
 }

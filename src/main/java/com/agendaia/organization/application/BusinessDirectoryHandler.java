@@ -39,6 +39,12 @@ public class BusinessDirectoryHandler implements BusinessDirectory {
         return businessRepository.findById(tenantId).map(this::toRef);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<BusinessRef> findBySlug(String slug) {
+        return businessRepository.findBySlug(slug).map(this::toRef);
+    }
+
     private BusinessRef toRef(Business business) {
         return new BusinessRef(business.tenantId().value(), business.name(), business.slug(), business.createdAt());
     }

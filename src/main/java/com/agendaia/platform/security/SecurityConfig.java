@@ -91,6 +91,12 @@ public class SecurityConfig {
                         // endpoints do actuator expõem informação de operação.
                         .requestMatchers("/actuator/health", "/actuator/health/**")
                         .permitAll()
+                        // Página pública de agendamento (pagina-publica-agendamento,
+                        // TODO-006) — sem sessão, GET e POST. permitAll() não desliga
+                        // CSRF: o formulário Thymeleaf inclui o token via th:action,
+                        // igual a qualquer outro POST do projeto.
+                        .requestMatchers("/b/**")
+                        .permitAll()
                         .anyRequest()
                         .hasRole("OWNER"))
                 .formLogin(form -> form

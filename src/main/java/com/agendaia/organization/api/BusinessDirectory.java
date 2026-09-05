@@ -23,6 +23,11 @@ import java.util.UUID;
  *       cobrança sob demanda), sempre com o {@code tenantId} já resolvido
  *       pela própria sessão do dono via {@code TenantContext} — nunca um
  *       id escolhido livremente pelo chamador.</li>
+ *   <li>{@link #findBySlug(String)} — existe para resolver o tenant a
+ *       partir da URL pública {@code /b/{slug}} (pagina-publica-agendamento,
+ *       TODO-006): é a segunda via de resolução de tenant prevista desde o
+ *       ADR 0004, chamada por {@code platform.tenant.TenantContextFilter}
+ *       antes de qualquer sessão existir.</li>
  * </ul>
  */
 public interface BusinessDirectory {
@@ -32,4 +37,7 @@ public interface BusinessDirectory {
 
     /** Vazio se o id não corresponde a nenhum estabelecimento. */
     Optional<BusinessRef> find(UUID tenantId);
+
+    /** Vazio se o slug não corresponde a nenhum estabelecimento. */
+    Optional<BusinessRef> findBySlug(String slug);
 }

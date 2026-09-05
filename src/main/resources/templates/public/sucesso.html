@@ -1,0 +1,42 @@
+<!doctype html>
+<!--/*
+  Página pública de agendamento — confirmação (pagina-publica-agendamento,
+  TODO-006, US-5).
+
+  serviceName/startsAt chegam via flash attribute do POST que criou o
+  agendamento (PRG) — ausentes se a página for recarregada depois, e a
+  tela então mostra só a confirmação genérica com o id.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${businessName})}"></head>
+<body>
+
+<header class="bg-body-tertiary border-bottom py-3 mb-4">
+  <div class="container">
+    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
+  </div>
+</header>
+
+<main class="container text-center" style="max-width: 32rem">
+
+  <div class="display-6 mb-3">✅</div>
+  <h1 class="h4 mb-3">Agendamento confirmado!</h1>
+
+  <p th:if="${serviceName != null and startsAt != null}" class="lead">
+    <strong th:text="${serviceName}">Serviço</strong><br>
+    <span th:text="${#temporals.format(startsAt, 'dd/MM/yyyy')} + ' às ' + ${#temporals.format(startsAt, 'HH:mm')}">
+      01/01/2026 às 08:00
+    </span>
+  </p>
+
+  <p th:unless="${serviceName != null and startsAt != null}" class="text-body-secondary">
+    Seu agendamento foi confirmado.
+  </p>
+
+  <a class="btn btn-primary mt-2" th:href="@{/b/{slug}(slug=${slug})}">Voltar ao início</a>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "CAN_PROCEED_WITH_WARNINGS",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1
+  },
+  "details": [
+    {
+      "severity": "minor",
+      "file": "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
+      "status": "documented_as_debt",
+      "description": "findOrCreate não captura DataIntegrityViolationException de UNIQUE(tenant_id, phone). Investigado: uma tentativa de recapturar e reconsultar dentro do mesmo catch foi revertida porque o método roda na mesma transação de BookAppointmentHandler.handle (propagação REQUIRED) — o Postgres aborta a transação inteira na violação, e qualquer novo comando na mesma conexão falharia de novo com 'current transaction is aborted', pior que a exceção original. Corrigir direito exigiria uma transação separada (REQUIRES_NEW) só para o retry, desproporcional para o piloto de um estabelecimento. Registrado como DEBT-017 em sdd/backlog.md, com o comportamento documentado no Javadoc da classe em vez de deixado implícito."
+    }
+  ],
+  "checks_passed": [
+    "scheduling.domain (Appointment, AppointmentStatus, exceções) é Java puro — nenhum import de org.springframework ou jakarta.persistence",
+    "customer em regime CRUD (ADR 0002) — Customer é @Entity, sem mapper/classe espelho",
+    "Nenhuma classe nova com sufixo Impl",
+    "@Transactional só em application (ServiceOfferingDirectoryHandler, CustomerDirectoryHandler, BookAppointmentHandler, GetAvailableSlotsHandler) — nunca em controller/filter/adapter",
+    "AppointmentPersistenceAdapter é o único ponto que traduz DataIntegrityViolationException em SlotUnavailableException",
+    "LayoutAdvice fundido em um único @ControllerAdvice (DD-4) — sem concorrência de @ModelAttribute",
+    "BookingRateLimiter e honeypot vivem em scheduling.adapter.in.web, não platform (DD-7)",
+    "Catch de ServiceOfferingNotFoundException em PublicBookingController.confirmar está antes do catch genérico de DomainException (ordem correta)"
+  ],
+  "files_reviewed": 24,
+  "timestamp": "2026-09-05T00:00:00Z"
+}

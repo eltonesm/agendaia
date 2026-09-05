@@ -1,0 +1,43 @@
+<!doctype html>
+<!--/*
+  Página pública de agendamento — passo 2: escolher o profissional
+  (pagina-publica-agendamento, TODO-006, US-2).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${businessName})}"></head>
+<body>
+
+<header class="bg-body-tertiary border-bottom py-3 mb-4">
+  <div class="container">
+    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
+  </div>
+</header>
+
+<main class="container" style="max-width: 40rem">
+
+  <h1 class="h4 mb-3">Com quem você quer agendar?</h1>
+
+  <div class="alert alert-secondary" th:if="${#lists.isEmpty(ofertas)}">
+    Nenhum profissional disponível para este serviço no momento.
+  </div>
+
+  <div class="list-group" th:unless="${#lists.isEmpty(ofertas)}">
+    <a th:each="oferta : ${ofertas}"
+       th:href="@{/b/{slug}/ofertas/{offeringId}(slug=${slug},offeringId=${oferta.id()})}"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+      <span th:text="${oferta.professionalName()}">Profissional</span>
+      <span class="text-body-secondary small">
+        <span th:text="${oferta.durationMinutes()} + ' min'">30 min</span>
+        ·
+        <span th:text="${oferta.priceFormatted()}">R$ 0,00</span>
+      </span>
+    </a>
+  </div>
+
+  <a class="btn btn-link mt-3 ps-0" th:href="@{/b/{slug}(slug=${slug})}">&larr; Voltar para os serviços</a>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

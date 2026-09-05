@@ -13,8 +13,15 @@
  * <em>estabelecimento</em>, {@code Business}, no contexto Organization.
  *
  * <p>Outros contextos só podem importar {@code com.agendaia.customer.api}.
+ *
+ * <p>{@code allowedDependencies} declarado explicitamente desde o primeiro
+ * commit real deste contexto (pagina-publica-agendamento, TODO-006):
+ * {@code shared} (tipos como {@code TenantId}) e {@code platform}
+ * ({@code TenantContext}) precisam estar na lista, ou {@code
+ * ModuleStructureTest} falha mesmo os dois sendo {@code Type.OPEN} — mesmo
+ * gotcha de whitelist documentado em {@code PATTERNS.md}.
  */
-@ApplicationModule(displayName = "Customer")
+@ApplicationModule(displayName = "Customer", allowedDependencies = {"shared", "platform"})
 package com.agendaia.customer;
 
 import org.springframework.modulith.ApplicationModule;
