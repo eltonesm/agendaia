@@ -340,6 +340,28 @@ mesma usada para recarregar a tela em caso de erro.
 
 **Trade-offs Accepted**: nenhum — era um bug, não uma escolha de design.
 
+### DD-12: `ServiceOfferingNotFoundException` no `POST` devolve 404, não recarrega a tela
+
+**Achado durante `PaginaPublicaAgendamentoIT` (E2E-3)**: o catch genérico
+de `DomainException` em `confirmar` chamava `recarregarTelaDeHorarios`
+para qualquer erro — inclusive quando a causa era "essa oferta não
+existe nesse tenant" (BR-5). Só que `recarregarTelaDeHorarios` também
+chama `getAvailableSlots.handle` para a **mesma** oferta inválida, que
+relança a **mesma** `ServiceOfferingNotFoundException` — desta vez sem
+nenhum catch ao redor, escapando para o `GlobalExceptionHandler` como
+422 genérico em vez da mensagem amigável (ou do 404 que o `GET` já dava
+para o mesmo caso).
+
+**Decisão**: `confirmar` ganhou um catch específico para
+`ServiceOfferingNotFoundException`, antes do catch genérico de
+`DomainException`, devolvendo `ResponseStatusException(NOT_FOUND)` —
+mesmo tratamento que o `GET` já dava. Os demais `DomainException`
+(`SlotUnavailableException`, `PhoneAppointmentLimitExceededException`)
+continuam recarregando a tela normalmente, porque neles a oferta
+**existe** — só a tentativa específica falhou.
+
+**Trade-offs Accepted**: nenhum — era um bug, não uma escolha de design.
+
 ### DD-9: Teto por telefone (BR-9) contado dentro do handler, nova query em `AppointmentRepository`
 
 **Decisão**:

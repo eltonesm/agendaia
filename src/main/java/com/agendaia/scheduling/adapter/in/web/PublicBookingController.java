@@ -8,6 +8,7 @@ import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.BookAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.GetAvailableSlotsQuery;
 import com.agendaia.scheduling.application.port.in.GetAvailableSlotsUseCase;
+import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
 import com.agendaia.shared.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -147,6 +148,13 @@ public class PublicBookingController {
             redirectAttributes.addFlashAttribute("serviceName", agendado.serviceName());
             redirectAttributes.addFlashAttribute("startsAt", agendado.startsAt());
             return "redirect:/b/{slug}/agendamentos/" + agendado.id();
+        } catch (ServiceOfferingNotFoundException e) {
+            // BR-5: a oferta não existe (ou é de outro tenant) — não faz
+            // sentido "recarregar a tela de horários" DESSA MESMA oferta,
+            // porque getAvailableSlots.handle relançaria a mesma exceção,
+            // desta vez sem nenhum catch ao redor (achado durante o
+            // PaginaPublicaAgendamentoIT, E2E-3). Mesmo tratamento do GET.
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } catch (DomainException e) {
             if (e.hasField()) {
                 binding.rejectValue(e.field(), "invalido", e.getMessage());

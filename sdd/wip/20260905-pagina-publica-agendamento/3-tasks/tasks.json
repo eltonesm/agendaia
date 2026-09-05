@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 14, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 15, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -294,8 +294,8 @@
     {
       "id": "TASK-015",
       "title": "PaginaPublicaAgendamentoIT (E2E-1 a E2E-7)",
-      "description": "Testcontainers, ponta a ponta contra Postgres real (obrigatorio para a exclusion constraint, ADR 0005 — H2 nao serve). Caminho feliz (E2E-1), duas reservas concorrentes para o mesmo horario com apenas uma vencendo (E2E-2, exige duas threads/requisicoes disparadas em paralelo), id de outro tenant recusado (E2E-3), honeypot (E2E-4), rate limit (E2E-5), teto por telefone (E2E-6), Customer reaproveitado (E2E-7).",
-      "status": "pending",
+      "description": "Testcontainers, ponta a ponta contra Postgres real (obrigatorio para a exclusion constraint, ADR 0005 — H2 nao serve). Caminho feliz (E2E-1), duas reservas concorrentes para o mesmo horario com apenas uma vencendo (E2E-2, exige duas threads/requisicoes disparadas em paralelo), id de outro tenant recusado (E2E-3), honeypot (E2E-4), rate limit (E2E-5), teto por telefone (E2E-6), Customer reaproveitado (E2E-7). Cada teste semeia seu proprio tenant com slug unico, sem limpar tabelas entre metodos. Achado real (DD-12): POST com oferta de outro tenant vazava como 422 generico em vez de 404 — corrigido no controller.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010"],
       "files": ["src/test/java/com/agendaia/scheduling/PaginaPublicaAgendamentoIT.java"],
