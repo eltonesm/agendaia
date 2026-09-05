@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Migration V6 nesta feature (billing_account). Credenciais do operador e chave/QR Pix e numero de WhatsApp vem de application.yaml/variaveis de ambiente, nunca de banco."
   },
-  "stats": { "total": 15, "done": 8, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 11, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -171,7 +171,7 @@
       "id": "TASK-009",
       "title": "BillingAccountTest (dominio puro)",
       "description": "Cobrir startTrial (BR-1), extendUntil (validacao de data futura, BR-3) e statusOn nos 4 quadrantes de BR-2, incluindo os limites exatos (accessValidUntil, accessValidUntil+5 dias) e a distincao TRIAL vs PAID (DD-6).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002"],
       "files": ["src/test/java/com/agendaia/billing/domain/BillingAccountTest.java"],
@@ -187,7 +187,7 @@
       "id": "TASK-010",
       "title": "BillingAccountServiceTest (mocks)",
       "description": "Get-or-create (cria quando nao existe, reaproveita quando existe), listForOperator cruzando BusinessDirectory mockado com BillingAccountRepository mockado em lote, extendUntil delegando a validacao de data futura.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-005"],
       "files": ["src/test/java/com/agendaia/billing/application/BillingAccountServiceTest.java"],
@@ -203,7 +203,7 @@
       "id": "TASK-011",
       "title": "Testes web: painel do operador e bloqueio",
       "description": "OperatorPanelControllerTest (@WebMvcTest): lista, marcar prazo, erro de data no passado, CSRF. AccessGuardFilterTest: BLOCKED redireciona, GRACE_PERIOD segue, TRIAL/PAID seguem sem nenhum efeito.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-007", "TASK-008"],
       "files": [
