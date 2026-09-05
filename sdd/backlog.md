@@ -104,6 +104,15 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-017: Corrida rara no cadastro de cliente vira 500 generico
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-05
+- **Origin**: revisao de codigo da TODO-006 (TASK-016)
+- **Context**: `CustomerDirectoryHandler.findOrCreate` nao trata a `DataIntegrityViolationException` de `UNIQUE(tenant_id, phone)`: se duas requisicoes com o **mesmo telefone nunca visto antes** confirmarem no mesmo instante, a que perde cai no `GlobalExceptionHandler` generico (500 padrao), sem vazar dado nem cruzar tenant. Nao foi corrigido junto porque o metodo roda na mesma transacao de `BookAppointmentHandler.handle` (propagacao REQUIRED) — reconsultar dentro do mesmo `catch` falharia de novo, ja que o Postgres aborta a transacao inteira apos a violacao ("current transaction is aborted"). Resolver exigiria uma transacao separada (REQUIRES_NEW) so para o retry, desproporcional para o piloto de um estabelecimento. Revisitar se o volume de tráfego público justificar.
+
+---
+
 ### DEBT-016: Erro de formulario nao e anunciado por leitor de tela
 - **Priority**: Low
 - **Status**: pending

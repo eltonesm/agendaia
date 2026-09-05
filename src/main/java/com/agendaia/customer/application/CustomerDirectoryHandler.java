@@ -13,6 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
  * (tenant, telefone) — a garantia de não duplicar sob concorrência é do
  * banco ({@code UNIQUE(tenant_id, phone)}), esta classe só evita a ida ao
  * banco quando já sabe que o cliente existe.
+ *
+ * <p>Uma violação da constraint (duas requisições com o mesmo telefone
+ * nunca visto antes, no mesmo instante) propositalmente não é recapturada
+ * aqui: {@code findOrCreate} roda na mesma transação de {@code
+ * BookAppointmentHandler.handle} (propagação REQUIRED), e o Postgres aborta
+ * a transação inteira na violação — qualquer novo comando na mesma conexão
+ * falharia de novo, agora com "current transaction is aborted", mais confuso
+ * que a exceção original. Cai no {@code GlobalExceptionHandler} genérico;
+ * caso raro o bastante (mesmo telefone, mesmo instante, primeira vez) para
+ * não justificar transação separada só para esse retry (DEBT candidato).
  */
 @Service
 public class CustomerDirectoryHandler implements CustomerDirectory {

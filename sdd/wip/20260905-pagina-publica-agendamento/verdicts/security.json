@@ -1,0 +1,21 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checks_passed": [
+    "tenantId nunca vem do formulário/query — PublicBookingController.confirmar usa TenantContext (resolvido pelo TenantContextFilter via slug), e BookAppointmentHandler chama TenantContext.require(); offeringId do formulário é revalidado em ServiceOfferingDirectoryHandler.find via findByTenantIdAndIdAndActiveTrue, então uma oferta de outro tenant é tratada como inexistente (BR-5, E2E-3)",
+    "Overbooking impedido pelo banco (BR-4/ADR 0005) — a checagem em memória (findOccupiedRanges) é só UX; AppointmentPersistenceAdapter.save captura DataIntegrityViolationException da exclusion constraint GiST e traduz em SlotUnavailableException amigável",
+    "CSRF permanece ativo em /b/** — permitAll no SecurityConfig afeta só autorização, não desliga a proteção CSRF; formulário Thymeleaf inclui o token via th:action",
+    "XSS: todo campo que ecoa dado (businessName, serviceName, nomes de profissional/serviço, datas) usa th:text; nenhuma ocorrência de th:utext nos templates public/*; nome e telefone do cliente não são reexibidos na tela de sucesso",
+    "Honeypot é checado primeiro em confirmar() e devolve redirect indistinguível de sucesso sem persistir nada; BookingRateLimiter é checado antes de qualquer efeito colateral (antes do binding e do save) — 5 tentativas / 10 min por IP",
+    "Teto de 3 agendamentos futuros por telefone (BR-9) é reforçado em BookAppointmentHandler via countFutureActive, não só na UI",
+    "Nenhum segredo hardcoded nos arquivos novos desta feature",
+    "Customer.toString() não inclui nome nem telefone — comentário explícito de LGPD; normalizePhone é usado tanto no cadastro quanto na busca, evitando comparação com string bruta"
+  ],
+  "files_reviewed": 24,
+  "timestamp": "2026-09-05T00:00:00Z"
+}

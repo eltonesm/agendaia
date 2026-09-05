@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 15, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 18, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -311,7 +311,7 @@
       "id": "TASK-016",
       "title": "Code Review",
       "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-9 refletidas no codigo, scheduling.domain continua Java puro, customer em regime CRUD sem cerimonia excessiva, sem setter publico alem do necessario, sem sufixo Impl, transacao so em application.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
       "files": [],
@@ -326,7 +326,7 @@
       "id": "TASK-017",
       "title": "Performance Review",
       "description": "Skill sdd-performance-expert: listActiveByService cruza ProfessionalDirectory uma vez so (sem N+1); BookAppointmentHandler faz no maximo uma consulta de contagem (BR-9) mais um insert por confirmacao; exclusion constraint e verificacao de indice, nao segunda consulta logica; BookingRateLimiter em memoria sem crescimento ilimitado (limpar entradas expiradas).",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
       "files": [],
@@ -341,7 +341,7 @@
       "id": "TASK-018",
       "title": "Security Review",
       "description": "Skill sdd-code-reviewer em modo seguranca: tenantId nunca aceito do formulario publico (BR-5), overbooking impedido pelo banco e nao pela aplicacao (BR-4/ADR 0005), CSRF ativo em /b/** apesar do permitAll, XSS (th:text em todo dado de cliente/estabelecimento), honeypot/rate limit/teto por telefone funcionando como desenhado, sem segredo hardcoded.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
       "files": [],
