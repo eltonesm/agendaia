@@ -36,11 +36,13 @@ passa por `/sdd.start`.
 
 ### TODO-006: Página pública e agendar
 - **Priority**: High
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-05
 - **Origin**: revisão arquitetural
 - **Context**: A escrita. Exclusion constraint (ADR 0005), revalidação de todo id do formulário contra o tenant do slug, teste de concorrência com duas reservas simultâneas. Inclui as defesas contra abuso: honeypot, rate limit e teto por telefone.
 - **Affected Files**: `scheduling`, `customer`, `platform`
+- **Feature**: `sdd/wip/20260905-pagina-publica-agendamento/`
 - **Complexity**: High
 
 ---
