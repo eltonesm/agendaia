@@ -4,6 +4,7 @@ import com.agendaia.catalog.api.PublicOfferingRef;
 import com.agendaia.catalog.api.ServiceOfferingDirectory;
 import com.agendaia.catalog.api.ServiceOfferingRef;
 import com.agendaia.catalog.application.port.out.ServiceOfferingRepository;
+import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.organization.api.ProfessionalDirectory;
 import com.agendaia.organization.api.ProfessionalRef;
 import com.agendaia.platform.tenant.TenantContext;
@@ -24,11 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class ServiceOfferingDirectoryHandler implements ServiceOfferingDirectory {
 
     private final ServiceOfferingRepository serviceOfferingRepository;
+    private final ServiceRepository serviceRepository;
     private final ProfessionalDirectory professionalDirectory;
 
     public ServiceOfferingDirectoryHandler(
-            ServiceOfferingRepository serviceOfferingRepository, ProfessionalDirectory professionalDirectory) {
+            ServiceOfferingRepository serviceOfferingRepository,
+            ServiceRepository serviceRepository,
+            ProfessionalDirectory professionalDirectory) {
         this.serviceOfferingRepository = serviceOfferingRepository;
+        this.serviceRepository = serviceRepository;
         this.professionalDirectory = professionalDirectory;
     }
 
@@ -40,7 +45,12 @@ public class ServiceOfferingDirectoryHandler implements ServiceOfferingDirectory
         return serviceOfferingRepository
                 .findByTenantIdAndIdAndActiveTrue(tenantId.value(), serviceOfferingId)
                 .map(oferta -> new ServiceOfferingRef(
-                        oferta.id(), oferta.professionalId(), oferta.durationMinutes(), oferta.bufferMinutes()));
+                        oferta.id(),
+                        oferta.professionalId(),
+                        oferta.durationMinutes(),
+                        oferta.bufferMinutes(),
+                        serviceRepository.findById(oferta.serviceId()).map(servico -> servico.name()).orElse(null),
+                        oferta.price()));
     }
 
     /**

@@ -17,11 +17,14 @@
  * declarada, a lista vira whitelist mesmo para módulo {@code Type.OPEN} —
  * {@code shared} e {@code platform} precisam estar aqui, ou
  * {@code ModuleStructureTest} falha (mesmo gotcha da TODO-003, documentado em
- * {@code PATTERNS.md}).
+ * {@code PATTERNS.md}). {@code customer :: api} entrou em
+ * pagina-publica-agendamento (TODO-006, TASK-006): {@code
+ * BookAppointmentHandler} resolve/cria o {@code Customer} antes de gravar o
+ * {@code Appointment}, na mesma transação (DD-5 da spec técnica).
  */
 @ApplicationModule(
         displayName = "Scheduling (core)",
-        allowedDependencies = {"organization :: api", "catalog :: api", "shared", "platform"})
+        allowedDependencies = {"organization :: api", "catalog :: api", "customer :: api", "shared", "platform"})
 package com.agendaia.scheduling;
 
 import org.springframework.modulith.ApplicationModule;

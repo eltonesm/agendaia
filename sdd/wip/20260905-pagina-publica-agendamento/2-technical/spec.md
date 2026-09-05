@@ -292,6 +292,34 @@ recarregando a página — sem JavaScript, sem endpoint de fragmento.
 atualização parcial). Aceitável: é a mesma experiência de qualquer link
 compartilhado por WhatsApp, e evita introduzir JS neste MVP.
 
+### DD-10: `GetAvailableSlotsHandler` (TODO-005) passa a excluir agendamentos já ativos
+
+**Achado durante a implementação (TASK-005/TASK-006)**: a TODO-005 já
+documentava explicitamente que "o cálculo não desconta nenhum agendamento
+por enquanto — `Appointment` não existe ainda". Como esta feature é
+exatamente quem cria `Appointment`, essa lacuna precisava ser fechada
+aqui — sem isso, a listagem de horários livres nunca refletiria uma
+reserva já feita, e o cliente só descobriria o conflito ao tentar
+confirmar (a exclusion constraint continuaria protegendo contra
+overbooking de verdade, mas a experiência de listagem ficaria enganosa
+assim que a agenda de um profissional começasse a ter agendamentos reais).
+
+**Decisão**: `AppointmentRepository` ganha `findOccupiedRanges(TenantId,
+UUID professionalId, LocalDate) -> List<TimeRange>`, com a mesma técnica
+de recorte às bordas do dia que `AvailabilityDirectoryHandler#blocksFor`
+já usa para `TimeOff` (organization). `GetAvailableSlotsHandler` mescla
+o resultado com os bloqueios de `TimeOff` antes de chamar
+`SlotCalculator.calculate` — um agendamento ativo é, do ponto de vista do
+cálculo, só mais um intervalo bloqueado; nenhuma mudança na assinatura
+de `SlotCalculator` (domínio puro) foi necessária.
+
+**Trade-offs Accepted**: `GetAvailableSlotsHandler` (TODO-005) ganha uma
+quarta dependência (`AppointmentRepository`, de `scheduling.application`,
+mesmo contexto — não atravessa fronteira nenhuma) e um teste existente
+(`GetAvailableSlotsHandlerTest`) precisou de um mock a mais. Aceitável:
+é a mesma classe corrigindo a lacuna que a própria spec funcional da
+TODO-005 já apontava para esta feature.
+
 ### DD-9: Teto por telefone (BR-9) contado dentro do handler, nova query em `AppointmentRepository`
 
 **Decisão**:

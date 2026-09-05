@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 7, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 8, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -99,7 +99,7 @@
     {
       "id": "TASK-005",
       "title": "scheduling: migration V8, entidade JPA e persistencia de Appointment",
-      "description": "Migration V8 (appointment + EXCLUDE USING gist literal do ADR 0005, indice (tenant_id, customer_id, status)). AppointmentJpaEntity + AppointmentMapper (regime completo). AppointmentRepository (port.out) com save() e countFutureActive(tenantId, customerId, agora) via @Query (DD-9, BR-9). AppointmentPersistenceAdapter traduz DataIntegrityViolationException em SlotUnavailableException (DD-6).",
+      "description": "Migration V8 (appointment + EXCLUDE USING gist literal do ADR 0005, indice (tenant_id, customer_id, status)). AppointmentJpaEntity + AppointmentMapper (regime completo). AppointmentRepository (port.out) com save() e countFutureActive(tenantId, customerId, agora) via @Query (DD-9, BR-9). AppointmentPersistenceAdapter traduz DataIntegrityViolationException em SlotUnavailableException (DD-6). Escopo ampliado durante a implementacao (DD-10): findOccupiedRanges(tenantId, professionalId, date) para GetAvailableSlotsHandler (TODO-005) excluir agendamentos ja ativos do calculo de disponibilidade — lacuna que a propria spec da TODO-005 ja apontava para esta feature.",
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-004"],
@@ -122,8 +122,8 @@
     {
       "id": "TASK-006",
       "title": "scheduling.application.BookAppointmentHandler",
-      "description": "BookAppointmentUseCase/Command(serviceOfferingId, startsAt, customerName, customerPhone)/BookedAppointment. Handler (DD-5, @Transactional): revalida oferta via ServiceOfferingDirectory.find (tenant, BR-5), resolve customerId via customer.api.CustomerDirectory.findOrCreate, checa teto de agendamentos futuros (BR-9, TASK-005), monta o retrato (BR-2) e grava via AppointmentRepository.",
-      "status": "pending",
+      "description": "BookAppointmentUseCase/Command(serviceOfferingId, startsAt, customerName, customerPhone)/BookedAppointment. Handler (DD-5, @Transactional): revalida oferta via ServiceOfferingDirectory.find (tenant, BR-5), resolve customerId via customer.api.CustomerDirectory.findOrCreate, checa teto de agendamentos futuros (BR-9, TASK-005), monta o retrato (BR-2) e grava via AppointmentRepository. scheduling ganhou customer :: api em allowedDependencies.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-005"],
       "files": [

@@ -9,9 +9,13 @@ import static org.mockito.Mockito.when;
 import com.agendaia.catalog.api.ServiceOfferingDirectory;
 import com.agendaia.catalog.api.ServiceOfferingRef;
 import com.agendaia.organization.api.AvailabilityDirectory;
+import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.scheduling.application.port.in.GetAvailableSlotsQuery;
+import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.exception.AvailabilityQueryOutOfRangeException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
+import com.agendaia.shared.Money;
+import com.agendaia.shared.TenantId;
 import com.agendaia.shared.TimeRange;
 import com.agendaia.shared.UuidV7;
 import java.time.DayOfWeek;
@@ -19,19 +23,24 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /** Orquestração isolada, sem Spring e sem banco — organization.api e catalog.api mockados. */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GetAvailableSlotsHandlerTest {
 
     @Mock private ServiceOfferingDirectory serviceOfferingDirectory;
     @Mock private AvailabilityDirectory availabilityDirectory;
+    @Mock private AppointmentRepository appointmentRepository;
 
     private GetAvailableSlotsHandler handler;
 
@@ -39,7 +48,14 @@ class GetAvailableSlotsHandlerTest {
 
     @BeforeEach
     void montar() {
-        handler = new GetAvailableSlotsHandler(serviceOfferingDirectory, availabilityDirectory);
+        handler = new GetAvailableSlotsHandler(serviceOfferingDirectory, availabilityDirectory, appointmentRepository);
+        TenantContext.set(TenantId.of(UuidV7.generate()));
+        when(appointmentRepository.findOccupiedRanges(any(), any(), any())).thenReturn(List.of());
+    }
+
+    @AfterEach
+    void limparContexto() {
+        TenantContext.clear();
     }
 
     @Test
@@ -48,7 +64,7 @@ class GetAvailableSlotsHandlerTest {
         var ofertaId = UuidV7.generate();
         var profissionalId = UuidV7.generate();
         when(serviceOfferingDirectory.find(ofertaId))
-                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0)));
+                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0, "Corte de Cabelo", new Money(3000))));
         when(availabilityDirectory.operatingHoursFor(DayOfWeek.MONDAY)).thenReturn(List.of());
         when(availabilityDirectory.workScheduleFor(profissionalId, DayOfWeek.MONDAY)).thenReturn(List.of());
         when(availabilityDirectory.blocksFor(profissionalId, hoje)).thenReturn(List.of());
@@ -65,7 +81,7 @@ class GetAvailableSlotsHandlerTest {
         var profissionalId = UuidV7.generate();
         var limite = hoje.plusDays(30);
         when(serviceOfferingDirectory.find(ofertaId))
-                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0)));
+                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0, "Corte de Cabelo", new Money(3000))));
         when(availabilityDirectory.operatingHoursFor(any())).thenReturn(List.of());
         when(availabilityDirectory.workScheduleFor(any(), any())).thenReturn(List.of());
         when(availabilityDirectory.blocksFor(any(), any())).thenReturn(List.of());
@@ -107,7 +123,7 @@ class GetAvailableSlotsHandlerTest {
         var ofertaId = UuidV7.generate();
         var profissionalDaOferta = UuidV7.generate();
         when(serviceOfferingDirectory.find(ofertaId))
-                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalDaOferta, 30, 0)));
+                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalDaOferta, 30, 0, "Corte de Cabelo", new Money(3000))));
         when(availabilityDirectory.operatingHoursFor(DayOfWeek.MONDAY)).thenReturn(List.of());
         when(availabilityDirectory.blocksFor(profissionalDaOferta, hoje)).thenReturn(List.of());
 
@@ -123,7 +139,7 @@ class GetAvailableSlotsHandlerTest {
         var ofertaId = UuidV7.generate();
         var profissionalId = UuidV7.generate();
         when(serviceOfferingDirectory.find(ofertaId))
-                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0)));
+                .thenReturn(Optional.of(new ServiceOfferingRef(ofertaId, profissionalId, 30, 0, "Corte de Cabelo", new Money(3000))));
         when(availabilityDirectory.operatingHoursFor(DayOfWeek.MONDAY))
                 .thenReturn(List.of(new TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))));
         when(availabilityDirectory.workScheduleFor(profissionalId, DayOfWeek.MONDAY))

@@ -2,7 +2,10 @@ package com.agendaia.scheduling.application.port.out;
 
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.shared.TenantId;
+import com.agendaia.shared.TimeRange;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,4 +25,15 @@ public interface AppointmentRepository {
 
     /** Quantos agendamentos futuros ainda ativos ({@code SCHEDULED}) o cliente tem no tenant (BR-9). */
     long countFutureActive(TenantId tenantId, UUID customerId, Instant agora);
+
+    /**
+     * Intervalos já ocupados por agendamento ativo ({@code SCHEDULED}/
+     * {@code CONFIRMED}) do profissional na data, recortados às bordas do
+     * dia — mesma técnica de {@code organization.api.AvailabilityDirectory
+     * #blocksFor}. {@code GetAvailableSlotsHandler} os trata como mais um
+     * bloqueio, junto com {@code TimeOff}: sem isso, a listagem de
+     * horários livres nunca refletiria uma reserva já feita (achado durante
+     * o TASK-006 de pagina-publica-agendamento).
+     */
+    List<TimeRange> findOccupiedRanges(TenantId tenantId, UUID professionalId, LocalDate date);
 }

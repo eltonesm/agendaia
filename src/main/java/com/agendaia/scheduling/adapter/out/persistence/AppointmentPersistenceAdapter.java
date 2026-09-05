@@ -5,7 +5,13 @@ import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
 import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
 import com.agendaia.shared.TenantId;
+import com.agendaia.shared.TimeRange;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -40,5 +46,33 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
     public long countFutureActive(TenantId tenantId, UUID customerId, Instant agora) {
         return appointmentJpaRepository.countByTenantIdAndCustomerIdAndStatusAndStartsAtAfter(
                 tenantId.value(), customerId, AppointmentStatus.SCHEDULED, agora);
+    }
+
+    /** Mesma técnica de recorte de {@code AvailabilityDirectoryHandler#blocksFor} (organization). */
+    @Override
+    public List<TimeRange> findOccupiedRanges(TenantId tenantId, UUID professionalId, LocalDate date) {
+        var zone = ZoneId.systemDefault();
+        var dayStart = date.atStartOfDay(zone).toInstant();
+        var dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant();
+
+        return appointmentJpaRepository.findOverlapping(tenantId.value(), professionalId, dayStart, dayEnd).stream()
+                .map(agendamento -> new TimeRange(
+                        clipStart(agendamento.startsAt(), dayStart, zone),
+                        clipEnd(agendamento.endsAt(), dayEnd, zone)))
+                .toList();
+    }
+
+    private static LocalTime clipStart(Instant startsAt, Instant dayStart, ZoneId zone) {
+        if (!startsAt.isAfter(dayStart)) {
+            return LocalTime.MIN;
+        }
+        return LocalDateTime.ofInstant(startsAt, zone).toLocalTime();
+    }
+
+    private static LocalTime clipEnd(Instant endsAt, Instant dayEnd, ZoneId zone) {
+        if (!endsAt.isBefore(dayEnd)) {
+            return LocalTime.MAX;
+        }
+        return LocalDateTime.ofInstant(endsAt, zone).toLocalTime();
     }
 }
