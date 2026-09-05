@@ -34,19 +34,6 @@ passa por `/sdd.start`.
 
 ---
 
-### TODO-006: Página pública e agendar
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-05
-- **Origin**: revisão arquitetural
-- **Context**: A escrita. Exclusion constraint (ADR 0005), revalidação de todo id do formulário contra o tenant do slug, teste de concorrência com duas reservas simultâneas. Inclui as defesas contra abuso: honeypot, rate limit e teto por telefone.
-- **Affected Files**: `scheduling`, `customer`, `platform`
-- **Feature**: `sdd/wip/20260905-pagina-publica-agendamento/`
-- **Complexity**: High
-
----
-
 ### TODO-007: Confirmação com link de cancelamento
 - **Priority**: Medium
 - **Status**: pending
@@ -451,6 +438,22 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-006: Página pública e agendar
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Started**: 2026-09-05
+- **Resolved**: 2026-09-05
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260905-pagina-publica-agendamento/`
+- **Origin**: revisão arquitetural
+- **Context**: O link público (`/b/{slug}`) que cada estabelecimento compartilha com os clientes para agendar sozinhos, sem login — o motivo de existir do produto. Primeira escrita real em `scheduling` (`Appointment`, exclusion constraint GiST do ADR 0005) e nascimento do contexto `customer` (get-or-create por telefone dentro do tenant). Catálogo → profissionais → horários → confirmação → sucesso, com honeypot, rate limit por IP e teto de 3 agendamentos futuros por telefone contra abuso. 18 tasks, 394 testes no projeto inteiro, 90% de cobertura de instrução.
+- **Decisões tomadas antes da spec**: `tenantId` nunca aceito do formulário público — sempre resolvido pelo slug e revalidado; overbooking impedido pelo banco (exclusion constraint), não pela aplicação; teste de concorrência obrigatório com Postgres real (H2 não implementa exclusion constraint).
+- **Nasceu aqui**: contexto `customer` completo (`Customer`, regime CRUD), `Appointment`/`AppointmentStatus` (domínio puro de `scheduling`), `TenantContextFilter` com segunda via de resolução por slug, `LayoutAdvice` fundido, `BookingRateLimiter` e honeypot.
+- **Gotcha real**: `GetAvailableSlotsHandler` (TODO-005) nunca descontava `Appointment` já criados da disponibilidade calculada — corrigido dentro desta feature, por decisão do usuário, em vez de virar tarefa separada. Um achado de code review (`CustomerDirectoryHandler.findOrCreate` sem tratar `DataIntegrityViolationException` de telefone duplicado) foi investigado e a correção óbvia **revertida**: reconsultar dentro da mesma transação já abortada pelo Postgres pioraria o erro. Documentado como **DEBT-017**.
+
+---
 
 ### TODO-009: Back-office do operador — estabelecimentos, trial e pagamento
 - **Priority**: High

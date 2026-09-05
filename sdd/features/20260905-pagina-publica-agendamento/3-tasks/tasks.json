@@ -1,0 +1,370 @@
+{
+  "feature": "pagina-publica-agendamento",
+  "local_config": {
+    "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
+    "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
+  },
+  "stats": { "total": 18, "done": 18, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "organization.api.BusinessDirectory ganha findBySlug",
+      "description": "BusinessRepository.findBySlug ja existe (comentario 'a partir da TODO-006'). Expor via BusinessDirectory.findBySlug(String) -> Optional<BusinessRef>, sem tenant implicito (e quem resolve o tenant). Handler edita BusinessDirectoryHandler.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/organization/api/BusinessDirectory.java",
+        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: findBySlug retorna vazio para slug inexistente, sem lancar excecao",
+        "AC-2: BusinessRef retornado tem tenantId, name, slug, createdAt (mesmo tipo ja usado por billing)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-002",
+      "title": "customer: dominio, migration e porta de saida",
+      "description": "Migration V7 (customer: id, tenant_id, name, phone, anonymized_at, created_at, updated_at, UNIQUE(tenant_id, phone)). Customer (regime CRUD, ADR 0002, DD-2): entidade JPA e o modelo. CustomerRepository (port.out). customer.api.CustomerDirectory.findOrCreate(name, phone) -> UUID, implementado por CustomerDirectoryHandler (get-or-create pelo par tenant+phone, tenant de TenantContext.require()). package-info.java com allowedDependencies explicito (shared, platform).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/resources/db/migration/V7__customer_create_customer.sql",
+        "src/main/java/com/agendaia/customer/package-info.java",
+        "src/main/java/com/agendaia/customer/domain/Customer.java",
+        "src/main/java/com/agendaia/customer/application/port/out/CustomerRepository.java",
+        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
+        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: findOrCreate com telefone ja existente no tenant devolve o MESMO id, sem duplicar (BR-3)",
+        "AC-2: mesmo telefone em tenants diferentes gera dois Customer distintos",
+        "AC-3: nome mais recente atualiza o cadastro quando o telefone ja existe (telefone e a chave, nao o nome)",
+        "GATE: ./mvnw compile passa",
+        "GATE: ModuleStructureTest continua verde apos declarar allowedDependencies"
+      ],
+      "references": ["US-4", "BR-3"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "catalog.api: ServiceDirectory novo e ServiceOfferingDirectory.listActiveByService",
+      "description": "ServiceDirectory.listActive() -> List<PublicServiceRef> (novo contrato). ServiceOfferingDirectory ganha listActiveByService(UUID serviceId) -> List<PublicOfferingRef>, cruzando organization.api.ProfessionalDirectory.listActive() uma vez so (DD-1, mesma tecnica de ListServiceOfferingsHandler). ServiceOfferingDirectoryHandler editado; ServiceDirectoryHandler novo.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/catalog/api/ServiceDirectory.java",
+        "src/main/java/com/agendaia/catalog/api/PublicServiceRef.java",
+        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/agendaia/catalog/api/PublicOfferingRef.java",
+        "src/main/java/com/agendaia/catalog/application/ServiceDirectoryHandler.java",
+        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: listActiveByService cruza ProfessionalDirectory.listActive() EXATAMENTE uma vez, nao em loop por oferta",
+        "AC-2: servico sem nenhuma oferta ativa devolve lista vazia, nao erro",
+        "AC-3: listActive/listActiveByService respeitam TenantContext.require() interno, sem parametro de tenant",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "scheduling.domain: Appointment, AppointmentStatus e excecoes",
+      "description": "Appointment (Java puro, regime completo ADR 0002): schedule(tenantId, professionalId, serviceOfferingId, customerId, serviceName, durationMinutes, price, startsAt, endsAt) valida campos nao nulos e endsAt apos startsAt (BR-1/BR-2). AppointmentStatus enum (SCHEDULED, CONFIRMED, CANCELLED, NO_SHOW — so SCHEDULED alcancavel aqui). SlotUnavailableException e PhoneAppointmentLimitExceededException (extends DomainException).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/domain/Appointment.java",
+        "src/main/java/com/agendaia/scheduling/domain/AppointmentStatus.java",
+        "src/main/java/com/agendaia/scheduling/domain/exception/SlotUnavailableException.java",
+        "src/main/java/com/agendaia/scheduling/domain/exception/PhoneAppointmentLimitExceededException.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: schedule() nasce sempre com status SCHEDULED (BR-1)",
+        "AC-2: schedule() recusa qualquer campo nulo e endsAt <= startsAt",
+        "AC-3: nenhuma classe deste pacote importa org.springframework ou jakarta.persistence",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-4", "US-6", "BR-1", "BR-2"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-005",
+      "title": "scheduling: migration V8, entidade JPA e persistencia de Appointment",
+      "description": "Migration V8 (appointment + EXCLUDE USING gist literal do ADR 0005, indice (tenant_id, customer_id, status)). AppointmentJpaEntity + AppointmentMapper (regime completo). AppointmentRepository (port.out) com save() e countFutureActive(tenantId, customerId, agora) via @Query (DD-9, BR-9). AppointmentPersistenceAdapter traduz DataIntegrityViolationException em SlotUnavailableException (DD-6). Escopo ampliado durante a implementacao (DD-10): findOccupiedRanges(tenantId, professionalId, date) para GetAvailableSlotsHandler (TODO-005) excluir agendamentos ja ativos do calculo de disponibilidade — lacuna que a propria spec da TODO-005 ja apontava para esta feature.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-004"],
+      "files": [
+        "src/main/resources/db/migration/V8__scheduling_create_appointment.sql",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaEntity.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentMapper.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
+        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: EXCLUDE USING gist copiado literalmente do ADR 0005 (tenant_id, professional_id, tstzrange '[)', WHERE status IN SCHEDULED/CONFIRMED)",
+        "AC-2: DataIntegrityViolationException da constraint vira SlotUnavailableException, nunca vaza como 500",
+        "AC-3: countFutureActive conta so status SCHEDULED com startsAt no futuro, indexado por (tenant_id, customer_id, status)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-6", "BR-4"],
+      "design_decisions": ["DD-6", "DD-9"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "scheduling.application.BookAppointmentHandler",
+      "description": "BookAppointmentUseCase/Command(serviceOfferingId, startsAt, customerName, customerPhone)/BookedAppointment. Handler (DD-5, @Transactional): revalida oferta via ServiceOfferingDirectory.find (tenant, BR-5), resolve customerId via customer.api.CustomerDirectory.findOrCreate, checa teto de agendamentos futuros (BR-9, TASK-005), monta o retrato (BR-2) e grava via AppointmentRepository. scheduling ganhou customer :: api em allowedDependencies.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-002", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/port/in/BookAppointmentUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/BookAppointmentCommand.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/BookedAppointment.java",
+        "src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: telefone com 3 agendamentos futuros SCHEDULED recusa o 4o com PhoneAppointmentLimitExceededException (BR-9)",
+        "AC-2: mesmo telefone reaproveita o Customer existente, nunca cria um segundo (BR-3)",
+        "AC-3: Appointment gravado com retrato (serviceName/durationMinutes/price) da oferta no momento da chamada, nao uma referencia viva ao catalogo (BR-2)",
+        "AC-4: oferta de outro tenant (ou inexistente) recusa antes de qualquer gravacao (BR-5)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-4", "US-6", "US-7", "BR-2", "BR-3", "BR-5", "BR-9"],
+      "design_decisions": ["DD-5", "DD-9"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "platform.tenant: resolucao de tenant pelo slug",
+      "description": "TenantContextFilter ganha segunda via de resolucao (DD-3): nao autenticado + path comeca com '/b/' -> extrai slug -> organization.api.BusinessDirectory (via ObjectProvider) .findBySlug(slug) -> achou: TenantContext.set + request.setAttribute('resolvedBusiness', ref) (DD-4); nao achou/provider vazio: segue sem tenant. Achado durante a implementacao: LayoutAdvice (ja existente) editado para checar sessao OU o atributo de slug na MESMA @ModelAttribute, em vez de um PublicLayoutAdvice novo separado — dois @ControllerAdvice globais com o mesmo nome de atributo teriam ordem de execucao indefinida e se sobrescreveriam.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": [
+        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java",
+        "src/main/java/com/agendaia/platform/web/LayoutAdvice.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: requisicao autenticada continua resolvendo pela sessao, sem nenhuma mudanca de comportamento (regressao zero)",
+        "AC-2: slug valido em /b/{slug} popula TenantContext e o atributo resolvedBusiness, sem segunda consulta no advice",
+        "AC-3: slug inexistente segue sem tenant nenhum (nao lanca excecao no filtro)",
+        "AC-4: TenantContext.clear() continua rodando no finally, mesmo na via nova",
+        "GATE: ./mvnw compile passa",
+        "GATE: testes existentes de /admin/** continuam verdes (SecurityRoutesIT, CrossTenantIsolationIT)"
+      ],
+      "references": ["US-1", "BR-5"],
+      "design_decisions": ["DD-3", "DD-4"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "platform.security: libera /b/** mantendo CSRF ativo",
+      "description": "SecurityConfig.filterChain ganha requestMatchers('/b/**').permitAll() (leitura e escrita, sem sessao). CSRF continua ligado por padrao — formulario Thymeleaf ja inclui o token via th:action, sem configuracao extra.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/platform/security/SecurityConfig.java"],
+      "acceptance_criteria": [
+        "AC-1: GET /b/{slug} sem sessao devolve 200, nao redireciona para /login",
+        "AC-2: POST /b/{slug}/... sem token CSRF continua sendo recusado (403) — permitAll nao desliga CSRF",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-009",
+      "title": "PublicBookingController: rotas de leitura (catalogo, profissionais, horarios)",
+      "description": "GET /b/{slug} (lista servicos via ServiceDirectory), GET /b/{slug}/servicos/{serviceId} (lista ofertas via listActiveByService), GET /b/{slug}/ofertas/{offeringId} (lista horarios via GetAvailableSlotsUseCase existente, TODO-005, parametro ?data=). Slug/ids nao resolvidos (TenantContext vazio, ou id de outro tenant) -> ResponseStatusException(NOT_FOUND) ou erro tratado. Templates catalogo.html, profissionais.html, horarios.html. Testado manualmente ponta a ponta via curl: catalogo, escolha de profissional e grade de horarios (10 min) todos corretos.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-003", "TASK-007", "TASK-008"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java",
+        "src/main/resources/templates/public/catalogo.html",
+        "src/main/resources/templates/public/profissionais.html",
+        "src/main/resources/templates/public/horarios.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: slug inexistente devolve 404 (view error/404), nao 500",
+        "AC-2: servico sem profissional ativo mostra mensagem clara, sem quebrar a pagina (US-2)",
+        "AC-3: data sem horario disponivel mostra mensagem clara, sem quebrar a pagina (US-3)",
+        "AC-4: data fora do horizonte de 30 dias nao e aceita (reaproveita AvailabilityQueryOutOfRangeException da TODO-005)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1", "US-2", "US-3"],
+      "design_decisions": ["DD-8"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "PublicBookingController: confirmacao (honeypot, rate limit, POST)",
+      "description": "POST /b/{slug}/ofertas/{offeringId}: honeypot (BR-7, campo invisivel via CSS, preenchido = sucesso generico silencioso), BookingRateLimiter (DD-7, ConcurrentHashMap por IP, 5/10min, BR-8), revalida oferta contra o tenant, chama BookAppointmentHandler. PRG para GET /b/{slug}/agendamentos/{id} (tela de sucesso, resumo via flash attribute, sem consulta nova). PublicBookingRequest (nome, telefone, honeypot). Template sucesso.html. Achado durante o teste manual (DD-11): recarregarTelaDeHorarios usava LocalDate.now() em vez da data escolhida pelo cliente, escondendo o erro de campo quando a data nao era hoje — corrigido com campo hidden 'data' no formulario. Testado manualmente: caminho feliz, overbooking recusado pela exclusion constraint (mensagem correta ao usuario), honeypot (redirect indistinguivel, nada gravado), rate limit (5/10min por IP confirmado, inclusive nos proprios testes manuais).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-006", "TASK-008", "TASK-009"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java",
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/BookingRateLimiter.java",
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/request/PublicBookingRequest.java",
+        "src/main/resources/templates/public/sucesso.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: honeypot preenchido nao grava Appointment e devolve resposta indistinguivel de outro caminho (BR-7)",
+        "AC-2: 6a tentativa do mesmo IP em 10 min e recusada antes de qualquer outra validacao (BR-8)",
+        "AC-3: sem token CSRF, POST e recusado com 403",
+        "AC-4: confirmacao valida grava Appointment SCHEDULED e redireciona (PRG) para a tela de sucesso com o resumo",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-4", "US-5", "US-7", "BR-7", "BR-8"],
+      "design_decisions": ["DD-7", "DD-8"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "AppointmentTest (dominio puro)",
+      "description": "Cobrir schedule() (BR-1: sempre SCHEDULED, BR-2: retrato correto) e as validacoes de campo nulo/endsAt invalido.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-004"],
+      "files": ["src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java"],
+      "acceptance_criteria": [
+        "AC-1: status sempre SCHEDULED apos schedule()",
+        "AC-2: cada campo nulo tem um caso de teste recusando",
+        "GATE: ./mvnw test -Dtest=AppointmentTest passa"
+      ],
+      "references": ["BR-1", "BR-2"],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-012",
+      "title": "BookAppointmentHandlerTest (mocks)",
+      "description": "Cobrir BR-3 (get-or-create de Customer via mock de CustomerDirectory), BR-9 (teto de 3 agendamentos futuros via mock de AppointmentRepository.countFutureActive), BR-5 (oferta de outro tenant/inexistente recusa antes de gravar), BR-2 (retrato gravado bate com a oferta resolvida).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-006"],
+      "files": ["src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: teto de 3 agendamentos futuros recusa o 4o sem chamar save()",
+        "AC-2: oferta nao encontrada recusa sem chamar CustomerDirectory nem save()",
+        "GATE: ./mvnw test -Dtest=BookAppointmentHandlerTest passa"
+      ],
+      "references": ["BR-2", "BR-3", "BR-5", "BR-9"],
+      "design_decisions": ["DD-5", "DD-9"]
+    },
+    {
+      "id": "TASK-013",
+      "title": "ServiceOfferingDirectoryHandlerTest: cobertura de listActiveByService",
+      "description": "Confirmar que listActiveByService cruza ProfessionalDirectory.listActive() exatamente uma vez (verify times(1)), independente do numero de ofertas retornadas, e que servico sem oferta ativa devolve lista vazia.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/test/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandlerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: verify(professionalDirectory, times(1)).listActive() com 3+ ofertas retornadas",
+        "AC-2: lista vazia para servico sem oferta ativa, sem erro",
+        "GATE: ./mvnw test -Dtest=ServiceOfferingDirectoryHandlerTest passa"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-014",
+      "title": "PublicBookingControllerTest (@WebMvcTest)",
+      "description": "Camada web isolada: honeypot, rate limit (mock do BookingRateLimiter ou instancia real com poucas tentativas), CSRF obrigatorio no POST, PRG apos sucesso, 404 para slug/oferta nao resolvidos, erro de validacao devolve campo (nao 500). BusinessDirectory mockado para o TenantContextFilter real resolver o tenant pelo slug. BookingRateLimiter importado de verdade (nao mock); cada teste que faz POST usa IP simulado proprio (RequestPostProcessor) para nao compartilhar o estado do rate limiter entre testes da mesma classe (contexto Spring cacheado).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-009", "TASK-010"],
+      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/PublicBookingControllerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: sem csrf(), POST devolve 403",
+        "AC-2: honeypot preenchido nao chama BookAppointmentUseCase",
+        "AC-3: 6a tentativa do mesmo IP e recusada",
+        "GATE: ./mvnw test -Dtest=PublicBookingControllerTest passa"
+      ],
+      "references": ["US-7", "BR-7", "BR-8"],
+      "design_decisions": ["DD-7"]
+    },
+    {
+      "id": "TASK-015",
+      "title": "PaginaPublicaAgendamentoIT (E2E-1 a E2E-7)",
+      "description": "Testcontainers, ponta a ponta contra Postgres real (obrigatorio para a exclusion constraint, ADR 0005 — H2 nao serve). Caminho feliz (E2E-1), duas reservas concorrentes para o mesmo horario com apenas uma vencendo (E2E-2, exige duas threads/requisicoes disparadas em paralelo), id de outro tenant recusado (E2E-3), honeypot (E2E-4), rate limit (E2E-5), teto por telefone (E2E-6), Customer reaproveitado (E2E-7). Cada teste semeia seu proprio tenant com slug unico, sem limpar tabelas entre metodos. Achado real (DD-12): POST com oferta de outro tenant vazava como 422 generico em vez de 404 — corrigido no controller.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-009", "TASK-010"],
+      "files": ["src/test/java/com/agendaia/scheduling/PaginaPublicaAgendamentoIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 a E2E-7 da spec funcional cobertos, cada um com asercao direta (nao so ausencia de erro)",
+        "AC-2: E2E-2 dispara duas requisicoes de fato concorrentes (ExecutorService/CountDownLatch) para o mesmo profissional+horario, exatamente uma grava",
+        "GATE: ./mvnw verify -Dtest=PaginaPublicaAgendamentoIT passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6", "US-7"],
+      "design_decisions": ["DD-3", "DD-5", "DD-6"]
+    },
+    {
+      "id": "TASK-016",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-9 refletidas no codigo, scheduling.domain continua Java puro, customer em regime CRUD sem cerimonia excessiva, sem setter publico alem do necessario, sem sufixo Impl, transacao so em application.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-017",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: listActiveByService cruza ProfessionalDirectory uma vez so (sem N+1); BookAppointmentHandler faz no maximo uma consulta de contagem (BR-9) mais um insert por confirmacao; exclusion constraint e verificacao de indice, nao segunda consulta logica; BookingRateLimiter em memoria sem crescimento ilimitado (limpar entradas expiradas).",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-018",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: tenantId nunca aceito do formulario publico (BR-5), overbooking impedido pelo banco e nao pela aplicacao (BR-4/ADR 0005), CSRF ativo em /b/** apesar do permitAll, XSS (th:text em todo dado de cliente/estabelecimento), honeypot/rate limit/teto por telefone funcionando como desenhado, sem segredo hardcoded.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-4", "BR-5", "BR-7", "BR-8", "BR-9"],
+      "design_decisions": ["DD-3", "DD-6", "DD-7"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-008"],
+        "level_1": ["TASK-005", "TASK-007"],
+        "level_2": ["TASK-006", "TASK-009"],
+        "level_3": ["TASK-010"],
+        "level_4": ["TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015"]
+      },
+      "3": {
+        "level_0": ["TASK-016", "TASK-017", "TASK-018"]
+      }
+    }
+  }
+}
