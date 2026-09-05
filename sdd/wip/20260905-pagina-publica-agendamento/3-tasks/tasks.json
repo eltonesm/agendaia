@@ -4,13 +4,13 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 0, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 5, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
       "title": "organization.api.BusinessDirectory ganha findBySlug",
       "description": "BusinessRepository.findBySlug ja existe (comentario 'a partir da TODO-006'). Expor via BusinessDirectory.findBySlug(String) -> Optional<BusinessRef>, sem tenant implicito (e quem resolve o tenant). Handler edita BusinessDirectoryHandler.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -29,7 +29,7 @@
       "id": "TASK-002",
       "title": "customer: dominio, migration e porta de saida",
       "description": "Migration V7 (customer: id, tenant_id, name, phone, anonymized_at, created_at, updated_at, UNIQUE(tenant_id, phone)). Customer (regime CRUD, ADR 0002, DD-2): entidade JPA e o modelo. CustomerRepository (port.out). customer.api.CustomerDirectory.findOrCreate(name, phone) -> UUID, implementado por CustomerDirectoryHandler (get-or-create pelo par tenant+phone, tenant de TenantContext.require()). package-info.java com allowedDependencies explicito (shared, platform).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -54,7 +54,7 @@
       "id": "TASK-003",
       "title": "catalog.api: ServiceDirectory novo e ServiceOfferingDirectory.listActiveByService",
       "description": "ServiceDirectory.listActive() -> List<PublicServiceRef> (novo contrato). ServiceOfferingDirectory ganha listActiveByService(UUID serviceId) -> List<PublicOfferingRef>, cruzando organization.api.ProfessionalDirectory.listActive() uma vez so (DD-1, mesma tecnica de ListServiceOfferingsHandler). ServiceOfferingDirectoryHandler editado; ServiceDirectoryHandler novo.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -78,7 +78,7 @@
       "id": "TASK-004",
       "title": "scheduling.domain: Appointment, AppointmentStatus e excecoes",
       "description": "Appointment (Java puro, regime completo ADR 0002): schedule(tenantId, professionalId, serviceOfferingId, customerId, serviceName, durationMinutes, price, startsAt, endsAt) valida campos nao nulos e endsAt apos startsAt (BR-1/BR-2). AppointmentStatus enum (SCHEDULED, CONFIRMED, CANCELLED, NO_SHOW — so SCHEDULED alcancavel aqui). SlotUnavailableException e PhoneAppointmentLimitExceededException (extends DomainException).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -168,7 +168,7 @@
       "id": "TASK-008",
       "title": "platform.security: libera /b/** mantendo CSRF ativo",
       "description": "SecurityConfig.filterChain ganha requestMatchers('/b/**').permitAll() (leitura e escrita, sem sessao). CSRF continua ligado por padrao — formulario Thymeleaf ja inclui o token via th:action, sem configuracao extra.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": ["src/main/java/com/agendaia/platform/security/SecurityConfig.java"],
