@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 13, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 14, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -277,8 +277,8 @@
     {
       "id": "TASK-014",
       "title": "PublicBookingControllerTest (@WebMvcTest)",
-      "description": "Camada web isolada: honeypot, rate limit (mock do BookingRateLimiter ou instancia real com poucas tentativas), CSRF obrigatorio no POST, PRG apos sucesso, 404 para slug/oferta nao resolvidos, erro de validacao devolve campo (nao 500).",
-      "status": "pending",
+      "description": "Camada web isolada: honeypot, rate limit (mock do BookingRateLimiter ou instancia real com poucas tentativas), CSRF obrigatorio no POST, PRG apos sucesso, 404 para slug/oferta nao resolvidos, erro de validacao devolve campo (nao 500). BusinessDirectory mockado para o TenantContextFilter real resolver o tenant pelo slug. BookingRateLimiter importado de verdade (nao mock); cada teste que faz POST usa IP simulado proprio (RequestPostProcessor) para nao compartilhar o estado do rate limiter entre testes da mesma classe (contexto Spring cacheado).",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010"],
       "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/PublicBookingControllerTest.java"],
