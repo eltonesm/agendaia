@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 10, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 13, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -230,7 +230,7 @@
       "id": "TASK-011",
       "title": "AppointmentTest (dominio puro)",
       "description": "Cobrir schedule() (BR-1: sempre SCHEDULED, BR-2: retrato correto) e as validacoes de campo nulo/endsAt invalido.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-004"],
       "files": ["src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java"],
@@ -246,7 +246,7 @@
       "id": "TASK-012",
       "title": "BookAppointmentHandlerTest (mocks)",
       "description": "Cobrir BR-3 (get-or-create de Customer via mock de CustomerDirectory), BR-9 (teto de 3 agendamentos futuros via mock de AppointmentRepository.countFutureActive), BR-5 (oferta de outro tenant/inexistente recusa antes de gravar), BR-2 (retrato gravado bate com a oferta resolvida).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
       "files": ["src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java"],
@@ -262,7 +262,7 @@
       "id": "TASK-013",
       "title": "ServiceOfferingDirectoryHandlerTest: cobertura de listActiveByService",
       "description": "Confirmar que listActiveByService cruza ProfessionalDirectory.listActive() exatamente uma vez (verify times(1)), independente do numero de ofertas retornadas, e que servico sem oferta ativa devolve lista vazia.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-003"],
       "files": ["src/test/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandlerTest.java"],
