@@ -32,18 +32,6 @@ passa por `/sdd.start`.
 ## 📋 TODOs
 
 
-### TODO-009: Back-office do operador — estabelecimentos, trial e pagamento
-- **Priority**: High
-- **Status**: in-progress
-- **Created**: 2026-09-03
-- **Started**: 2026-09-04
-- **Origin**: revisão arquitetural — pedido do dono da plataforma em 2026-09-03
-- **Context**: Hoje não existe nenhuma visão de quem opera o AgendaIA (você) sobre os estabelecimentos cadastrados — quantos existem, qual o status de pagamento, quem está em trial. Isso é uma "decisão nova" de propósito: o glossário bane `Plano`, `Assinatura` e `Pagamento` do MVP justamente até que exista essa decisão — esta TODO é ela. Painel do operador (fora de `/admin/**`, que é do dono do estabelecimento — o operador não é um tenant) lista cada `Business` com nome, slug, data de cadastro, "modelo" (campo para plano futuro; só um valor fixo no MVP) e status: trial, vencido (aguardando pagamento), bloqueado, pago. Trial automático de 30 dias corridos a partir do cadastro (retroativo ao piloto existente, calculado a partir do `created_at` dele). Ao vencer o trial, entra em carência de 5 dias corridos: o admin do dono passa a mostrar um aviso fixo com QR code/chave Pix, sem bloquear nada ainda. Se ninguém marcar pagamento até o fim da carência (dia 35), o sistema bloqueia `/admin/**` sozinho, redirecionando para uma tela "conta suspensa" com link de WhatsApp de suporte. O operador pode, a qualquer momento, marcar como pago (Pix recebido por fora, sem gateway nesta feature — ver IDEA de gateway abaixo) ou estender o prazo manualmente, para cobrir exceções sem precisar que tudo seja automático. Inclui também um botão de WhatsApp no admin do dono do estabelecimento, para dúvidas e sugestões — mesma técnica `wa.me` que a TODO-007 já vai usar do lado do cliente, aqui apontando para o número do operador; cobre o pedido de canal de feedback do dono sem precisar de tela ou tabela nova (decisão: WhatsApp é canal suficiente no MVP).
-- **Affected Files**: contexto novo (nome a decidir na spec técnica — ex. `billing`), `organization` (`Business` ganha dados de trial/status), `platform` (novo tipo de sessão, do operador, fora do modelo de tenant), `docs/domain/glossary.md` (amendment liberando `Plano`/`Assinatura`/`Pagamento`)
-- **Feature**: `sdd/wip/20260904-back-office-operador/`
-- **Complexity**: High
-- **Notes**: Perguntas em aberto para a spec funcional: nome exato do "modelo"/plano (provável só um valor fixo tipo "Padrão" no MVP); se o vencimento também notifica o operador proativamente ou se ele só vê no próprio painel; como autenticar o operador (role sem `tenant_id` vs. login inteiramente separado). Gateway de pagamento (Stripe/Mercado Pago assinatura) fica para quando o volume de clientes justificar — cobrar por fora é a decisão para o MVP.
-
 ---
 
 ### TODO-006: Página pública e agendar
@@ -452,6 +440,22 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-009: Back-office do operador — estabelecimentos, trial e pagamento
+- **Priority**: High
+- **Status**: resolved
+- **Created**: 2026-09-03
+- **Started**: 2026-09-04
+- **Resolved**: 2026-09-05
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260904-back-office-operador/`
+- **Origin**: revisão arquitetural — pedido do dono da plataforma em 2026-09-03
+- **Context**: Sétimo contexto delimitado (`billing`) e primeiro papel de usuário sem tenant — o operador da plataforma. Painel do operador (`/operador/**`, login isolado) lista todos os estabelecimentos com nome, slug, cadastro, status calculado (trial/pago/carência/bloqueado) e data de validade. Trial automático de 30 dias corridos a partir do cadastro; carência de 5 dias com aviso fixo no admin do dono; bloqueio automático de `/admin/**` ao final da carência, redirecionando para tela de conta suspensa com WhatsApp; operador marca pagamento/estende prazo a qualquer momento (Pix recebido por fora, sem gateway). Botão de WhatsApp incluído também no admin do dono, para dúvidas e sugestões. 15 tasks, 34 testes novos, 90% de cobertura de instrução no projeto inteiro.
+- **Decisões tomadas antes da spec**: operador é um papel novo, não um tenant; cobrança por fora (Pix manual) até o volume justificar gateway; `accessValidUntil` como linha do tempo única para trial/pagamento/carência, com `trialEndsAt` imutável só para distinguir TRIAL de PAID.
+- **Nasceu aqui**: contexto `billing` completo (`BillingAccount`, `AccessStatus`, `BillingAccountService`, `AccessGuardFilter`, `BillingBannerAdvice`), `organization.api.BusinessDirectory` (`listAll()`/`find(UUID)`), `platform.security.OperatorSecurityConfig` (segunda cadeia de autenticação).
+- **Gotcha real**: as duas cadeias de segurança (dono e operador) compartilham o mesmo `SecurityContextRepository` e checavam só `authenticated()`, não a role — uma sessão de dono passaria pelo gate do operador e veria dado de todos os tenants. Descoberto ao escrever o teste de isolamento (E2E-5) e corrigido com `hasRole("OWNER")`/`hasRole("OPERATOR")` antes do arquivamento; promovido a `PATTERNS.md`.
+
+---
 
 ### TODO-005: Consultar horários disponíveis
 - **Priority**: High
