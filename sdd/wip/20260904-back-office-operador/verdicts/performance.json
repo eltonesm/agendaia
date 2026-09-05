@@ -1,0 +1,17 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "notes": [
+    "AccessGuardFilter faz no maximo uma consulta por requisicao a /admin/**: BillingAccountService.snapshotFor -> BillingAccountRepository.findByTenantId(tenantId), indexado, sem loop.",
+    "listForOperator busca BillingAccountRepository em lote (findByTenantIdIn) cruzando com BusinessDirectory.listAll() via Collectors.toMap — nenhuma consulta por estabelecimento, sem N+1.",
+    "BillingBannerAdvice le o atributo de requisicao (REQUEST_ATTR_SNAPSHOT) que AccessGuardFilter ja calculou, sem segunda consulta na mesma requisicao.",
+    "Migration V6: tenant_id tem UNIQUE, que o Postgres ja implementa com indice unico implicito; o CREATE INDEX billing_account_tenant_idx adicional e redundante (recomendacao, nao critico dado o volume esperado no piloto — mantido custo de escrita duplicado e desprezivel numa tabela pequena)."
+  ],
+  "patterns_checked": ["n+1", "unbounded_collections", "redundant_index", "n_queries_per_request"],
+  "timestamp": "2026-09-05T13:15:00Z"
+}

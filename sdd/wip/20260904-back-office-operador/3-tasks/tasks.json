@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Migration V6 nesta feature (billing_account). Credenciais do operador e chave/QR Pix e numero de WhatsApp vem de application.yaml/variaveis de ambiente, nunca de banco."
   },
-  "stats": { "total": 15, "done": 12, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 15, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -237,7 +237,7 @@
       "id": "TASK-013",
       "title": "Code Review",
       "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-7 refletidas no codigo, platform continua sem regra de negocio (AccessGuardFilter/BillingBannerAdvice moram em billing), sem setter publico, sem sufixo Impl, transacao so em application.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],
@@ -252,7 +252,7 @@
       "id": "TASK-014",
       "title": "Performance Review",
       "description": "Skill sdd-performance-expert: AccessGuardFilter roda em toda requisicao /admin/** sem N+1 (uma consulta indexada por requisicao); listForOperator busca BillingAccountRepository em lote, nao por estabelecimento; BillingBannerAdvice reaproveita o atributo de requisicao do filtro em vez de consultar de novo.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],
@@ -267,7 +267,7 @@
       "id": "TASK-015",
       "title": "Security Review",
       "description": "Skill sdd-code-reviewer em modo seguranca: isolamento total entre login de operador e login de dono (BR-6), conta do operador so por configuracao (BR-7), BusinessDirectory.listAll() so e chamado por codigo atras do login do operador (DD-5), CSRF nos formularios novos, sem segredo hardcoded (credencial/Pix/WhatsApp vem de config, nao de codigo).",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],

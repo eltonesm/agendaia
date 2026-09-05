@@ -1,0 +1,20 @@
+{
+  "skill": "sdd-code-reviewer",
+  "mode": "security-audit",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "notes": [
+    "BR-6/E2E-5: SecurityConfig e OperatorSecurityConfig checam hasRole(\"OWNER\")/hasRole(\"OPERATOR\") especificamente, nao authenticated() — necessario porque as duas cadeias compartilham o mesmo SecurityContextRepository. Confirmado por OperadorBackofficeIT.e2e5 (403 nas duas direcoes).",
+    "BR-7: nenhuma rota de cadastro/criacao de operador via formulario — a unica conta nasce de OperatorSecurityConfig.operatorUserDetailsService(), alimentada por @Value ligado a variavel de ambiente (grep por controllers/rotas com 'operador' nao encontrou nenhum @PostMapping de registro).",
+    "DD-5: BusinessDirectory.listAll() so e chamado por BillingAccountService (dentro de billing, atras de /operador/**) — grep confirma que nenhum controller de organization/*.web chama listAll() diretamente.",
+    "CSRF permanece ativo em toda a aplicacao — grep por csrf().disable()/ignoringRequestMatchers() nao encontrou nenhuma ocorrencia em platform.security; POST /operador/estabelecimentos/{id}/prazo, POST /operador/login e POST /operador/logout dependem do token padrao do Spring Security (form Thymeleaf com th:action).",
+    "Sem segredo hardcoded: agendaia.operador.{username,password-hash,whatsapp,pix-chave} vem de variavel de ambiente via @Value; o unico valor fixo em application.yaml e o hash BCrypt de um valor dev-only, documentado em comentario como exigindo sobrescrita em qualquer implantacao real.",
+    "tenantId como @PathVariable em POST /operador/estabelecimentos/{tenantId}/prazo e intencional, nao uma violacao da regra 'tenantId nunca vem do cliente': essa rota vive inteiramente atras de hasRole(\"OPERATOR\"), e o papel do operador e justamente agir sobre qualquer tenant — a regra geral protege /admin/** e /b/{slug}/**, onde o chamador tem (ou finge ter) um unico tenant."
+  ],
+  "files_reviewed": 27,
+  "timestamp": "2026-09-05T13:20:00Z"
+}
