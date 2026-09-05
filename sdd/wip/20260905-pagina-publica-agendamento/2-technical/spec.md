@@ -185,7 +185,7 @@ no início de cada rota e lança `ResponseStatusException(NOT_FOUND)`
 explicitamente (não é o filtro que decide 404; rotear é responsabilidade
 do controller).
 
-### DD-4: `BusinessRef` resolvido pelo filtro vira atributo de requisição, reaproveitado pelo layout
+### DD-4: `BusinessRef` resolvido pelo filtro vira atributo de requisição, reaproveitado por `LayoutAdvice` — uma classe só, não duas
 
 **Contexto**: a página pública precisa mostrar o nome do estabelecimento
 em todo template. Uma segunda consulta por `findBySlug` no controller ou
@@ -193,15 +193,24 @@ no `@ControllerAdvice` duplicaria a mesma leitura que o filtro acabou de
 fazer.
 
 **Decisão**: `TenantContextFilter`, ao resolver pelo slug, guarda
-`request.setAttribute("resolvedBusiness", businessRef)`. Um novo
-`platform.web.PublicLayoutAdvice` (irmão de `LayoutAdvice`, que já faz o
-equivalente para `/admin/**` a partir do principal de sessão) expõe
-`@ModelAttribute("businessName")` lendo esse atributo — vazio quando
-ausente (rota autenticada, ou slug não resolvido).
+`request.setAttribute("resolvedBusiness", businessRef)`.
 
-**Trade-offs Accepted**: nenhum — mesmo padrão já em uso por
-`AccessGuardFilter`/`BillingBannerAdvice` (TODO-009): filtro calcula uma
-vez, advice reaproveita.
+**Achado durante a implementação (TASK-007)**: o plano original propunha
+um `platform.web.PublicLayoutAdvice` novo, irmão de `LayoutAdvice`. Os
+dois seriam `@ControllerAdvice` **globais** (sem `basePackages`/
+`assignableTypes`) expondo o **mesmo** `@ModelAttribute("businessName")`
+— a ordem de execução entre advices sem `@Order` explícito não é
+garantida, então um sobrescreveria o valor do outro de forma
+não-determinística em qualquer rota (admin OU pública). Corrigido antes
+do commit: `LayoutAdvice` passou a checar as duas fontes na mesma
+`@ModelAttribute` — sessão autenticada primeiro, senão o atributo de
+requisição — mesma técnica de "duas vias, uma classe" que
+`TenantContextFilter` já usa para o próprio `TenantContext`.
+
+**Trade-offs Accepted**: `platform.web.LayoutAdvice` (que antes só
+conhecia `AuthenticatedUser`) passa a também importar `organization.api.
+BusinessRef` — aceitável pelo mesmo argumento do DD-3 (`platform` é
+`Type.OPEN` sem `allowedDependencies` declarado).
 
 ### DD-5: `BookAppointmentHandler` resolve o `Customer` e grava o `Appointment` na mesma transação
 
@@ -544,7 +553,7 @@ src/main/java/com/agendaia/scheduling/
 
 src/main/java/com/agendaia/platform/
 ├── tenant/TenantContextFilter.java                        [EDITADO — DD-3]
-├── web/PublicLayoutAdvice.java                            [NOVO — DD-4]
+├── web/LayoutAdvice.java                                  [EDITADO — DD-4, checa sessão OU slug]
 └── security/SecurityConfig.java                            [EDITADO — permitAll /b/**]
 
 src/main/resources/db/migration/

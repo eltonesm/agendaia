@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Duas migrations Flyway novas: V7 (customer) e V8 (appointment, com a exclusion constraint do ADR 0005). btree_gist ja habilitada na V1."
   },
-  "stats": { "total": 18, "done": 5, "by_layer": { "1": 15, "2": 0, "3": 3 } },
+  "stats": { "total": 18, "done": 7, "by_layer": { "1": 15, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -100,7 +100,7 @@
       "id": "TASK-005",
       "title": "scheduling: migration V8, entidade JPA e persistencia de Appointment",
       "description": "Migration V8 (appointment + EXCLUDE USING gist literal do ADR 0005, indice (tenant_id, customer_id, status)). AppointmentJpaEntity + AppointmentMapper (regime completo). AppointmentRepository (port.out) com save() e countFutureActive(tenantId, customerId, agora) via @Query (DD-9, BR-9). AppointmentPersistenceAdapter traduz DataIntegrityViolationException em SlotUnavailableException (DD-6).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-004"],
       "files": [
@@ -145,13 +145,13 @@
     {
       "id": "TASK-007",
       "title": "platform.tenant: resolucao de tenant pelo slug",
-      "description": "TenantContextFilter ganha segunda via de resolucao (DD-3): nao autenticado + path comeca com '/b/' -> extrai slug -> organization.api.BusinessDirectory (via ObjectProvider) .findBySlug(slug) -> achou: TenantContext.set + request.setAttribute('resolvedBusiness', ref) (DD-4); nao achou/provider vazio: segue sem tenant. platform.web.PublicLayoutAdvice novo expoe @ModelAttribute('businessName') lendo o atributo.",
-      "status": "pending",
+      "description": "TenantContextFilter ganha segunda via de resolucao (DD-3): nao autenticado + path comeca com '/b/' -> extrai slug -> organization.api.BusinessDirectory (via ObjectProvider) .findBySlug(slug) -> achou: TenantContext.set + request.setAttribute('resolvedBusiness', ref) (DD-4); nao achou/provider vazio: segue sem tenant. Achado durante a implementacao: LayoutAdvice (ja existente) editado para checar sessao OU o atributo de slug na MESMA @ModelAttribute, em vez de um PublicLayoutAdvice novo separado — dois @ControllerAdvice globais com o mesmo nome de atributo teriam ordem de execucao indefinida e se sobrescreveriam.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
         "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java",
-        "src/main/java/com/agendaia/platform/web/PublicLayoutAdvice.java"
+        "src/main/java/com/agendaia/platform/web/LayoutAdvice.java"
       ],
       "acceptance_criteria": [
         "AC-1: requisicao autenticada continua resolvendo pela sessao, sem nenhuma mudanca de comportamento (regressao zero)",
