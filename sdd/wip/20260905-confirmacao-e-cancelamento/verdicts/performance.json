@@ -1,0 +1,24 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "details": [
+    {
+      "severity": "recommendation",
+      "description": "countFutureActive agora usa countByTenantIdAndCustomerIdAndStatusInAndStartsAtAfter com List.of(SCHEDULED, CONFIRMED). O índice appointment_customer_idx (tenant_id, customer_id, status) da V8 continua servindo bem essa consulta — Postgres resolve um IN de 2 valores sobre a terceira coluna de um índice composto sem precisar de índice novo, já que tenant_id e customer_id (as duas primeiras colunas, sempre por igualdade) restringem o conjunto de linhas antes do filtro de status. Nenhuma ação necessária agora; se o número de status relevantes crescesse muito (não é o caso, são só 2 de 4 valores do enum), valeria reavaliar."
+    }
+  ],
+  "checks_passed": [
+    "ManageAppointmentHandler.handle() faz exatamente 3 buscas fixas por chamada (Appointment por tenant+id, profissional por id, cliente por id) — nenhuma em loop, confirmado por leitura direta do método e por ManageAppointmentHandlerTest",
+    "confirm()/cancel() fazem no máximo 1 busca (findByTenantIdAndId) + 1 UPDATE (updateStatus) — gravarSeMudou só chama updateStatus quando depois.status() != antes.status(), confirmado pelos testes confirmSemEfeitoQuandoCancelado/cancelSemEfeitoQuandoJaCancelado (verify(..., never())) e pelo E2E-4 do IT (idempotência sem gravação extra)",
+    "updateStatus é um UPDATE de 2 colunas (status, updated_at) via @Modifying @Query direto — sem o SELECT que save()/merge() faria por trás para decidir insert vs update",
+    "V9 (business.whatsapp) é só uma coluna nova em uma tabela já pequena (uma linha por estabelecimento) — sem impacto de índice, sem consulta nova no caminho de leitura da página pública (o valor já vem embutido em BusinessRef, resolvido uma vez pelo TenantContextFilter)",
+    "IcsWriter.escrever é um método estático sem estado — monta a string uma vez por chamada via text block, sem alocação além do necessário; DateTimeFormatter é um campo static final, não recompilado a cada chamada"
+  ],
+  "patterns_checked": ["n+1", "regex", "string_concat", "unbounded_collections", "memory_leaks", "missing_indexes"],
+  "timestamp": "2026-09-06T00:00:00Z"
+}

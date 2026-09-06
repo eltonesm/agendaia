@@ -1,0 +1,21 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checks_passed": [
+    "tenantId nunca vem do id do agendamento — AppointmentController usa só TenantContext (resolvido pelo slug via TenantContextFilter, sem mudança nesta feature) e ManageAppointmentHandler chama TenantContext.require() internamente; AppointmentRepository.findByTenantIdAndId filtra sempre pelos dois campos juntos, confirmado por E2E-3 do IT (id de tenant B com slug de tenant A dá 404, nada muda no registro)",
+    "CSRF ativo: SecurityConfig.java não foi tocado nesta feature (fora do diff), continua permitAll(/b/**) com CSRF ligado; os dois POSTs novos (/confirmar, /cancelar) usam formulário Thymeleaf com th:action, token incluído automaticamente — confirmado por confirmarSemCsrfERecusado (403 sem token)",
+    "XSS: agendamento.html usa th:text em todo dado dinâmico (serviceName, professionalName, businessName, status) — nenhuma ocorrência de th:utext em nenhum template tocado (grep confirmado)",
+    "LGPD: IcsWriter.escrever recebe só serviceName/businessName/datas — nome e telefone do cliente nunca chegam à função, confirmado por teste dedicado",
+    "Link wa.me: nome do cliente aparece só na querystring de uma URL que o PRÓPRIO cliente abre no seu WhatsApp — não é persistido, não é exposto a terceiros, é o mesmo dado que o estabelecimento já tem no cadastro do cliente. Mensagem é URL-encoded via URLEncoder.encode antes de compor a URL — sem risco de quebrar a query string ou injetar parâmetro extra",
+    "Nenhum segredo novo — sem chave de API, sem credencial; DD-1 desta feature (id do Appointment revalidado por tenant, sem token assinado) foi decisão deliberada exatamente para não precisar de uma chave secreta nova",
+    "Business.normalizeWhatsapp valida formato antes de persistir (mesmo padrão de Customer.normalizePhone); RegistrationRequest.@Pattern rejeita formato inválido na camada web antes de chegar ao domínio — confirmado por whatsappInvalidoMostraErroNoCampo",
+    "AppointmentNotFoundException nunca revela se a causa foi 'tenant errado' vs 'id inexistente' — mesma mensagem genérica para os dois casos (mesmo raciocínio de ServiceOfferingNotFoundException)"
+  ],
+  "files_reviewed": 29,
+  "timestamp": "2026-09-06T00:00:00Z"
+}

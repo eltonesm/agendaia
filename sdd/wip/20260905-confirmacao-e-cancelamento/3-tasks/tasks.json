@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Uma migration Flyway nova: V9 (business.whatsapp, coluna opcional). Nenhuma mudanca de schema em appointment — V8 (TODO-006) ja previa CONFIRMED/CANCELLED."
   },
-  "stats": { "total": 15, "done": 12, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 15, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -247,7 +247,7 @@
       "id": "TASK-013",
       "title": "Code Review",
       "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-10 refletidas no codigo, Appointment continua Java puro, ManageAppointmentHandler documentado como excecao deliberada ao padrao uma-porta-por-classe (DD-2), sem sufixo Impl, transacao so em application.",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],
@@ -262,7 +262,7 @@
       "id": "TASK-014",
       "title": "Performance Review",
       "description": "Skill sdd-performance-expert: consulta de detalhes faz no maximo 3 buscas fixas (Appointment, profissional, cliente), sem laco; confirmar/cancelar fazem 1 busca + 1 UPDATE de 2 colunas, sem SELECT adicional de merge().",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],
@@ -277,7 +277,7 @@
       "id": "TASK-015",
       "title": "Security Review",
       "description": "Skill sdd-code-reviewer em modo seguranca: tenantId nunca aceito do id do agendamento (revalidado sempre por tenant, BR-1/BR-7), CSRF ativo nos POSTs novos, XSS coberto por th:text, .ics sem dado pessoal do cliente (BR-9), sem segredo hardcoded (DD-1 evita necessidade de chave nova).",
-      "status": "pending",
+      "status": "completed",
       "layer": 3,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
       "files": [],

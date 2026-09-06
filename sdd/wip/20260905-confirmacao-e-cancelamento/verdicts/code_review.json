@@ -1,0 +1,22 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "checks_passed": [
+    "scheduling.domain (Appointment, confirm()/cancel()) continua Java puro — nenhum import de org.springframework ou jakarta.persistence",
+    "customer e organization continuam em regime CRUD — CustomerRef/ProfessionalRef são records simples, sem cerimônia; Business.whatsapp é só mais um campo na entidade que já é o modelo",
+    "Nenhuma classe nova com sufixo Impl (ManageAppointmentHandler, AppointmentController, IcsWriter, todos nomeados pelo papel)",
+    "@Transactional só em application (ManageAppointmentHandler, CustomerDirectoryHandler, ProfessionalDirectoryHandler, RegisterBusinessHandler) — grep confirma zero ocorrência em adapter.in.web",
+    "AppointmentController trata AppointmentNotFoundException com catch específico (detalhesOuFalhar/executarOuFalhar) nas 4 rotas, convertendo para ResponseStatusException(NOT_FOUND) antes de chegar ao GlobalExceptionHandler genérico — confirmado por AppointmentControllerTest (10/10 verde) e pelo E2E-3 do IT",
+    "updateStatus (via @Modifying @Query) é o único ponto que persiste mudança de status — nenhuma chamada a save()/saveAndFlush para esse fim em ManageAppointmentHandler",
+    "IcsWriter.escrever recebe só serviceName/businessName/startsAt/endsAt — nenhum parâmetro de nome ou telefone do cliente chega à função, confirmado por teste dedicado (icsNaoCarregaDadoDoCliente)",
+    "ManageAppointmentHandler implementa 3 portas numa classe só (DD-2) — desvio documentado no próprio Javadoc da classe com justificativa (mesma dependência, mesma resolução por tenant+id), não é inconsistência acidental",
+    "SecurityConfig.java não foi tocado nesta feature — CSRF e permitAll(/b/**) preservados exatamente como a TODO-006 deixou"
+  ],
+  "files_reviewed": 29,
+  "timestamp": "2026-09-06T00:00:00Z"
+}
