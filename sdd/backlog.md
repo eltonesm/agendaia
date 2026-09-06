@@ -36,11 +36,13 @@ passa por `/sdd.start`.
 
 ### TODO-008: Agenda do profissional — criar, cancelar, reagendar
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-06
 - **Origin**: revisão arquitetural
 - **Context**: Fecha o ciclo do dono. Muitos clientes vão continuar ligando, então o agendamento manual é requisito, não conveniência. Depois desta feature existe um produto que um barbeiro real consegue usar.
 - **Affected Files**: `scheduling`
+- **Feature**: `sdd/wip/20260906-agenda-profissional/`
 - **Complexity**: High
 
 ---
