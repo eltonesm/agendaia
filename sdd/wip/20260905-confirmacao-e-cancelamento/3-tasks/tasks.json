@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Uma migration Flyway nova: V9 (business.whatsapp, coluna opcional). Nenhuma mudanca de schema em appointment — V8 (TODO-006) ja previa CONFIRMED/CANCELLED."
   },
-  "stats": { "total": 15, "done": 9, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 10, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -199,7 +199,7 @@
       "id": "TASK-010",
       "title": "Teste do cadastro com WhatsApp opcional",
       "description": "Cobertura do fluxo de cadastro (TASK-003): formato invalido rejeita com erro de campo, campo vazio funciona, campo valido persiste. Reaproveita a estrutura de teste do fluxo de cadastro ja existente (TODO-001), so estendendo os casos.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-003"],
       "files": [],

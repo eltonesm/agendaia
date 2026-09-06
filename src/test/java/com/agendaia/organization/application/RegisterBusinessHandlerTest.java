@@ -62,6 +62,37 @@ class RegisterBusinessHandlerTest {
     }
 
     @Test
+    @DisplayName("WhatsApp informado é gravado no Business; ausente vira null (confirmacao-e-cancelamento, TASK-010)")
+    void whatsappOpcionalEGravado() {
+        when(businessRepository.existsBySlug(any())).thenReturn(false);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+
+        handler.register(new RegisterBusinessCommand(
+                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", "11988887777"));
+
+        var comWhatsapp = org.mockito.ArgumentCaptor.forClass(Business.class);
+        verify(businessRepository).saveAndFlush(comWhatsapp.capture());
+        assertThat(comWhatsapp.getValue().whatsapp()).isEqualTo("11988887777");
+
+        handler.register(comando());
+
+        var semWhatsapp = org.mockito.ArgumentCaptor.forClass(Business.class);
+        verify(businessRepository, org.mockito.Mockito.times(2)).saveAndFlush(semWhatsapp.capture());
+        assertThat(semWhatsapp.getValue().whatsapp()).isNull();
+    }
+
+    @Test
+    @DisplayName("WhatsApp em formato inválido é recusado na construção do Business")
+    void whatsappInvalidoERecusado() {
+        when(businessRepository.existsBySlug(any())).thenReturn(false);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> handler.register(new RegisterBusinessCommand(
+                        "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", "abc")))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     @DisplayName("a senha é gravada como hash BCrypt, nunca em texto claro")
     void senhaViraHash() {
         when(businessRepository.existsBySlug(any())).thenReturn(false);
