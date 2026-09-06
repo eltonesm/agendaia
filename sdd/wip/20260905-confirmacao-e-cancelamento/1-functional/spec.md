@@ -19,7 +19,7 @@ próprio calendário. Sem isso, ele volta a ligar ou mandar mensagem para o
 estabelecimento — exatamente o problema que o AgendaIA existe para
 resolver.
 
-Esta feature entrega um link persistente e assinado, sem login, onde o
+Esta feature entrega um link persistente e seguro, sem login, onde o
 cliente pode: ver os detalhes do agendamento a qualquer momento,
 confirmar presença, cancelar, baixar um arquivo `.ics` para o calendário,
 e falar com o estabelecimento pelo WhatsApp quando o número estiver
@@ -51,9 +51,10 @@ cadastrado.
 
 ### In Scope
 
-- Link persistente e assinado (token, não um UUID cru) entregue na tela
-  de sucesso da TODO-006, reutilizável a qualquer momento até o
-  agendamento acontecer.
+- Link persistente e seguro (revalidado contra o tenant do
+  estabelecimento, nunca confiado às cegas) entregue na tela de sucesso
+  da TODO-006, reutilizável a qualquer momento até o agendamento
+  acontecer.
 - Tela "meu agendamento" (`GET` pelo token): mostra estabelecimento,
   serviço, profissional, data, horário e status atual.
 - Ação "Confirmar presença" (`POST`): `SCHEDULED` → `CONFIRMED`.
@@ -85,8 +86,8 @@ cadastrado.
 - **Prazo mínimo de antecedência para cancelar.** Cancelamento é permitido
   a qualquer momento até o horário do agendamento chegar — sem regra de
   "só até X horas antes" nesta feature.
-- **Autenticação/CAPTCHA na tela do link.** O próprio token assinado é a
-  defesa — mesma filosofia de `/b/{slug}` na TODO-006.
+- **Autenticação/CAPTCHA na tela do link.** A revalidação contra o tenant
+  já é a defesa — mesma filosofia de `/b/{slug}` na TODO-006.
 
 ---
 
@@ -200,10 +201,11 @@ agendamento.
 
 ### Core Rules
 
-- **BR-1**: O link de acesso ao agendamento usa um token assinado, não um
-  identificador cru — não deve ser possível adivinhar ou adulterar um
-  token para acessar agendamento de outro tenant. Mecanismo exato de
-  assinatura é decisão da spec técnica.
+- **BR-1**: O link de acesso ao agendamento não pode permitir que um
+  cliente acesse ou altere agendamento de outro tenant, mesmo tentando
+  outro id à mão. Mecanismo exato (id opaco revalidado contra o tenant,
+  ou token derivado) é decisão da spec técnica — o requisito de produto é
+  o isolamento entre tenants, não uma técnica específica.
 - **BR-2**: Transições de status permitidas nesta feature: `SCHEDULED` →
   `CONFIRMED` (confirmar), `SCHEDULED` → `CANCELLED` (cancelar),
   `CONFIRMED` → `CANCELLED` (cancelar depois de confirmado). `CANCELLED`
@@ -253,8 +255,8 @@ agendamento.
 **`Business`** (já existe, TODO-001) — ganha um campo conceitual de
 WhatsApp, opcional.
 
-Nenhuma entidade nova. Mecanismo de token (coluna persistida vs. valor
-assinado sem estado) é decisão da spec técnica.
+Nenhuma entidade nova. Mecanismo exato do link (id opaco revalidado por
+tenant vs. token derivado) é decisão da spec técnica.
 
 ---
 
@@ -436,15 +438,16 @@ Segunda rota pública sem autenticação do projeto (depois de `/b/{slug}`
 na TODO-006) — mesma filosofia de defesa:
 - `tenantId` nunca vem de nenhum dado da requisição além do que o token
   permite resolver (BR-1/BR-7).
-- Token não pode ser adivinhável nem adulterável — decisão de mecanismo
-  na spec técnica, mas o requisito de produto é esse.
+- Nenhum agendamento de outro tenant deve ficar acessível ou alterável a
+  partir de um id diferente digitado à mão — decisão de mecanismo na spec
+  técnica, mas o requisito de produto é o isolamento entre tenants.
 - XSS: qualquer dado exibido (nome do estabelecimento, nome do serviço)
   via `th:text`, nunca `th:utext`, mesma convenção do projeto.
 - `.ics` não carrega dado pessoal do cliente (BR-9, LGPD).
-- Sem CAPTCHA nem rate limit dedicado nesta feature — o token assinado já
-  restringe quem consegue agir sobre qual agendamento; se abuso real
-  aparecer (ex.: tentativa de força bruta de tokens), fica para revisão
-  futura.
+- Sem CAPTCHA nem rate limit dedicado nesta feature — a revalidação
+  contra o tenant já restringe quem consegue agir sobre qual agendamento;
+  se abuso real aparecer (ex.: tentativa de enumeração de ids), fica para
+  revisão futura.
 
 ---
 
@@ -457,6 +460,6 @@ na TODO-006) — mesma filosofia de defesa:
   já registrada para e-mail/SMS (TODO-108/TODO-109).
 - O WhatsApp do estabelecimento, quando ausente, não bloqueia nenhuma
   outra funcionalidade desta feature — é estritamente opcional.
-- Expiração de token (se houver) e formato exato de assinatura ficam
-  para a spec técnica decidir — o requisito de produto é só "não
-  adivinhável, não adulterável".
+- Mecanismo exato do link (id opaco revalidado por tenant, ou token
+  derivado) fica para a spec técnica decidir — o requisito de produto é
+  só isolamento entre tenants, sem prazo de expiração exigido.
