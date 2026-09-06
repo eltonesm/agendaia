@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Uma migration Flyway nova: V9 (business.whatsapp, coluna opcional). Nenhuma mudanca de schema em appointment — V8 (TODO-006) ja previa CONFIRMED/CANCELLED."
   },
-  "stats": { "total": 15, "done": 10, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 11, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -213,8 +213,8 @@
     {
       "id": "TASK-011",
       "title": "AppointmentControllerTest (@WebMvcTest)",
-      "description": "Cobertura das 4 rotas: GET detalhes (200 e 404), POST confirmar, POST cancelar, GET ics. Confirma que o .ics nao carrega nome/telefone do cliente e que whatsappLink e omitido quando Business.whatsapp e nulo.",
-      "status": "pending",
+      "description": "Cobertura das 4 rotas: GET detalhes (200 e 404), POST confirmar, POST cancelar, GET ics. Confirma que o .ics nao carrega nome/telefone do cliente e que whatsappLink e omitido quando Business.whatsapp e nulo. Revelou lacuna: AppointmentNotFoundException caia no 422 generico do GlobalExceptionHandler — corrigido com catch especifico -> 404 nas 4 rotas de AppointmentController.",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-007", "TASK-008"],
       "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/AppointmentControllerTest.java"],

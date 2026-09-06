@@ -3,9 +3,11 @@ package com.agendaia.scheduling.adapter.in.web;
 import com.agendaia.organization.api.BusinessRef;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.platform.tenant.TenantContextFilter;
+import com.agendaia.scheduling.application.port.in.AppointmentDetails;
 import com.agendaia.scheduling.application.port.in.AppointmentDetailsUseCase;
 import com.agendaia.scheduling.application.port.in.CancelAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.ConfirmAppointmentUseCase;
+import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +57,7 @@ public class AppointmentController {
     @GetMapping
     public String ver(@PathVariable String slug, @PathVariable UUID id, HttpServletRequest request, Model model) {
         exigirTenantResolvido();
-        var detalhes = appointmentDetails.handle(id);
+        var detalhes = detalhesOuFalhar(id);
 
         model.addAttribute("slug", slug);
         model.addAttribute("agendamento", detalhes);
@@ -66,21 +68,21 @@ public class AppointmentController {
     @PostMapping("/confirmar")
     public String confirmar(@PathVariable String slug, @PathVariable UUID id) {
         exigirTenantResolvido();
-        confirmAppointment.confirm(id);
+        executarOuFalhar(() -> confirmAppointment.confirm(id));
         return "redirect:/b/{slug}/agendamentos/{id}";
     }
 
     @PostMapping("/cancelar")
     public String cancelar(@PathVariable String slug, @PathVariable UUID id) {
         exigirTenantResolvido();
-        cancelAppointment.cancel(id);
+        executarOuFalhar(() -> cancelAppointment.cancel(id));
         return "redirect:/b/{slug}/agendamentos/{id}";
     }
 
     @GetMapping("/ics")
     public ResponseEntity<String> ics(@PathVariable String slug, @PathVariable UUID id, HttpServletRequest request) {
         exigirTenantResolvido();
-        var detalhes = appointmentDetails.handle(id);
+        var detalhes = detalhesOuFalhar(id);
         var negocio = negocioResolvido(request);
         var corpo = IcsWriter.escrever(
                 detalhes.serviceName(), negocio.name(), detalhes.startsAt(), detalhes.endsAt());
@@ -89,6 +91,28 @@ public class AppointmentController {
                 .contentType(MediaType.parseMediaType("text/calendar"))
                 .header("Content-Disposition", "attachment; filename=\"agendamento.ics\"")
                 .body(corpo);
+    }
+
+    /**
+     * Id de outro tenant ou inexistente vira 404 — mesmo tratamento de
+     * {@code ServiceOfferingNotFoundException} em {@link PublicBookingController}
+     * (DD-1 da spec técnica desta feature), nunca o 422 genérico do
+     * {@code GlobalExceptionHandler}.
+     */
+    private AppointmentDetails detalhesOuFalhar(UUID id) {
+        try {
+            return appointmentDetails.handle(id);
+        } catch (AppointmentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private static void executarOuFalhar(Runnable acao) {
+        try {
+            acao.run();
+        } catch (AppointmentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
