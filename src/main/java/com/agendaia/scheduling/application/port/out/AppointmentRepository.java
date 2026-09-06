@@ -1,11 +1,13 @@
 package com.agendaia.scheduling.application.port.out;
 
 import com.agendaia.scheduling.domain.Appointment;
+import com.agendaia.scheduling.domain.AppointmentStatus;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.TimeRange;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -23,7 +25,25 @@ public interface AppointmentRepository {
      */
     Appointment save(Appointment appointment);
 
-    /** Quantos agendamentos futuros ainda ativos ({@code SCHEDULED}) o cliente tem no tenant (BR-9). */
+    /**
+     * Um agendamento por id, sempre revalidado por tenant (BR-1/BR-7 de
+     * confirmacao-e-cancelamento, TODO-007, DD-1) — vazio se pertencer a
+     * outro tenant ou não existir.
+     */
+    Optional<Appointment> findByTenantIdAndId(TenantId tenantId, UUID id);
+
+    /**
+     * Grava só a mudança de status (+ {@code updatedAt}) — nunca via
+     * {@link #save}, que sobrescreveria {@code createdAt} (DD-4 de
+     * confirmacao-e-cancelamento).
+     */
+    void updateStatus(TenantId tenantId, UUID id, AppointmentStatus status, Instant agora);
+
+    /**
+     * Quantos agendamentos futuros ainda ativos ({@code SCHEDULED} ou
+     * {@code CONFIRMED}, DD-6 de confirmacao-e-cancelamento) o cliente tem
+     * no tenant (BR-9/BR-6).
+     */
     long countFutureActive(TenantId tenantId, UUID customerId, Instant agora);
 
     /**

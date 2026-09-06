@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * O estabelecimento — e o tenant do sistema.
@@ -30,6 +31,9 @@ public class Business {
     /** Fuso assumido quando não perguntado no cadastro. Ver Assumptions da spec funcional. */
     public static final String FUSO_PADRAO = "America/Sao_Paulo";
 
+    /** Mesmo formato de {@code Customer.TELEFONE_VALIDO} — dígitos com "+" opcional na frente. */
+    private static final Pattern WHATSAPP_VALIDO = Pattern.compile("^\\+?\\d{8,15}$");
+
     @Id
     private UUID id;
 
@@ -41,6 +45,9 @@ public class Business {
 
     @Column(nullable = false, length = 64)
     private String timezone;
+
+    @Column(length = 20)
+    private String whatsapp;
 
     @Column(nullable = false)
     private boolean active;
@@ -56,28 +63,38 @@ public class Business {
         // JPA
     }
 
-    private Business(UUID id, String name, String slug, String timezone, Instant agora) {
+    private Business(UUID id, String name, String slug, String timezone, String whatsapp, Instant agora) {
         this.id = id;
         this.name = name;
         this.slug = slug;
         this.timezone = timezone;
+        this.whatsapp = whatsapp;
         this.active = true;
         this.createdAt = agora;
         this.updatedAt = agora;
     }
 
     /**
-     * Cria um estabelecimento com o fuso padrão.
+     * Cria um estabelecimento com o fuso padrão, sem WhatsApp.
      *
      * <p>A identidade é gerada aqui, no domínio — não no {@code INSERT}. É o que
      * permite ao agregado saber quem é antes de qualquer repositório vê-lo
      * (ADR 0009).
      */
     public static Business register(String name, String slug) {
-        return register(name, slug, FUSO_PADRAO, Instant.now());
+        return register(name, slug, null);
     }
 
-    static Business register(String name, String slug, String timezone, Instant agora) {
+    /**
+     * Cria um estabelecimento com o fuso padrão e WhatsApp opcional
+     * (confirmacao-e-cancelamento, TODO-007) — usado para montar o link
+     * {@code wa.me} na tela pública do agendamento (BR-8).
+     */
+    public static Business register(String name, String slug, String whatsapp) {
+        return register(name, slug, FUSO_PADRAO, whatsapp, Instant.now());
+    }
+
+    static Business register(String name, String slug, String timezone, String whatsapp, Instant agora) {
         var nomeLimpo = name == null ? "" : name.strip();
         if (nomeLimpo.length() < 2 || nomeLimpo.length() > 120) {
             throw new IllegalArgumentException(
@@ -90,7 +107,23 @@ public class Business {
         // meses depois, na primeira feature que calcular disponibilidade.
         ZoneId.of(timezone);
 
-        return new Business(UuidV7.generate(), nomeLimpo, slug, timezone, agora);
+        return new Business(UuidV7.generate(), nomeLimpo, slug, timezone, normalizeWhatsapp(whatsapp), agora);
+    }
+
+    /**
+     * Normaliza o WhatsApp do estabelecimento — nulo ou em branco vira
+     * {@code null} (campo opcional, DD-7 de confirmacao-e-cancelamento);
+     * formato inválido lança exceção.
+     */
+    public static String normalizeWhatsapp(String whatsapp) {
+        var limpo = whatsapp == null ? "" : whatsapp.strip();
+        if (limpo.isEmpty()) {
+            return null;
+        }
+        if (!WHATSAPP_VALIDO.matcher(limpo).matches()) {
+            throw new IllegalArgumentException("WhatsApp fora do formato aceito: " + whatsapp);
+        }
+        return limpo;
     }
 
     /**
@@ -121,6 +154,11 @@ public class Business {
 
     public String timezone() {
         return timezone;
+    }
+
+    /** Nulo quando o estabelecimento não informou WhatsApp no cadastro (BR-8). */
+    public String whatsapp() {
+        return whatsapp;
     }
 
     public boolean isActive() {

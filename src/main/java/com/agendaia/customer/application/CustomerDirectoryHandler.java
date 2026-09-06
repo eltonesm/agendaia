@@ -1,9 +1,11 @@
 package com.agendaia.customer.application;
 
 import com.agendaia.customer.api.CustomerDirectory;
+import com.agendaia.customer.api.CustomerRef;
 import com.agendaia.customer.application.port.out.CustomerRepository;
 import com.agendaia.customer.domain.Customer;
 import com.agendaia.platform.tenant.TenantContext;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,5 +50,15 @@ public class CustomerDirectoryHandler implements CustomerDirectory {
 
         var novo = Customer.register(tenantId, name, telefoneNormalizado);
         return customerRepository.saveAndFlush(novo).id();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CustomerRef> find(UUID id) {
+        var tenantId = TenantContext.require();
+
+        return customerRepository
+                .findByTenantIdAndId(tenantId.value(), id)
+                .map(cliente -> new CustomerRef(cliente.id(), cliente.name()));
     }
 }

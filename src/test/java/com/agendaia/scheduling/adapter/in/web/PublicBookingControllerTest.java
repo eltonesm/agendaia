@@ -75,7 +75,7 @@ class PublicBookingControllerTest {
     @BeforeEach
     void resolverTenantPeloSlug() {
         when(businessDirectory.findBySlug(SLUG))
-                .thenReturn(Optional.of(new BusinessRef(tenantId, "Barbearia Teste", SLUG, Instant.now())));
+                .thenReturn(Optional.of(new BusinessRef(tenantId, "Barbearia Teste", SLUG, null, Instant.now())));
     }
 
     /** IP simulado exclusivo deste método de teste — isola o BookingRateLimiter entre testes. */

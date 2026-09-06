@@ -71,7 +71,7 @@ class BusinessTest {
     @DisplayName("recusa fuso inexistente na criação, não meses depois no cálculo")
     void recusaFusoInvalido() {
         assertThatThrownBy(() ->
-                        Business.register("Barbearia", "barbearia", "America/Nao_Existe", AGORA))
+                        Business.register("Barbearia", "barbearia", "America/Nao_Existe", null, AGORA))
                 .isInstanceOf(Exception.class);
     }
 

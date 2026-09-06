@@ -1,5 +1,6 @@
 package com.agendaia.customer.api;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,4 +18,11 @@ public interface CustomerDirectory {
      * informado atualiza o cadastro — o telefone é a chave, não o nome.
      */
     UUID findOrCreate(String name, String phone);
+
+    /**
+     * Um cliente por id, sempre revalidado contra o tenant da sessão —
+     * vazio se pertencer a outro tenant ou não existir (DD-8 de
+     * confirmacao-e-cancelamento, TODO-007).
+     */
+    Optional<CustomerRef> find(UUID id);
 }

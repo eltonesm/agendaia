@@ -172,6 +172,40 @@ public final class Appointment {
         return price;
     }
 
+    /**
+     * {@code SCHEDULED} → {@code CONFIRMED} (US-2, confirmacao-e-cancelamento,
+     * TODO-007). Absorve estado terminal sem lançar exceção — devolve a
+     * própria instância, sem transição, quando já está {@code CANCELLED}
+     * (BR-3), quando {@code agora} já passou de {@code startsAt} (BR-4), ou
+     * quando já está {@code CONFIRMED} (idempotência, BR-3). Quem chama
+     * compara {@code antes.status() != depois.status()} para saber se há
+     * gravação a fazer.
+     */
+    public Appointment confirm(Instant agora) {
+        if (status == AppointmentStatus.CANCELLED || agora.isAfter(startsAt) || status == AppointmentStatus.CONFIRMED) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                AppointmentStatus.CONFIRMED, startsAt, endsAt, serviceName, durationMinutes, price);
+    }
+
+    /**
+     * {@code SCHEDULED}/{@code CONFIRMED} → {@code CANCELLED} (US-3,
+     * confirmacao-e-cancelamento, TODO-007). Mesma filosofia de absorção de
+     * {@link #confirm}: já {@code CANCELLED} (idempotência) ou {@code agora}
+     * depois de {@code startsAt} (BR-4) devolvem a própria instância, sem
+     * gravação.
+     */
+    public Appointment cancel(Instant agora) {
+        if (status == AppointmentStatus.CANCELLED || agora.isAfter(startsAt)) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
+    }
+
     @Override
     public boolean equals(Object outro) {
         if (this == outro) {
