@@ -86,6 +86,7 @@ que muda de sentido ao cruzar a fronteira?
 | Disponibilidade | `Availability` | Resultado de cálculo | A lista de `AvailableSlot` para um profissional, uma oferta e uma data. |
 | Grade | `slotInterval` | Configuração do tenant | Passo entre horários oferecidos. Padrão: 10 minutos. |
 | Reservar, agendar | `BookAppointmentUseCase` | Caso de uso | Criar o agendamento. |
+| Confirmação de presença | `ConfirmAppointmentUseCase` | Caso de uso | Cliente confirma que vai comparecer, pelo link (`SCHEDULED` → `CONFIRMED`). |
 | Cancelamento | `CancelAppointmentUseCase` | Caso de uso | Libera o horário. |
 | Reagendamento | `RescheduleAppointmentUseCase` | Caso de uso | Move o agendamento. Sujeito às mesmas invariantes de uma reserva nova. |
 | Falta | `NO_SHOW` | Status | Cliente não compareceu. Libera o horário retroativamente. |

@@ -65,6 +65,16 @@
            th:errors="*{email}">erro</div>
     </div>
 
+    <div class="mb-3">
+      <label for="whatsapp" class="form-label">WhatsApp do estabelecimento <span class="text-body-secondary">(opcional)</span></label>
+      <input type="tel" id="whatsapp" th:field="*{whatsapp}"
+             class="form-control" th:classappend="${#fields.hasErrors('whatsapp')} ? 'is-invalid'"
+             placeholder="5511999999999" autocomplete="tel">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('whatsapp')}"
+           th:errors="*{whatsapp}">erro</div>
+      <div class="form-text">Aparece para o cliente na tela do agendamento, para ele falar com você.</div>
+    </div>
+
     <div class="mb-4">
       <label for="password" class="form-label">Senha</label>
       <!--/* th:field não é usado aqui de propósito: ele devolveria a senha

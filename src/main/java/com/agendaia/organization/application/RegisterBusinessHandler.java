@@ -66,7 +66,7 @@ public class RegisterBusinessHandler implements RegisterBusinessUseCase {
             throw new EmailAlreadyUsedException();
         }
 
-        var business = Business.register(command.businessName(), slug);
+        var business = Business.register(command.businessName(), slug, command.whatsapp());
         var user = User.owner(
                 business.tenantId(),
                 email,

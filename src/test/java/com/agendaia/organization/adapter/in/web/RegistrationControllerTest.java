@@ -104,6 +104,45 @@ class RegistrationControllerTest {
     }
 
     @Test
+    @DisplayName("cadastro com WhatsApp válido é aceito (confirmacao-e-cancelamento, TASK-010)")
+    void cadastroComWhatsappValido() throws Exception {
+        when(registerBusiness.register(any(RegisterBusinessCommand.class)))
+                .thenReturn(registrado());
+        when(userDetailsService.loadUserByUsername("joao@exemplo.com")).thenReturn(principal());
+
+        mockMvc.perform(post("/cadastro")
+                        .with(csrf())
+                        .param("businessName", "Barbearia do João")
+                        .param("slug", "barbearia-do-joao")
+                        .param("email", "joao@exemplo.com")
+                        .param("password", "senha-do-joao")
+                        .param("whatsapp", "11988887777"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/dashboard"));
+
+        var comando = org.mockito.ArgumentCaptor.forClass(RegisterBusinessCommand.class);
+        verify(registerBusiness).register(comando.capture());
+        org.assertj.core.api.Assertions.assertThat(comando.getValue().whatsapp()).isEqualTo("11988887777");
+    }
+
+    @Test
+    @DisplayName("WhatsApp em formato inválido mostra erro no campo, preserva o resto do formulário")
+    void whatsappInvalidoMostraErroNoCampo() throws Exception {
+        mockMvc.perform(post("/cadastro")
+                        .with(csrf())
+                        .param("businessName", "Barbearia do João")
+                        .param("slug", "barbearia-do-joao")
+                        .param("email", "joao@exemplo.com")
+                        .param("password", "senha-do-joao")
+                        .param("whatsapp", "abc"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/cadastro"))
+                .andExpect(model().attributeHasFieldErrors("form", "whatsapp"));
+
+        verify(registerBusiness, never()).register(any());
+    }
+
+    @Test
     @DisplayName("a sessão é gravada no repositório, não só no holder — é o DD-5")
     void gravaContextoNaSessao() throws Exception {
         when(registerBusiness.register(any(RegisterBusinessCommand.class)))

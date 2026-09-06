@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AppointmentPersistenceAdapter implements AppointmentRepository {
+
+    /** BR-9/BR-6: agendamento CONFIRMED conta para o teto tanto quanto SCHEDULED. */
+    private static final List<AppointmentStatus> ATIVOS_PARA_TETO =
+            List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
 
     private final AppointmentJpaRepository appointmentJpaRepository;
 
@@ -43,9 +48,19 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
     }
 
     @Override
+    public Optional<Appointment> findByTenantIdAndId(TenantId tenantId, UUID id) {
+        return appointmentJpaRepository.findByTenantIdAndId(tenantId.value(), id).map(AppointmentMapper::toDomain);
+    }
+
+    @Override
+    public void updateStatus(TenantId tenantId, UUID id, AppointmentStatus status, Instant agora) {
+        appointmentJpaRepository.updateStatus(tenantId.value(), id, status, agora);
+    }
+
+    @Override
     public long countFutureActive(TenantId tenantId, UUID customerId, Instant agora) {
-        return appointmentJpaRepository.countByTenantIdAndCustomerIdAndStatusAndStartsAtAfter(
-                tenantId.value(), customerId, AppointmentStatus.SCHEDULED, agora);
+        return appointmentJpaRepository.countByTenantIdAndCustomerIdAndStatusInAndStartsAtAfter(
+                tenantId.value(), customerId, ATIVOS_PARA_TETO, agora);
     }
 
     /** Mesma técnica de recorte de {@code AvailabilityDirectoryHandler#blocksFor} (organization). */

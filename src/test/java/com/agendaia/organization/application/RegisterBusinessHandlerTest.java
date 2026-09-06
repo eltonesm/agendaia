@@ -41,7 +41,7 @@ class RegisterBusinessHandlerTest {
 
     private RegisterBusinessCommand comando() {
         return new RegisterBusinessCommand(
-                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao");
+                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", null);
     }
 
     @Test
@@ -59,6 +59,37 @@ class RegisterBusinessHandlerTest {
 
         verify(businessRepository).saveAndFlush(any(Business.class));
         verify(userRepository).saveAndFlush(any(User.class));
+    }
+
+    @Test
+    @DisplayName("WhatsApp informado é gravado no Business; ausente vira null (confirmacao-e-cancelamento, TASK-010)")
+    void whatsappOpcionalEGravado() {
+        when(businessRepository.existsBySlug(any())).thenReturn(false);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+
+        handler.register(new RegisterBusinessCommand(
+                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", "11988887777"));
+
+        var comWhatsapp = org.mockito.ArgumentCaptor.forClass(Business.class);
+        verify(businessRepository).saveAndFlush(comWhatsapp.capture());
+        assertThat(comWhatsapp.getValue().whatsapp()).isEqualTo("11988887777");
+
+        handler.register(comando());
+
+        var semWhatsapp = org.mockito.ArgumentCaptor.forClass(Business.class);
+        verify(businessRepository, org.mockito.Mockito.times(2)).saveAndFlush(semWhatsapp.capture());
+        assertThat(semWhatsapp.getValue().whatsapp()).isNull();
+    }
+
+    @Test
+    @DisplayName("WhatsApp em formato inválido é recusado na construção do Business")
+    void whatsappInvalidoERecusado() {
+        when(businessRepository.existsBySlug(any())).thenReturn(false);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> handler.register(new RegisterBusinessCommand(
+                        "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", "abc")))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -94,7 +125,7 @@ class RegisterBusinessHandlerTest {
     @DisplayName("palavra reservada é recusada sem nem consultar o banco")
     void slugReservado(String reservado) {
         var comando = new RegisterBusinessCommand(
-                "Barbearia", reservado, "joao@exemplo.com", "senha-do-joao");
+                "Barbearia", reservado, "joao@exemplo.com", "senha-do-joao", null);
 
         assertThatThrownBy(() -> handler.register(comando))
                 .isInstanceOf(SlugUnavailableException.class);
@@ -166,7 +197,7 @@ class RegisterBusinessHandlerTest {
 
         handler.register(new RegisterBusinessCommand(
                 "Barbearia do João", "  BARBEARIA-DO-JOAO  ", "  Joao@Exemplo.COM  ",
-                "senha-do-joao"));
+                "senha-do-joao", null));
 
         verify(businessRepository).existsBySlug("barbearia-do-joao");
         verify(userRepository).existsByEmail("joao@exemplo.com");
@@ -176,7 +207,7 @@ class RegisterBusinessHandlerTest {
     @DisplayName("senha curta é recusada na construção do comando, antes de chegar ao handler")
     void senhaCurta() {
         assertThatThrownBy(() -> new RegisterBusinessCommand(
-                        "Barbearia", "barbearia", "joao@exemplo.com", "curta"))
+                        "Barbearia", "barbearia", "joao@exemplo.com", "curta", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("8 caracteres");
     }

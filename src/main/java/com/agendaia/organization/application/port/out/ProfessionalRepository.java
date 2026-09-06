@@ -2,6 +2,7 @@ package com.agendaia.organization.application.port.out;
 
 import com.agendaia.organization.domain.Professional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,4 +19,7 @@ public interface ProfessionalRepository extends JpaRepository<Professional, UUID
 
     /** Usado para confirmar que um profissional pertence ao tenant da sessão (BR-8, TASK-004). */
     boolean existsByIdAndTenantId(UUID id, UUID tenantId);
+
+    /** Resolução por id, sempre revalidada por tenant (confirmacao-e-cancelamento, DD-8). */
+    Optional<Professional> findByTenantIdAndId(UUID tenantId, UUID id);
 }

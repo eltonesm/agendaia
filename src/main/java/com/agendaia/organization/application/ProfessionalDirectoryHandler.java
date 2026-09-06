@@ -5,6 +5,8 @@ import com.agendaia.organization.api.ProfessionalRef;
 import com.agendaia.organization.application.port.out.ProfessionalRepository;
 import com.agendaia.platform.tenant.TenantContext;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,5 +35,15 @@ public class ProfessionalDirectoryHandler implements ProfessionalDirectory {
                 .stream()
                 .map(profissional -> new ProfessionalRef(profissional.id(), profissional.name()))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<ProfessionalRef> find(UUID id) {
+        var tenantId = TenantContext.require();
+
+        return professionalRepository
+                .findByTenantIdAndId(tenantId.value(), id)
+                .map(profissional -> new ProfessionalRef(profissional.id(), profissional.name()));
     }
 }

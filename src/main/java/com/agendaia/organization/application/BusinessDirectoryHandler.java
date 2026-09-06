@@ -46,6 +46,7 @@ public class BusinessDirectoryHandler implements BusinessDirectory {
     }
 
     private BusinessRef toRef(Business business) {
-        return new BusinessRef(business.tenantId().value(), business.name(), business.slug(), business.createdAt());
+        return new BusinessRef(
+                business.tenantId().value(), business.name(), business.slug(), business.whatsapp(), business.createdAt());
     }
 }

@@ -219,4 +219,71 @@ class AppointmentTest {
         assertThat(agendamento.id()).isEqualTo(id);
         assertThat(agendamento.status()).isEqualTo(AppointmentStatus.CANCELLED);
     }
+
+    private static Appointment reconstituirCom(AppointmentStatus status) {
+        return Appointment.reconstitute(
+                UuidV7.generate(),
+                TENANT,
+                UuidV7.generate(),
+                UuidV7.generate(),
+                UuidV7.generate(),
+                status,
+                STARTS_AT,
+                ENDS_AT,
+                "Corte de Cabelo",
+                30,
+                new Money(3000));
+    }
+
+    @Test
+    @DisplayName("confirm() muda SCHEDULED para CONFIRMED quando agora está antes de startsAt (AC-1)")
+    void confirmMudaScheduledParaConfirmed() {
+        var agendamento = agendamentoValido();
+
+        var confirmado = agendamento.confirm(STARTS_AT.minusSeconds(60));
+
+        assertThat(confirmado.status()).isEqualTo(AppointmentStatus.CONFIRMED);
+        assertThat(confirmado).isNotSameAs(agendamento);
+    }
+
+    @Test
+    @DisplayName("confirm() e cancel() são no-op quando já CANCELLED (AC-2)")
+    void confirmECancelSaoNoOpQuandoJaCancelado() {
+        var cancelado = reconstituirCom(AppointmentStatus.CANCELLED);
+        var antesDoHorario = STARTS_AT.minusSeconds(60);
+
+        assertThat(cancelado.confirm(antesDoHorario)).isSameAs(cancelado);
+        assertThat(cancelado.cancel(antesDoHorario)).isSameAs(cancelado);
+    }
+
+    @Test
+    @DisplayName("confirm() é no-op quando já CONFIRMED — idempotência (AC-3)")
+    void confirmEIdempotente() {
+        var confirmado = reconstituirCom(AppointmentStatus.CONFIRMED);
+
+        assertThat(confirmado.confirm(STARTS_AT.minusSeconds(60))).isSameAs(confirmado);
+    }
+
+    @Test
+    @DisplayName("confirm() e cancel() são no-op quando agora já passou de startsAt (AC-4)")
+    void semEfeitoQuandoHorarioJaPassou() {
+        var scheduled = agendamentoValido();
+        var confirmed = reconstituirCom(AppointmentStatus.CONFIRMED);
+        var depoisDoHorario = ENDS_AT.plusSeconds(60);
+
+        assertThat(scheduled.confirm(depoisDoHorario)).isSameAs(scheduled);
+        assertThat(scheduled.cancel(depoisDoHorario)).isSameAs(scheduled);
+        assertThat(confirmed.cancel(depoisDoHorario)).isSameAs(confirmed);
+    }
+
+    @Test
+    @DisplayName("cancel() muda SCHEDULED ou CONFIRMED para CANCELLED quando agora está antes de startsAt (AC-5)")
+    void cancelMudaParaCancelled() {
+        var scheduled = agendamentoValido();
+        var confirmed = reconstituirCom(AppointmentStatus.CONFIRMED);
+        var antesDoHorario = STARTS_AT.minusSeconds(60);
+
+        assertThat(scheduled.cancel(antesDoHorario).status()).isEqualTo(AppointmentStatus.CANCELLED);
+        assertThat(confirmed.cancel(antesDoHorario).status()).isEqualTo(AppointmentStatus.CANCELLED);
+    }
 }

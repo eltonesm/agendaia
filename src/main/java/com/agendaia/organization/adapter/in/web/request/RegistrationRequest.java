@@ -9,7 +9,10 @@ import jakarta.validation.constraints.Size;
  * O que o formulário de cadastro envia.
  *
  * <p>Três campos mais o link, que chega preenchido pelo navegador e é editável.
- * Cada campo a mais é abandono — a spec funcional pediu o mínimo.
+ * Cada campo a mais é abandono — a spec funcional pediu o mínimo. O WhatsApp
+ * é a única exceção deliberada, e é opcional (confirmacao-e-cancelamento,
+ * TODO-007, BR-8) — sem ele, o estabelecimento simplesmente não tem o link
+ * {@code wa.me} na tela pública do agendamento.
  *
  * <p>As restrições aqui são de <strong>formato</strong>. Disponibilidade do link
  * e do e-mail depende do banco e é decidida no caso de uso.
@@ -33,11 +36,16 @@ public record RegistrationRequest(
 
         @NotBlank(message = "Informe uma senha")
         @Size(min = 8, message = "A senha precisa de pelo menos 8 caracteres")
-        String password) {
+        String password,
+
+        @Pattern(
+                regexp = "^$|^\\+?\\d{8,15}$",
+                message = "WhatsApp fora do formato aceito")
+        String whatsapp) {
 
     /** Construtor vazio para o Thymeleaf renderizar o formulário na primeira visita. */
     public RegistrationRequest() {
-        this("", "", "", "");
+        this("", "", "", "", "");
     }
 
     /**

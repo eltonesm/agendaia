@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -46,7 +45,6 @@ public class PublicBookingController {
     private static final String VIEW_CATALOGO = "public/catalogo";
     private static final String VIEW_PROFISSIONAIS = "public/profissionais";
     private static final String VIEW_HORARIOS = "public/horarios";
-    private static final String VIEW_SUCESSO = "public/sucesso";
 
     private final ServiceDirectory serviceDirectory;
     private final ServiceOfferingDirectory serviceOfferingDirectory;
@@ -111,8 +109,7 @@ public class PublicBookingController {
             @Valid @ModelAttribute("form") PublicBookingRequest form,
             BindingResult binding,
             HttpServletRequest request,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+            Model model) {
         exigirTenantResolvido();
 
         // A tela recarregada em caso de erro precisa continuar mostrando a
@@ -143,10 +140,9 @@ public class PublicBookingController {
         try {
             var agendado = bookAppointment.handle(
                     new BookAppointmentCommand(offeringId, startsAt, form.name(), form.phone()));
-            // Flash attribute: sobrevive só ao próximo GET (PRG), sem nova
-            // consulta ao banco e sem expor o resumo na querystring (US-5).
-            redirectAttributes.addFlashAttribute("serviceName", agendado.serviceName());
-            redirectAttributes.addFlashAttribute("startsAt", agendado.startsAt());
+            // PRG sem flash attribute: a tela de destino (AppointmentController,
+            // confirmacao-e-cancelamento) consulta o agregado de verdade, não
+            // depende de nada sobrevivendo só ao próximo GET.
             return "redirect:/b/{slug}/agendamentos/" + agendado.id();
         } catch (ServiceOfferingNotFoundException e) {
             // BR-5: a oferta não existe (ou é de outro tenant) — não faz
@@ -163,18 +159,6 @@ public class PublicBookingController {
             }
             return recarregarTelaDeHorarios(slug, offeringId, dataDoFormulario, model);
         }
-    }
-
-    @GetMapping("/agendamentos/{id}")
-    public String sucesso(@PathVariable String slug, @PathVariable UUID id, Model model) {
-        exigirTenantResolvido();
-        // O resumo (serviceName/startsAt) chega via flash attribute do POST
-        // que criou o agendamento — se a página for recarregada depois, os
-        // dois somem, e a tela mostra só a confirmação genérica com o id.
-        // Nome do estabelecimento já vem do LayoutAdvice.
-        model.addAttribute("slug", slug);
-        model.addAttribute("appointmentId", id);
-        return VIEW_SUCESSO;
     }
 
     /** Não é o filtro que decide 404 (DD-3): rotear é responsabilidade do controller. */

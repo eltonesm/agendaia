@@ -1,0 +1,70 @@
+<!doctype html>
+<!--/*
+  Página pública do agendamento — ver, confirmar presença, cancelar, .ics
+  e WhatsApp (confirmacao-e-cancelamento, TODO-007, US-1 a US-5).
+
+  Substitui sucesso.html (pagina-publica-agendamento, TODO-006): a mesma
+  URL agora consulta o agregado de verdade, a qualquer momento, não só
+  logo depois de agendar (DD-5 da spec técnica).
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${businessName})}"></head>
+<body>
+
+<header class="bg-body-tertiary border-bottom py-3 mb-4">
+  <div class="container">
+    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
+  </div>
+</header>
+
+<main class="container" style="max-width: 32rem">
+
+  <h1 class="h4 mb-3">Seu agendamento</h1>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <p class="mb-1"><strong th:text="${agendamento.serviceName()}">Serviço</strong></p>
+      <p class="mb-1 text-body-secondary" th:text="${agendamento.professionalName()}">Profissional</p>
+      <p class="mb-2">
+        <span th:text="${#temporals.format(agendamento.startsAt(), 'dd/MM/yyyy')} + ' às ' + ${#temporals.format(agendamento.startsAt(), 'HH:mm')}">
+          01/01/2026 às 08:00
+        </span>
+      </p>
+
+      <span class="badge text-bg-secondary" th:if="${agendamento.status().name() == 'SCHEDULED'}">Agendado</span>
+      <span class="badge text-bg-success" th:if="${agendamento.status().name() == 'CONFIRMED'}">Confirmado</span>
+      <span class="badge text-bg-danger" th:if="${agendamento.status().name() == 'CANCELLED'}">Cancelado</span>
+    </div>
+  </div>
+
+  <div class="d-flex flex-column gap-2 mb-3">
+    <form th:if="${agendamento.canConfirm()}"
+          method="post"
+          th:action="@{/b/{slug}/agendamentos/{id}/confirmar(slug=${slug},id=${agendamento.id()})}">
+      <button type="submit" class="btn btn-success w-100">Confirmar presença</button>
+    </form>
+
+    <form th:if="${agendamento.canCancel()}"
+          method="post"
+          th:action="@{/b/{slug}/agendamentos/{id}/cancelar(slug=${slug},id=${agendamento.id()})}">
+      <button type="submit" class="btn btn-outline-danger w-100">Cancelar</button>
+    </form>
+
+    <a th:if="${agendamento.status().name() != 'CANCELLED'}"
+       class="btn btn-outline-secondary"
+       th:href="@{/b/{slug}/agendamentos/{id}/ics(slug=${slug},id=${agendamento.id()})}">
+      Adicionar ao calendário
+    </a>
+
+    <a th:if="${whatsappLink != null}" class="btn btn-outline-success" th:href="${whatsappLink}">
+      Falar no WhatsApp
+    </a>
+  </div>
+
+  <a class="btn btn-link ps-0" th:href="@{/b/{slug}(slug=${slug})}">&larr; Voltar ao início</a>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

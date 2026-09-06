@@ -15,4 +15,7 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
     /** Get-or-create pelo par (tenant, telefone) — chave natural do agregado. */
     Optional<Customer> findByTenantIdAndPhone(UUID tenantId, String phone);
+
+    /** Resolução por id, sempre revalidada por tenant (confirmacao-e-cancelamento, DD-8). */
+    Optional<Customer> findByTenantIdAndId(UUID tenantId, UUID id);
 }

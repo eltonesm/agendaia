@@ -45,7 +45,7 @@ class BillingAccountServiceTest {
     }
 
     private BusinessRef negocio(UUID tenantId) {
-        return new BusinessRef(tenantId, "Barbearia do João", "barbearia-do-joao", Instant.now());
+        return new BusinessRef(tenantId, "Barbearia do João", "barbearia-do-joao", null, Instant.now());
     }
 
     @Test
