@@ -36,11 +36,13 @@ passa por `/sdd.start`.
 
 ### TODO-007: Confirmação com link de cancelamento
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-29
+- **Started**: 2026-09-05
 - **Origin**: revisão arquitetural — risco D-01
 - **Context**: Fecha o ciclo do cliente: token assinado para ver e cancelar, arquivo `.ics` e link `wa.me` pré-preenchido. Sem isto o cliente agenda e não recebe nada, e volta a perguntar por WhatsApp — que é o problema que o produto existe para resolver.
 - **Affected Files**: `scheduling`, `platform`
+- **Feature**: `sdd/wip/20260905-confirmacao-e-cancelamento/`
 - **Complexity**: Medium
 
 ---
