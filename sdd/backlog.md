@@ -34,19 +34,6 @@ passa por `/sdd.start`.
 
 ---
 
-### TODO-007: Confirmação com link de cancelamento
-- **Priority**: Medium
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-05
-- **Origin**: revisão arquitetural — risco D-01
-- **Context**: Fecha o ciclo do cliente: token assinado para ver e cancelar, arquivo `.ics` e link `wa.me` pré-preenchido. Sem isto o cliente agenda e não recebe nada, e volta a perguntar por WhatsApp — que é o problema que o produto existe para resolver.
-- **Affected Files**: `scheduling`, `platform`
-- **Feature**: `sdd/wip/20260905-confirmacao-e-cancelamento/`
-- **Complexity**: Medium
-
----
-
 ### TODO-008: Agenda do profissional — criar, cancelar, reagendar
 - **Priority**: Medium
 - **Status**: pending
@@ -440,6 +427,22 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-007: Confirmação com link de cancelamento
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Started**: 2026-09-05
+- **Resolved**: 2026-09-06
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260905-confirmacao-e-cancelamento/`
+- **Origin**: revisão arquitetural — risco D-01
+- **Context**: Fecha o ciclo do cliente aberto pela TODO-006 — a única prova de agendamento até aqui era uma tela de sucesso que sumia ao recarregar. A mesma URL (`/b/{slug}/agendamentos/{id}`) passou a consultar o agregado de verdade, ganhando confirmar presença, cancelar (libera o horário), baixar `.ics` e link `wa.me` condicional ao WhatsApp do estabelecimento (campo novo, opcional, coletado no cadastro). 15 tasks, 490 testes no projeto inteiro, 90% de cobertura de instrução.
+- **Decisões tomadas antes da spec**: sem prazo mínimo para cancelar (só até o horário chegar); wa.me serve para o cliente falar com o estabelecimento, não para compartilhar a própria confirmação; WhatsApp do estabelecimento só no cadastro, sem tela de edição nesta feature.
+- **Nasceu aqui**: `Appointment.confirm()`/`cancel()` (domínio puro), `ManageAppointmentHandler` (3 portas numa classe só), `AppointmentController`/`IcsWriter`, `Business.whatsapp`, `ProfessionalDirectory.find(UUID)`/`CustomerDirectory.find(UUID)`.
+- **Gotcha real**: a própria spec funcional presumiu "token assinado" para o link antes de a spec técnica decidir o mecanismo — corrigida para exigir só isolamento entre tenants, depois que o DD-1 mostrou que o UUID do `Appointment` já é opaco o bastante (ADR 0009), mesma defesa das demais rotas públicas. Um segundo achado, já durante os testes (TASK-011): `AppointmentNotFoundException` sem catch específico caía no 422 genérico em vez do 404 exigido pela spec técnica — corrigido nas 4 rotas de `AppointmentController` antes do commit da tarefa.
+
+---
 
 ### TODO-006: Página pública e agendar
 - **Priority**: High
