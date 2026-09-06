@@ -10,7 +10,7 @@
       "id": "TASK-001",
       "title": "Appointment ganha confirm()/cancel()",
       "description": "Dois metodos novos em Appointment (dominio puro, ADR 0002): confirm(Instant agora) e cancel(Instant agora). Absorvem estado terminal (CANCELLED ou startsAt ja passado) devolvendo a propria instancia sem lancar excecao (DD-3) — nenhum campo novo, so as duas transicoes.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": ["src/main/java/com/agendaia/scheduling/domain/Appointment.java"],
@@ -29,7 +29,7 @@
       "id": "TASK-002",
       "title": "organization ganha WhatsApp do estabelecimento",
       "description": "Migration V9 (business.whatsapp, VARCHAR(20) nullable). Business ganha o campo, Business.register(name, slug, whatsapp) com overload de 2 params preservado, e Business.normalizeWhatsapp(String) (nulo/branco vira null, formato invalido lanca IllegalArgumentException). BusinessRef ganha o campo whatsapp; BusinessDirectoryHandler.toRef mapeia.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -52,7 +52,7 @@
       "id": "TASK-003",
       "title": "Cadastro aceita WhatsApp opcional",
       "description": "RegistrationRequest ganha campo whatsapp com @Pattern permitindo string vazia OU formato de telefone (nao @NotBlank). RegisterBusinessCommand e RegisterBusinessHandler propagam o valor para Business.register. cadastro.html ganha o campo no formulario, claramente marcado como opcional.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002"],
       "files": [
@@ -73,7 +73,7 @@
       "id": "TASK-004",
       "title": "ProfessionalDirectory e CustomerDirectory ganham find(UUID)",
       "description": "ProfessionalDirectory.find(UUID id) -> Optional<ProfessionalRef>, usando TenantContext.require() interno (mesma convencao geral). CustomerDirectory.find(UUID id) -> Optional<CustomerRef> (record novo, so id e name). Cada um chamado uma vez por visualizacao, nunca em laco.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -95,7 +95,7 @@
       "id": "TASK-005",
       "title": "AppointmentRepository ganha findByTenantIdAndId/updateStatus; teto por telefone conta CONFIRMED",
       "description": "findByTenantIdAndId(TenantId, UUID) -> Optional<Appointment> (DD-1). updateStatus(TenantId, UUID, AppointmentStatus, Instant) via @Modifying @Query direto, so status+updated_at (DD-4) — nunca via save()/merge, para nao sobrescrever created_at. countFutureActive passa a considerar SCHEDULED e CONFIRMED via metodo derivado StatusIn (DD-6).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": [],
       "files": [
@@ -116,7 +116,7 @@
       "id": "TASK-006",
       "title": "AppointmentNotFoundException + ManageAppointmentHandler",
       "description": "Excecao nova (mesmo padrao de ServiceOfferingNotFoundException). ManageAppointmentHandler implementa AppointmentDetailsUseCase, ConfirmAppointmentUseCase e CancelAppointmentUseCase numa classe so (DD-2), com resolucao por tenant+id compartilhada. AppointmentDetails (DTO) calcula canConfirm/canCancel a partir do status atual e de agora.isBefore(startsAt).",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-004", "TASK-005"],
       "files": [

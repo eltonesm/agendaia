@@ -71,7 +71,7 @@ public class RegistrationController {
 
         try {
             var registrado = registerBusiness.register(new RegisterBusinessCommand(
-                    form.businessName(), form.slug(), form.email(), form.password()));
+                    form.businessName(), form.slug(), form.email(), form.password(), form.whatsapp()));
 
             autenticarSessao(registrado.ownerEmail(), request, response);
 

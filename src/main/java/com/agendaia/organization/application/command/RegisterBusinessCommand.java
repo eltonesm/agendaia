@@ -9,7 +9,7 @@ package com.agendaia.organization.application.command;
  * depuração.
  */
 public record RegisterBusinessCommand(
-        String businessName, String slug, String email, String rawPassword) {
+        String businessName, String slug, String email, String rawPassword, String whatsapp) {
 
     /** Menor senha aceita. Ver Validation Invariants da spec funcional. */
     public static final int SENHA_MINIMA = 8;

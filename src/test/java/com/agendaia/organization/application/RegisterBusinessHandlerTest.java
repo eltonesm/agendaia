@@ -41,7 +41,7 @@ class RegisterBusinessHandlerTest {
 
     private RegisterBusinessCommand comando() {
         return new RegisterBusinessCommand(
-                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao");
+                "Barbearia do João", "barbearia-do-joao", "joao@exemplo.com", "senha-do-joao", null);
     }
 
     @Test
@@ -94,7 +94,7 @@ class RegisterBusinessHandlerTest {
     @DisplayName("palavra reservada é recusada sem nem consultar o banco")
     void slugReservado(String reservado) {
         var comando = new RegisterBusinessCommand(
-                "Barbearia", reservado, "joao@exemplo.com", "senha-do-joao");
+                "Barbearia", reservado, "joao@exemplo.com", "senha-do-joao", null);
 
         assertThatThrownBy(() -> handler.register(comando))
                 .isInstanceOf(SlugUnavailableException.class);
@@ -166,7 +166,7 @@ class RegisterBusinessHandlerTest {
 
         handler.register(new RegisterBusinessCommand(
                 "Barbearia do João", "  BARBEARIA-DO-JOAO  ", "  Joao@Exemplo.COM  ",
-                "senha-do-joao"));
+                "senha-do-joao", null));
 
         verify(businessRepository).existsBySlug("barbearia-do-joao");
         verify(userRepository).existsByEmail("joao@exemplo.com");
@@ -176,7 +176,7 @@ class RegisterBusinessHandlerTest {
     @DisplayName("senha curta é recusada na construção do comando, antes de chegar ao handler")
     void senhaCurta() {
         assertThatThrownBy(() -> new RegisterBusinessCommand(
-                        "Barbearia", "barbearia", "joao@exemplo.com", "curta"))
+                        "Barbearia", "barbearia", "joao@exemplo.com", "curta", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("8 caracteres");
     }
