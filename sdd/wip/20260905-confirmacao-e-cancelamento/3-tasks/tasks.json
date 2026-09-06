@@ -1,0 +1,306 @@
+{
+  "feature": "confirmacao-e-cancelamento",
+  "local_config": {
+    "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
+    "note": "Uma migration Flyway nova: V9 (business.whatsapp, coluna opcional). Nenhuma mudanca de schema em appointment — V8 (TODO-006) ja previa CONFIRMED/CANCELLED."
+  },
+  "stats": { "total": 15, "done": 0, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Appointment ganha confirm()/cancel()",
+      "description": "Dois metodos novos em Appointment (dominio puro, ADR 0002): confirm(Instant agora) e cancel(Instant agora). Absorvem estado terminal (CANCELLED ou startsAt ja passado) devolvendo a propria instancia sem lancar excecao (DD-3) — nenhum campo novo, so as duas transicoes.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/scheduling/domain/Appointment.java"],
+      "acceptance_criteria": [
+        "AC-1: confirm() muda SCHEDULED para CONFIRMED quando agora esta antes de startsAt",
+        "AC-2: confirm() e cancel() sao no-op (devolvem this) quando status ja e CANCELLED",
+        "AC-3: confirm() e no-op quando status ja e CONFIRMED (idempotencia)",
+        "AC-4: confirm() e cancel() sao no-op quando agora e depois de startsAt, mesmo a partir de SCHEDULED/CONFIRMED",
+        "AC-5: cancel() muda SCHEDULED ou CONFIRMED para CANCELLED quando agora esta antes de startsAt",
+        "GATE: nenhum import de org.springframework ou jakarta.persistence em Appointment.java"
+      ],
+      "references": ["US-2", "US-3", "BR-2", "BR-3", "BR-4"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "organization ganha WhatsApp do estabelecimento",
+      "description": "Migration V9 (business.whatsapp, VARCHAR(20) nullable). Business ganha o campo, Business.register(name, slug, whatsapp) com overload de 2 params preservado, e Business.normalizeWhatsapp(String) (nulo/branco vira null, formato invalido lanca IllegalArgumentException). BusinessRef ganha o campo whatsapp; BusinessDirectoryHandler.toRef mapeia.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/resources/db/migration/V9__organization_add_business_whatsapp.sql",
+        "src/main/java/com/agendaia/organization/domain/Business.java",
+        "src/main/java/com/agendaia/organization/api/BusinessRef.java",
+        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Business.register(name, slug) (2 params) continua funcionando, whatsapp fica null",
+        "AC-2: normalizeWhatsapp(null) e normalizeWhatsapp(\"\") devolvem null, sem lancar excecao",
+        "AC-3: normalizeWhatsapp com formato invalido lanca IllegalArgumentException",
+        "AC-4: BusinessRef.whatsapp() reflete o valor persistido, nullable",
+        "GATE: ./mvnw test -Dtest=BusinessTest passa (se existir) ou build compila com o novo campo"
+      ],
+      "references": ["US-7", "BR-8"],
+      "design_decisions": ["DD-7"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "Cadastro aceita WhatsApp opcional",
+      "description": "RegistrationRequest ganha campo whatsapp com @Pattern permitindo string vazia OU formato de telefone (nao @NotBlank). RegisterBusinessCommand e RegisterBusinessHandler propagam o valor para Business.register. cadastro.html ganha o campo no formulario, claramente marcado como opcional.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-002"],
+      "files": [
+        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegistrationRequest.java",
+        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessCommand.java",
+        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
+        "src/main/resources/templates/auth/cadastro.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Cadastro sem preencher whatsapp continua funcionando (campo opcional)",
+        "AC-2: Cadastro com whatsapp em formato invalido mostra erro no campo, preserva o resto do formulario",
+        "AC-3: Cadastro com whatsapp valido grava o Business com o campo preenchido"
+      ],
+      "references": ["US-7"],
+      "design_decisions": ["DD-7"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "ProfessionalDirectory e CustomerDirectory ganham find(UUID)",
+      "description": "ProfessionalDirectory.find(UUID id) -> Optional<ProfessionalRef>, usando TenantContext.require() interno (mesma convencao geral). CustomerDirectory.find(UUID id) -> Optional<CustomerRef> (record novo, so id e name). Cada um chamado uma vez por visualizacao, nunca em laco.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/organization/api/ProfessionalDirectory.java",
+        "src/main/java/com/agendaia/organization/application/ProfessionalDirectoryHandler.java",
+        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java",
+        "src/main/java/com/agendaia/customer/api/CustomerRef.java",
+        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: ProfessionalDirectory.find(id) devolve vazio para id de outro tenant ou inexistente",
+        "AC-2: CustomerDirectory.find(id) devolve vazio para id de outro tenant ou inexistente",
+        "AC-3: CustomerRef nao expõe telefone, so id e name"
+      ],
+      "references": [],
+      "design_decisions": ["DD-8"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "AppointmentRepository ganha findByTenantIdAndId/updateStatus; teto por telefone conta CONFIRMED",
+      "description": "findByTenantIdAndId(TenantId, UUID) -> Optional<Appointment> (DD-1). updateStatus(TenantId, UUID, AppointmentStatus, Instant) via @Modifying @Query direto, so status+updated_at (DD-4) — nunca via save()/merge, para nao sobrescrever created_at. countFutureActive passa a considerar SCHEDULED e CONFIRMED via metodo derivado StatusIn (DD-6).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: findByTenantIdAndId filtra sempre pelos dois campos juntos — id de outro tenant devolve vazio",
+        "AC-2: updateStatus grava so status e updated_at, sem tocar created_at (verificavel por teste de integracao)",
+        "AC-3: countFutureActive soma agendamentos SCHEDULED e CONFIRMED, nao so SCHEDULED",
+        "GATE: nenhuma chamada a save()/saveAndFlush para persistir mudanca de status"
+      ],
+      "references": ["BR-1", "BR-6", "BR-7"],
+      "design_decisions": ["DD-1", "DD-4", "DD-6"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "AppointmentNotFoundException + ManageAppointmentHandler",
+      "description": "Excecao nova (mesmo padrao de ServiceOfferingNotFoundException). ManageAppointmentHandler implementa AppointmentDetailsUseCase, ConfirmAppointmentUseCase e CancelAppointmentUseCase numa classe so (DD-2), com resolucao por tenant+id compartilhada. AppointmentDetails (DTO) calcula canConfirm/canCancel a partir do status atual e de agora.isBefore(startsAt).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-001", "TASK-004", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/domain/exception/AppointmentNotFoundException.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/AppointmentDetailsUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/ConfirmAppointmentUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/CancelAppointmentUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/AppointmentDetails.java",
+        "src/main/java/com/agendaia/scheduling/application/ManageAppointmentHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: handle(id) de tenant errado ou inexistente lanca AppointmentNotFoundException",
+        "AC-2: confirm(id) so grava (updateStatus) quando ha transicao real de status",
+        "AC-3: cancel(id) so grava quando ha transicao real de status",
+        "AC-4: canConfirm e canCancel refletem corretamente status atual + comparacao com agora"
+      ],
+      "references": ["US-1", "US-2", "US-3", "BR-1", "BR-7"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "AppointmentController + IcsWriter + link wa.me",
+      "description": "Controller novo scheduling.adapter.in.web.AppointmentController sob /b/{slug}/agendamentos/{id}: GET detalhes, POST confirmar, POST cancelar, GET ics. IcsWriter (DD-9) monta o VCALENDAR/VEVENT em texto plano, sem dado do cliente. Link wa.me montado no controller com URLEncoder (DD-10), null quando Business.whatsapp e nulo. PublicBookingController perde o metodo sucesso() e o redirect de confirmar() para de usar RedirectAttributes.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-002", "TASK-006"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/AppointmentController.java",
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/IcsWriter.java",
+        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: GET .../agendamentos/{id} de id de outro tenant devolve 404",
+        "AC-2: POST .../confirmar e .../cancelar redirecionam (PRG) para o proprio GET",
+        "AC-3: GET .../ics devolve Content-Type text/calendar sem nome nem telefone do cliente",
+        "AC-4: whatsappLink no model e null quando Business.whatsapp e nulo, presente com mensagem codificada quando nao e",
+        "AC-5: PublicBookingController.confirmar nao usa mais RedirectAttributes para serviceName/startsAt"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "BR-1", "BR-9"],
+      "design_decisions": ["DD-5", "DD-9", "DD-10"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Template public/agendamento.html",
+      "description": "Substitui sucesso.html: mostra estabelecimento, profissional, servico, data/horario e status; botoes Confirmar presenca/Cancelar condicionais a canConfirm/canCancel; link de download do .ics; link wa.me condicional. Todo dado dinamico via th:text.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-007"],
+      "files": ["src/main/resources/templates/public/agendamento.html"],
+      "acceptance_criteria": [
+        "AC-1: botoes de acao somem quando canConfirm/canCancel sao false",
+        "AC-2: link wa.me so aparece quando o model traz whatsappLink",
+        "AC-3: nenhum th:utext no template"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5"],
+      "design_decisions": ["DD-5", "DD-9", "DD-10"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Testes de dominio e aplicacao",
+      "description": "AppointmentTest cobre confirm/cancel (transicao normal, idempotencia, terminal por cancelamento, terminal por horario passado). ManageAppointmentHandlerTest cobre as tres portas com mocks. BookAppointmentHandlerTest atualizado para o teto contando SCHEDULED e CONFIRMED (BR-6).",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-001", "TASK-005", "TASK-006"],
+      "files": [
+        "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
+        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: casos de AC-1 a AC-5 do TASK-001 cobertos por teste de dominio puro",
+        "AC-2: AppointmentNotFoundException coberta para tenant errado",
+        "AC-3: BookAppointmentHandlerTest prova que um CONFIRMED conta para o teto de 3",
+        "GATE: ./mvnw test -Dtest=AppointmentTest,ManageAppointmentHandlerTest,BookAppointmentHandlerTest passa"
+      ],
+      "references": ["US-2", "US-3", "BR-2", "BR-3", "BR-4", "BR-6"],
+      "design_decisions": ["DD-2", "DD-3", "DD-6"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "Teste do cadastro com WhatsApp opcional",
+      "description": "Cobertura do fluxo de cadastro (TASK-003): formato invalido rejeita com erro de campo, campo vazio funciona, campo valido persiste. Reaproveita a estrutura de teste do fluxo de cadastro ja existente (TODO-001), so estendendo os casos.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: cadastro sem whatsapp continua passando nos testes existentes",
+        "AC-2: novo caso cobre whatsapp valido e whatsapp em formato invalido"
+      ],
+      "references": ["US-7"],
+      "design_decisions": ["DD-7"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "AppointmentControllerTest (@WebMvcTest)",
+      "description": "Cobertura das 4 rotas: GET detalhes (200 e 404), POST confirmar, POST cancelar, GET ics. Confirma que o .ics nao carrega nome/telefone do cliente e que whatsappLink e omitido quando Business.whatsapp e nulo.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-007", "TASK-008"],
+      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/AppointmentControllerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: GET de id de outro tenant (mock) devolve 404",
+        "AC-2: POST confirmar/cancelar seguido de GET reflete o novo status",
+        "AC-3: corpo do .ics nao contem nome nem telefone do cliente de teste",
+        "GATE: ./mvnw test -Dtest=AppointmentControllerTest passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "BR-1", "BR-9"],
+      "design_decisions": ["DD-1", "DD-5", "DD-9", "DD-10"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "ConfirmacaoECancelamentoIT — E2E-1 a E2E-7",
+      "description": "Teste de integracao contra Postgres real (Testcontainers), cobrindo os 7 cenarios da spec funcional: confirmar, cancelar libera horario, isolamento de tenant, idempotencia, agendamento no passado, teto contando CONFIRMED, wa.me condicional.",
+      "status": "pending",
+      "layer": 1,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
+      "files": ["src/test/java/com/agendaia/scheduling/ConfirmacaoECancelamentoIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 a E2E-7 da spec funcional, um teste por cenario, nomeados por @DisplayName",
+        "AC-2: E2E-2 confirma via GetAvailableSlotsHandler que o horario cancelado volta a aparecer disponivel",
+        "GATE: ./mvnw verify -Dtest=ConfirmacaoECancelamentoIT passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6", "US-7"],
+      "design_decisions": ["DD-1", "DD-2", "DD-3", "DD-6"]
+    },
+    {
+      "id": "TASK-013",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-10 refletidas no codigo, Appointment continua Java puro, ManageAppointmentHandler documentado como excecao deliberada ao padrao uma-porta-por-classe (DD-2), sem sufixo Impl, transacao so em application.",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-014",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: consulta de detalhes faz no maximo 3 buscas fixas (Appointment, profissional, cliente), sem laco; confirmar/cancelar fazem 1 busca + 1 UPDATE de 2 colunas, sem SELECT adicional de merge().",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: tenantId nunca aceito do id do agendamento (revalidado sempre por tenant, BR-1/BR-7), CSRF ativo nos POSTs novos, XSS coberto por th:text, .ics sem dado pessoal do cliente (BR-9), sem segredo hardcoded (DD-1 evita necessidade de chave nova).",
+      "status": "pending",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011", "TASK-012"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-1", "BR-7", "BR-9"],
+      "design_decisions": ["DD-1"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-004", "TASK-005"],
+        "level_1": ["TASK-003", "TASK-006"],
+        "level_2": ["TASK-007", "TASK-009", "TASK-010"],
+        "level_3": ["TASK-008", "TASK-011"],
+        "level_4": ["TASK-012"]
+      },
+      "3": {
+        "level_0": ["TASK-013", "TASK-014", "TASK-015"]
+      }
+    }
+  }
+}

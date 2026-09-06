@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-05
 **Last Updated**: 2026-09-05
-**Current Stage**: tasks
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `Appointment`,
 > `BookAppointmentHandler` e a rota pública `/b/{slug}` inteira (TODO-006).
@@ -183,14 +183,23 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-06
+    completed: 2026-09-06
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-06T13:41:18Z
+    strategy_chosen_by: Elton Marques
+    generated_tasks_count: 15
+    iterations: 0
+    final_tasks_count: 15
 
   implementation:
     started: null
     completed: null
     status: pending
+    execution_strategy: batched
+    total_tasks: 15
+    completed_tasks: 0
 ```
 
 ---
@@ -199,12 +208,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null
-  chosen_date: null
+  type: batched
+  chosen_date: 2026-09-06
   estimated_agent_time: null
   estimated_tokens: null
   actual_agent_time: null
-  rationale: null
+  rationale: "Batched por nivel de dependencia. Quatro tarefas independentes no nivel 0 (confirm/cancel do dominio, WhatsApp de organization, find(UUID) dos directories, AppointmentRepository), depois cadeia sequencial: cadastro + ManageAppointmentHandler -> AppointmentController -> template -> testes -> qualidade."
 ```
 
 ---
