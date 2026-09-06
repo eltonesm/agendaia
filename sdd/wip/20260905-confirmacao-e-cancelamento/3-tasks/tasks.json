@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
     "note": "Uma migration Flyway nova: V9 (business.whatsapp, coluna opcional). Nenhuma mudanca de schema em appointment — V8 (TODO-006) ja previa CONFIRMED/CANCELLED."
   },
-  "stats": { "total": 15, "done": 0, "by_layer": { "1": 12, "2": 0, "3": 3 } },
+  "stats": { "total": 15, "done": 9, "by_layer": { "1": 12, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -177,8 +177,8 @@
     {
       "id": "TASK-009",
       "title": "Testes de dominio e aplicacao",
-      "description": "AppointmentTest cobre confirm/cancel (transicao normal, idempotencia, terminal por cancelamento, terminal por horario passado). ManageAppointmentHandlerTest cobre as tres portas com mocks. BookAppointmentHandlerTest atualizado para o teto contando SCHEDULED e CONFIRMED (BR-6).",
-      "status": "pending",
+      "description": "AppointmentTest cobre confirm/cancel (transicao normal, idempotencia, terminal por cancelamento, terminal por horario passado). ManageAppointmentHandlerTest cobre as tres portas com mocks. BookAppointmentHandlerTest nao precisou mudar: a contagem SCHEDULED+CONFIRMED (BR-6) vive so no adapter, coberta pelo E2E-6 (TASK-012).",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-005", "TASK-006"],
       "files": [
