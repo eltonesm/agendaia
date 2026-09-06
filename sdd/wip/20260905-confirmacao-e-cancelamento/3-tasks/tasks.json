@@ -140,7 +140,7 @@
       "id": "TASK-007",
       "title": "AppointmentController + IcsWriter + link wa.me",
       "description": "Controller novo scheduling.adapter.in.web.AppointmentController sob /b/{slug}/agendamentos/{id}: GET detalhes, POST confirmar, POST cancelar, GET ics. IcsWriter (DD-9) monta o VCALENDAR/VEVENT em texto plano, sem dado do cliente. Link wa.me montado no controller com URLEncoder (DD-10), null quando Business.whatsapp e nulo. PublicBookingController perde o metodo sucesso() e o redirect de confirmar() para de usar RedirectAttributes.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-006"],
       "files": [
@@ -162,7 +162,7 @@
       "id": "TASK-008",
       "title": "Template public/agendamento.html",
       "description": "Substitui sucesso.html: mostra estabelecimento, profissional, servico, data/horario e status; botoes Confirmar presenca/Cancelar condicionais a canConfirm/canCancel; link de download do .ics; link wa.me condicional. Todo dado dinamico via th:text.",
-      "status": "pending",
+      "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-007"],
       "files": ["src/main/resources/templates/public/agendamento.html"],
