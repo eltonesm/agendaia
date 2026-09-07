@@ -48,11 +48,13 @@ passa por `/sdd.start`.
 
 ### TODO-108: Observabilidade — log estruturado e métricas
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: in-progress
 - **Created**: 2026-08-30
+- **Started**: 2026-09-07
 - **Origin**: convenções do time
 - **Context**: Log em JSON com `tenantId` e `requestId` no MDC, saindo em toda linha da requisição. Actuator com `/health` e `/prometheus`, ambos protegidos. Métricas de negócio junto com as técnicas: agendamentos criados, cancelados e falhas por conflito de horário. Proibido logar telefone e nome de cliente (LGPD).
 - **Affected Files**: `platform`, `application.yaml`
+- **Feature**: `sdd/wip/20260907-observabilidade/`
 - **Complexity**: Medium
 
 ---
