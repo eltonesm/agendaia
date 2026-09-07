@@ -170,9 +170,11 @@ stages:
     approved_at: 2026-09-07T17:09:39Z
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-07
+    completed: 2026-09-07
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T17:14:37Z
 
   tasks:
     started: null
