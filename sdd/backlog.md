@@ -34,19 +34,6 @@ passa por `/sdd.start`.
 
 ---
 
-### TODO-008: Agenda do profissional — criar, cancelar, reagendar
-- **Priority**: Medium
-- **Status**: in-progress
-- **Created**: 2026-08-29
-- **Started**: 2026-09-06
-- **Origin**: revisão arquitetural
-- **Context**: Fecha o ciclo do dono. Muitos clientes vão continuar ligando, então o agendamento manual é requisito, não conveniência. Depois desta feature existe um produto que um barbeiro real consegue usar.
-- **Affected Files**: `scheduling`
-- **Feature**: `sdd/wip/20260906-agenda-profissional/`
-- **Complexity**: High
-
----
-
 ### TODO-106: Compose de produção com TLS
 - **Priority**: Medium
 - **Status**: pending
@@ -81,6 +68,18 @@ passa por `/sdd.start`.
 ---
 
 ## 🔧 Technical Debt
+
+### DEBT-018: Consulta da agenda do dono sem indice cobrindo todos os status
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-07
+- **Origin**: revisao de performance da TODO-008
+- **Context**: `AppointmentRepository.findByTenantIdAndProfessionalIdAndDate` (usada por `ViewAgendaUseCase`, a tela `/admin/agenda`) busca agendamentos de **qualquer status**, inclusive `CANCELLED` (ADR 0011). O unico indice existente que cobre `(tenant_id, professional_id, ...)` e o GiST parcial de `appointment_no_overlap` (migration V8), que so indexa linhas `SCHEDULED`/`CONFIRMED` — a consulta da agenda nao pode usar esse indice e tende a sequential scan. Aceitavel no volume do piloto (um estabelecimento, poucas centenas de linhas). Resolver com um indice btree `(tenant_id, professional_id, starts_at)` quando o volume de agendamentos por estabelecimento justificar.
+- **Affected Files**: `scheduling/adapter/out/persistence/AppointmentJpaRepository.java`, nova migration
+- **Complexity**: Low
+- **Risk if Ignored**: Tela da agenda fica lenta conforme o historico de agendamentos cresce — sem impacto de correcao, so de tempo de resposta
+
+---
 
 ### DEBT-017: Corrida rara no cadastro de cliente vira 500 generico
 - **Priority**: Low
@@ -251,6 +250,17 @@ passa por `/sdd.start`.
 ---
 
 ## 💡 Ideas
+
+### IDEA-017: Promover "uma classe, varias portas" ao PATTERNS.md
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-07
+- **Origin**: code review da TODO-008
+- **Context**: `ManageAppointmentHandler` (TODO-007) e `ProfessionalAgendaHandler` (TODO-008) sao a 1a e 2a ocorrencia deliberada do mesmo desvio do padrao "uma porta por classe": varias portas `application.port.in` implementadas por uma unica classe, quando compartilham a mesma dependencia principal e sao a mesma funcionalidade vista de angulos diferentes. Duas ocorrencias reais e documentadas no proprio codigo — momento de extrair a regra para `PATTERNS.md`, para a proxima feature nao reinventar a justificativa do zero.
+- **Affected Files**: `sdd/PATTERNS.md`
+- **Complexity**: Low
+
+---
 
 ### IDEA-001: Contexto de notificação — confirmação e lembrete
 - **Priority**: Medium
@@ -429,6 +439,22 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-008: Agenda do profissional — criar, cancelar, reagendar
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-29
+- **Started**: 2026-09-06
+- **Resolved**: 2026-09-07
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260906-agenda-profissional/`
+- **Origin**: revisão arquitetural
+- **Context**: Fecha o ciclo do dono que a TODO-006/TODO-007 abriram para o cliente. O painel administrativo (`/admin/agenda/**`) ganhou visão da agenda de um profissional por dia, criação manual de agendamento (sem o teto de 3 por telefone do fluxo público), confirmação (reaproveitando `ConfirmAppointmentUseCase` sem mudança), cancelamento sem restrição de horário e reagendamento — que pode inclusive trocar o profissional. 14 tasks, 451 testes no projeto inteiro, 89% de cobertura de instrução.
+- **Decisões tomadas antes da spec**: só o dono vê a agenda de qualquer profissional; cliente identificado por nome+telefone, mesmo get-or-create do link público; dono pode agir mesmo sobre agendamento no passado; reagendar pode trocar de profissional (decisão explícita, não a opção recomendada).
+- **Nasceu aqui**: `Appointment.cancelByOwner()` (domínio puro), `AppointmentFactory` (extraído de `BookAppointmentHandler`), `ProfessionalAgendaHandler` (4 portas numa classe só — 2ª ocorrência do desvio "uma porta por classe", ver IDEA-017), `AgendaController` (1º controller admin de `scheduling`), `ServiceOfferingDirectory.listActive()`, `CustomerDirectory.findByIds()`.
+- **Gotcha real**: a própria rota de redirecionamento pós-criação (`/admin/agenda/agendamentos/{id}/confirmado`) foi projetada e implementada, mas não resolvia `professionalId` de qualquer forma — um salto de rede extra sem benefício real. Encontrado e removido durante a própria revisão de código, antes do quality gate, em vez de virar achado formal.
+
+---
 
 ### TODO-007: Confirmação com link de cancelamento
 - **Priority**: Medium
@@ -680,5 +706,7 @@ passa por `/sdd.start`.
 ---
 
 ## Last Updated
+
+2026-09-07 — TODO-008 (agenda-profissional) resolvida e arquivada; DEBT-018 e IDEA-017 registrados.
 
 2026-09-04 — TODO-005 (consultar-horarios-disponiveis) resolvida e arquivada.
