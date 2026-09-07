@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.agendaia.TestcontainersConfiguration;
 import com.agendaia.catalog.application.port.out.ServiceOfferingRepository;
 import com.agendaia.catalog.application.port.out.ServiceRepository;
+import com.agendaia.organization.application.port.out.BusinessOperatingHoursRepository;
 import com.agendaia.organization.application.port.out.BusinessRepository;
 import com.agendaia.organization.application.port.out.ProfessionalRepository;
 import com.agendaia.organization.application.port.out.TimeOffRepository;
@@ -41,11 +42,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * transação, e a limpeza é feita à mão no {@code @BeforeEach}.
  *
  * <p>Ordem de limpeza: {@code service_offering} antes de {@code service}
- * (FK dentro do próprio contexto); {@code time_off} e {@code work_schedule}
- * antes de {@code professional} antes de {@code business} (FK de
- * {@code organization}) — mesma disciplina documentada em
- * {@code PATTERNS.md} para IT que compartilha o Postgres do Testcontainers
- * com as demais.
+ * (FK dentro do próprio contexto); {@code time_off}, {@code work_schedule}
+ * e {@code business_operating_hours} antes de {@code professional} antes
+ * de {@code business} (FK de {@code organization}) — mesma disciplina
+ * documentada em {@code PATTERNS.md} para IT que compartilha o Postgres do
+ * Testcontainers com as demais.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -63,6 +64,7 @@ class ServiceOfferingRegistrationIT {
     @Autowired private ServiceOfferingRepository serviceOfferingRepository;
     @Autowired private WorkScheduleRepository workScheduleRepository;
     @Autowired private TimeOffRepository timeOffRepository;
+    @Autowired private BusinessOperatingHoursRepository businessOperatingHoursRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -74,6 +76,7 @@ class ServiceOfferingRegistrationIT {
         serviceRepository.deleteAllInBatch();
         timeOffRepository.deleteAllInBatch();
         workScheduleRepository.deleteAllInBatch();
+        businessOperatingHoursRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
