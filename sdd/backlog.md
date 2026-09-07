@@ -36,12 +36,13 @@ passa por `/sdd.start`.
 
 ### TODO-106: Compose de produção com TLS
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: blocked
 - **Created**: 2026-08-29
 - **Origin**: revisão arquitetural — risco T-08
 - **Context**: App, banco e Caddy com certificado automático. Nasce junto com a VPS, para poder ser testado de verdade. Link público em HTTP não fecha: coleta nome e telefone em claro.
 - **Affected Files**: `compose.prod.yaml`
 - **Complexity**: Low
+- **Blocked by**: Escolha do domínio e do provedor de VPS, ainda em análise pelo dono (2026-09-07). Candidatos levantados: Vultr (região São Paulo, tem datacenter no Brasil) e Magalu Cloud (nuvem brasileira, cobrança em R$ sem risco cambial) — Hetzner e DigitalOcean descartados por não terem datacenter no Brasil. `compose.prod.yaml` pode ser escrito antes da decisão (domínio entra como variável de ambiente), mas só é testável de verdade depois que a VPS existir e o DNS apontar para ela.
 
 ---
 
