@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-06
 **Last Updated**: 2026-09-06
-**Current Stage**: technical
+**Current Stage**: tasks
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `Appointment`,
 > `BookAppointmentHandler` (TODO-006) e `ManageAppointmentHandler`
@@ -180,9 +180,13 @@ stages:
     iterations: 0
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-07
+    completed: 2026-09-07
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T13:47:51Z
+    mcpqueried: false
+    services_count: 0
 
   tasks:
     started: null
