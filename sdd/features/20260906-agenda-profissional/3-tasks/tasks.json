@@ -1,0 +1,280 @@
+{
+  "feature": "agenda-profissional",
+  "local_config": {
+    "postgres": "docker-compose-dev (mesmo compose.yaml das features anteriores) + Testcontainers nos testes de integracao",
+    "note": "Nenhuma migration nova — Appointment/AppointmentStatus (V8, TODO-006) ja suportam tudo que esta feature precisa."
+  },
+  "stats": { "total": 14, "done": 14, "by_layer": { "1": 11, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Appointment ganha cancelByOwner()",
+      "description": "Metodo novo em Appointment (dominio puro, ADR 0002): cancelByOwner(), sem parametro de tempo. Idempotente se ja CANCELLED (devolve this); caso contrario transiciona para CANCELLED, sem checar startsAt (BR-2, diferente de cancel(Instant) da TODO-007).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/scheduling/domain/Appointment.java"],
+      "acceptance_criteria": [
+        "AC-1: cancelByOwner() muda SCHEDULED ou CONFIRMED para CANCELLED, independente de startsAt ja ter passado",
+        "AC-2: cancelByOwner() e no-op (devolve this) quando ja CANCELLED",
+        "GATE: nenhum import de org.springframework ou jakarta.persistence em Appointment.java"
+      ],
+      "references": ["US-3", "BR-2"],
+      "design_decisions": ["DD-6"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "ServiceOfferingDirectory ganha listActive()",
+      "description": "ActiveOfferingRef (catalog.api, NOVO): id, professionalId, professionalName, serviceName, durationMinutes, priceFormatted. ServiceOfferingDirectory.listActive() lista todas as ofertas ativas do tenant, cruzando ProfessionalDirectory.listActive() e ServiceRepository.findByTenantIdAndActiveTrueOrderByNameAsc UMA VEZ CADA (sem N+1, mesma tecnica de listActiveByService).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/catalog/api/ActiveOfferingRef.java",
+        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java",
+        "src/main/java/com/agendaia/catalog/application/port/out/ServiceOfferingRepository.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: listActive() devolve todas as ofertas ativas do tenant, com nome de profissional e de servico resolvidos",
+        "AC-2: professionalDirectory.listActive() e serviceRepository sao chamados uma vez cada, nunca em laco por oferta",
+        "GATE: build compila com o novo metodo"
+      ],
+      "references": ["US-2", "US-4"],
+      "design_decisions": ["DD-2", "DD-10"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "CustomerDirectory ganha findByIds; CustomerRef ganha phone",
+      "description": "CustomerDirectory.findByIds(Collection<UUID>) -> List<CustomerRef>, uma consulta em lote (nunca uma por agendamento). CustomerRef ganha o campo phone (so a tela admin usa). Atualiza callers existentes que constroem CustomerRef posicionalmente (ManageAppointmentHandlerTest, AppointmentControllerTest, TODO-007) para o novo construtor de 3 campos.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/customer/api/CustomerRef.java",
+        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java",
+        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
+        "src/main/java/com/agendaia/customer/application/port/out/CustomerRepository.java",
+        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/agendaia/scheduling/adapter/in/web/AppointmentControllerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: findByIds([]) devolve lista vazia sem consultar o banco",
+        "AC-2: findByIds so retorna clientes do tenant da sessao",
+        "GATE: ./mvnw test-compile passa (callers antigos de CustomerRef atualizados)"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "AppointmentRepository ganha findByTenantIdAndProfessionalIdAndDate",
+      "description": "Lista Appointment completo (todos os status, inclusive CANCELLED) de um profissional numa data — mesma tecnica de recorte de dia de findOccupiedRanges (TODO-006), mas devolvendo Appointment via AppointmentMapper.toDomain, nao so TimeRange.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
+        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: devolve agendamentos de todos os status do profissional naquele dia, ordenados por startsAt",
+        "AC-2: so agendamentos do tenant informado, mesmo padrao de findByTenantIdAndId"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "AppointmentFactory extrai montagem/gravacao do Appointment",
+      "description": "Classe pacote-privada AppointmentFactory.buildAndSave(repo, tenantId, professionalId, customerId, oferta, startsAt) monta o retrato e grava, reaproveitada pelo BookAppointmentHandler (que passa a delegar em vez de montar inline). Nenhuma mudanca de comportamento observavel.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/AppointmentFactory.java",
+        "src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: BookAppointmentHandlerTest (TODO-006, ja existente) continua 100% verde sem nenhuma mudanca no proprio arquivo de teste",
+        "AC-2: AppointmentFactory nao conhece teto por telefone nem get-or-create de cliente — so monta e grava"
+      ],
+      "references": [],
+      "design_decisions": ["DD-5"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Portas in + ProfessionalAgendaHandler",
+      "description": "ViewAgendaUseCase/AgendaEntry, CreateAppointmentManuallyUseCase, CancelAppointmentByOwnerUseCase, RescheduleAppointmentUseCase/RescheduleAppointmentCommand (scheduling.application.port.in). ProfessionalAgendaHandler implementa as 4 numa classe so (DD-8), reaproveitando AppointmentFactory (DD-5), cancelByOwner (DD-6) e a nova consulta de agenda (DD-3). Reagendar cria o novo antes de cancelar o antigo (DD-9).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-005"],
+      "files": [
+        "src/main/java/com/agendaia/scheduling/application/port/in/ViewAgendaUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/AgendaEntry.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/CreateAppointmentManuallyUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/CancelAppointmentByOwnerUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/RescheduleAppointmentUseCase.java",
+        "src/main/java/com/agendaia/scheduling/application/port/in/RescheduleAppointmentCommand.java",
+        "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: create() nao chama countFutureActive (BR-4 — teto por telefone nao se aplica a criacao manual)",
+        "AC-2: cancel() usa cancelByOwner(), sem restricao de horario",
+        "AC-3: reschedule() grava o novo Appointment ANTES de cancelar o antigo; se o novo falhar (SlotUnavailableException), o antigo continua intacto",
+        "AC-4: view() calcula canConfirm/canCancel/canReschedule por linha, sem logica no controller nem no template",
+        "AC-5: profissional/oferta/agendamento de outro tenant lancam excecao tratada em qualquer das 4 acoes"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-6", "BR-1", "BR-2", "BR-3", "BR-4", "BR-5", "BR-6", "BR-7"],
+      "design_decisions": ["DD-6", "DD-7", "DD-8", "DD-9"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "AgendaController",
+      "description": "scheduling.adapter.in.web.AgendaController: GET /admin/agenda (lista do dia), GET/POST /admin/agenda/novo (criar), POST /admin/agenda/agendamentos/{id}/confirmar (reusa ConfirmAppointmentUseCase sem mudanca, DD-11), POST .../cancelar, GET/POST .../reagendar. Nenhuma rota nova em SecurityConfig (DD-1 — cai em anyRequest().hasRole(OWNER) por omissao).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-006", "TASK-002"],
+      "files": ["src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java"],
+      "acceptance_criteria": [
+        "AC-1: as 7 rotas exigem sessao OWNER (herdado de SecurityConfig, sem configuracao nova)",
+        "AC-2: dropdown de oferta em criar/reagendar vem de ServiceOfferingDirectory.listActive() (DD-10, sem cascata JS)",
+        "AC-3: id de outro tenant devolve 404, nao 422 generico (mesmo padrao de AppointmentController, TODO-007)"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6"],
+      "design_decisions": ["DD-1", "DD-10", "DD-11"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Templates admin/agenda.html, agenda-novo.html, agenda-reagendar.html",
+      "description": "agenda.html: seletor de profissional/data (GET simples), lista de agendamentos com botoes condicionais a canConfirm/canCancel/canReschedule. agenda-novo.html e agenda-reagendar.html: formulario com dropdown unico de oferta (DD-10), data, horario, nome/telefone (so em criar). Todo dado dinamico via th:text.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-007"],
+      "files": [
+        "src/main/resources/templates/admin/agenda.html",
+        "src/main/resources/templates/admin/agenda-novo.html",
+        "src/main/resources/templates/admin/agenda-reagendar.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: botoes de confirmar/cancelar/reagendar somem quando canConfirm/canCancel/canReschedule sao false",
+        "AC-2: nenhum th:utext em nenhum dos tres templates"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5"],
+      "design_decisions": ["DD-10"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Testes de dominio e aplicacao",
+      "description": "AppointmentTest cobre cancelByOwner (transicao normal, idempotencia, SEM restricao de horario). ProfessionalAgendaHandlerTest cobre as 4 portas com mocks: create sem teto, cancel sem restricao de horario, reschedule (ordem cria-depois-cancela e revalidacao por tenant), view (canConfirm/canCancel/canReschedule calculados certo).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-001", "TASK-005", "TASK-006"],
+      "files": [
+        "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
+        "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: cancelByOwner() sobre agendamento com startsAt no passado ainda transiciona (diferente de cancel(Instant))",
+        "AC-2: create() com telefone que ja tem 3 agendamentos futuros ainda assim grava (BR-4)",
+        "AC-3: reschedule() com novo horario colidindo (SlotUnavailableException) mantem o agendamento original intacto (nao chama cancelByOwner)",
+        "GATE: ./mvnw test -Dtest=AppointmentTest,ProfessionalAgendaHandlerTest passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "BR-2", "BR-3", "BR-4"],
+      "design_decisions": ["DD-6", "DD-8", "DD-9"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "AgendaControllerTest (@WebMvcTest)",
+      "description": "Cobertura das 7 rotas: GET lista (200 e 404 de tenant errado), GET/POST criar, POST confirmar, POST cancelar, GET/POST reagendar. Confirma sessao OWNER exigida e dropdown de oferta populado por ServiceOfferingDirectory.listActive().",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-007", "TASK-008"],
+      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/AgendaControllerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: sem sessao OWNER, qualquer rota de /admin/agenda/** e recusada",
+        "AC-2: id de outro tenant (mock) devolve 404 nas rotas de acao",
+        "GATE: ./mvnw test -Dtest=AgendaControllerTest passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6"],
+      "design_decisions": ["DD-1", "DD-7"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "AgendaProfissionalIT — E2E-1 a E2E-7",
+      "description": "Teste de integracao contra Postgres real (Testcontainers), cobrindo os 7 cenarios da spec funcional: criar manualmente, concorrencia painel x link publico, cancelar agendamento passado, reagendar preserva historico, isolamento entre tenants, teto por telefone nao bloqueia o dono, confirmar presenca pelo painel.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-009", "TASK-010"],
+      "files": ["src/test/java/com/agendaia/scheduling/AgendaProfissionalIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 a E2E-7 da spec funcional, um teste por cenario, nomeados por @DisplayName",
+        "AC-2: E2E-2 usa duas threads reais (uma via painel, uma via link publico) disputando o mesmo horario",
+        "GATE: ./mvnw verify -Dtest=AgendaProfissionalIT passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5", "US-6"],
+      "design_decisions": ["DD-1", "DD-2", "DD-3", "DD-4", "DD-5", "DD-6", "DD-7", "DD-8", "DD-9", "DD-10", "DD-11"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: DD-1 a DD-11 refletidas no codigo, Appointment continua Java puro, ProfessionalAgendaHandler documentado como excecao deliberada ao padrao uma-porta-por-classe (2a ocorrencia), sem sufixo Impl, transacao so em application.",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-013",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: consulta de agenda faz consultas fixas (profissionais, agendamentos do dia, clientes em lote), sem N+1 por agendamento; listActive() cruza profissionais e servicos uma vez so; reagendar/criar fazem no maximo uma consulta de oferta + get-or-create de cliente + um INSERT (mais um UPDATE no caso de reagendar).",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-014",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: tenantId nunca aceito de formulario (revalidado sempre por tenant da sessao, BR-5/BR-7), rotas /admin/agenda/** exigem OWNER sem excecao, CSRF ativo, XSS coberto por th:text, overbooking impedido pelo banco tambem para criacao manual/reagendamento, sem segredo hardcoded.",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-1", "BR-5", "BR-7"],
+      "design_decisions": ["DD-1"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-005"],
+        "level_1": ["TASK-006"],
+        "level_2": ["TASK-007"],
+        "level_3": ["TASK-008", "TASK-009"],
+        "level_4": ["TASK-010"],
+        "level_5": ["TASK-011"]
+      },
+      "3": {
+        "level_0": ["TASK-012", "TASK-013", "TASK-014"]
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package com.agendaia.catalog.application;
 
+import com.agendaia.catalog.api.ActiveOfferingRef;
 import com.agendaia.catalog.api.PublicOfferingRef;
 import com.agendaia.catalog.api.ServiceOfferingDirectory;
 import com.agendaia.catalog.api.ServiceOfferingRef;
@@ -75,6 +76,36 @@ public class ServiceOfferingDirectoryHandler implements ServiceOfferingDirectory
                         oferta.id(),
                         oferta.professionalId(),
                         nomesDeProfissional.get(oferta.professionalId()),
+                        oferta.durationMinutes(),
+                        oferta.price().format()))
+                .toList();
+    }
+
+    /**
+     * {@link ProfessionalDirectory#listActive()} e
+     * {@link ServiceRepository#findByTenantIdAndActiveTrueOrderByNameAsc} são
+     * chamados uma vez só, nunca em laço por oferta (mesma técnica de
+     * {@link #listActiveByService}).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActiveOfferingRef> listActive() {
+        var tenantId = TenantContext.require();
+
+        var ofertas = serviceOfferingRepository.findByTenantIdAndActiveTrueOrderByCreatedAtAsc(tenantId.value());
+
+        var nomesDeProfissional = professionalDirectory.listActive().stream()
+                .collect(Collectors.toMap(ProfessionalRef::id, ProfessionalRef::name));
+
+        var nomesDeServico = serviceRepository.findByTenantIdAndActiveTrueOrderByNameAsc(tenantId.value()).stream()
+                .collect(Collectors.toMap(servico -> servico.id(), servico -> servico.name()));
+
+        return ofertas.stream()
+                .map(oferta -> new ActiveOfferingRef(
+                        oferta.id(),
+                        oferta.professionalId(),
+                        nomesDeProfissional.get(oferta.professionalId()),
+                        nomesDeServico.get(oferta.serviceId()),
                         oferta.durationMinutes(),
                         oferta.price().format()))
                 .toList();

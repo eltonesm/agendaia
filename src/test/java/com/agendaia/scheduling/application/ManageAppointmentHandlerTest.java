@@ -77,7 +77,8 @@ class ManageAppointmentHandlerTest {
     private void mockarNomes() {
         when(professionalDirectory.find(professionalId))
                 .thenReturn(Optional.of(new ProfessionalRef(professionalId, "Maria")));
-        when(customerDirectory.find(customerId)).thenReturn(Optional.of(new CustomerRef(customerId, "João")));
+        when(customerDirectory.find(customerId))
+                .thenReturn(Optional.of(new CustomerRef(customerId, "João", "+5511999990000")));
     }
 
     @Test

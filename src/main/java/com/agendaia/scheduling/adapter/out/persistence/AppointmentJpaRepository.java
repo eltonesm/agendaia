@@ -58,4 +58,21 @@ interface AppointmentJpaRepository extends JpaRepository<AppointmentJpaEntity, U
             @Param("professionalId") UUID professionalId,
             @Param("dayStart") Instant dayStart,
             @Param("dayEnd") Instant dayEnd);
+
+    /**
+     * Todos os agendamentos do profissional no dia, de qualquer status —
+     * diferente de {@link #findOverlapping}, que só traz os ativos (agenda-
+     * profissional, TODO-008, DD-3).
+     */
+    @Query("""
+            select a from AppointmentJpaEntity a
+            where a.tenantId = :tenantId and a.professionalId = :professionalId
+              and a.startsAt < :dayEnd and a.endsAt > :dayStart
+            order by a.startsAt asc
+            """)
+    List<AppointmentJpaEntity> findByProfessionalAndDay(
+            @Param("tenantId") UUID tenantId,
+            @Param("professionalId") UUID professionalId,
+            @Param("dayStart") Instant dayStart,
+            @Param("dayEnd") Instant dayEnd);
 }

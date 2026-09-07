@@ -7,12 +7,10 @@ import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.BookAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.BookedAppointment;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
-import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.exception.PhoneAppointmentLimitExceededException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,20 +60,8 @@ public class BookAppointmentHandler implements BookAppointmentUseCase {
             throw new PhoneAppointmentLimitExceededException();
         }
 
-        var endsAt = command.startsAt().plus(oferta.durationMinutes(), ChronoUnit.MINUTES);
-
-        var agendamento = Appointment.schedule(
-                tenantId,
-                oferta.professionalId(),
-                oferta.id(),
-                customerId,
-                oferta.serviceName(),
-                oferta.durationMinutes(),
-                oferta.price(),
-                command.startsAt(),
-                endsAt);
-
-        var salvo = appointmentRepository.save(agendamento);
+        var salvo = AppointmentFactory.buildAndSave(
+                appointmentRepository, tenantId, oferta.professionalId(), customerId, oferta, command.startsAt());
 
         return new BookedAppointment(
                 salvo.id(), salvo.serviceName(), salvo.startsAt().atZone(ZoneId.systemDefault()).toLocalDateTime());

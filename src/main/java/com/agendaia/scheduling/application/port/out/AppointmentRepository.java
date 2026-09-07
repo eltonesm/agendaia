@@ -56,4 +56,12 @@ public interface AppointmentRepository {
      * o TASK-006 de pagina-publica-agendamento).
      */
     List<TimeRange> findOccupiedRanges(TenantId tenantId, UUID professionalId, LocalDate date);
+
+    /**
+     * Todos os agendamentos do profissional na data, de qualquer status
+     * (inclusive {@code CANCELLED} — ADR 0011, nada é apagado), para a
+     * agenda do dono (agenda-profissional, TODO-008, DD-3). Ordenados por
+     * {@code startsAt}.
+     */
+    List<Appointment> findByTenantIdAndProfessionalIdAndDate(TenantId tenantId, UUID professionalId, LocalDate date);
 }

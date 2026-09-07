@@ -24,4 +24,10 @@ public interface ServiceOfferingDirectory {
      * profissional a partir desta lista.
      */
     List<PublicOfferingRef> listActiveByService(UUID serviceId);
+
+    /**
+     * Todas as ofertas ativas do tenant, para o dropdown único de criação/
+     * reagendamento manual do painel (agenda-profissional, TODO-008, DD-2).
+     */
+    List<ActiveOfferingRef> listActive();
 }
