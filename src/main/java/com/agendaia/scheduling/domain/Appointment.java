@@ -206,6 +206,23 @@ public final class Appointment {
                 AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
     }
 
+    /**
+     * {@code SCHEDULED}/{@code CONFIRMED} → {@code CANCELLED} pelo dono, pelo
+     * painel administrativo (US-3, agenda-profissional, TODO-008). Ao
+     * contrário de {@link #cancel(Instant)}, não tem restrição de horário
+     * (BR-2 — o dono corrige erro de digitação ou desiste em nome do cliente
+     * mesmo depois do horário já ter passado). Idempotente se já
+     * {@code CANCELLED}.
+     */
+    public Appointment cancelByOwner() {
+        if (status == AppointmentStatus.CANCELLED) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
+    }
+
     @Override
     public boolean equals(Object outro) {
         if (this == outro) {

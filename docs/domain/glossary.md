@@ -90,6 +90,9 @@ que muda de sentido ao cruzar a fronteira?
 | Cancelamento | `CancelAppointmentUseCase` | Caso de uso | Libera o horário. |
 | Reagendamento | `RescheduleAppointmentUseCase` | Caso de uso | Move o agendamento. Sujeito às mesmas invariantes de uma reserva nova. |
 | Falta | `NO_SHOW` | Status | Cliente não compareceu. Libera o horário retroativamente. |
+| Agenda do dono | `ViewAgendaUseCase` | Caso de uso | Lista os agendamentos de um profissional num dia, para o painel administrativo. |
+| Criação manual | `CreateAppointmentManuallyUseCase` | Caso de uso | Dono cria um agendamento diretamente pelo painel, sem o teto de agendamentos futuros por telefone. |
+| Cancelamento pelo dono | `CancelAppointmentByOwnerUseCase` | Caso de uso | Cancela em nome do cliente, sem restrição de horário — diferente de `CancelAppointmentUseCase`. |
 
 ## Contexto Customer
 

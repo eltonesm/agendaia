@@ -1,0 +1,89 @@
+<!doctype html>
+<!--/*
+  Agenda do dono: lista os agendamentos de um profissional num dia
+  (agenda-profissional, TODO-008, US-1).
+
+  canConfirm/canCancel/canReschedule já vêm calculados de ProfessionalAgendaHandler
+  (PATTERNS.md) — o template só decide se mostra o botão, nunca a regra.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Agenda')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 40rem">
+
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <h1 class="h4 mb-0">Agenda</h1>
+    <a class="btn btn-primary btn-sm"
+       th:href="@{/admin/agenda/novo(professionalId=${professionalId},date=${date})}">
+      + Novo agendamento
+    </a>
+  </div>
+  <p class="text-body-secondary mb-4">Agendamentos de um profissional, dia a dia.</p>
+
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(profissionais)}">
+    Cadastre um <a th:href="@{/admin/profissionais}">profissional</a> antes de ver a agenda.
+  </div>
+
+  <form th:if="${not #lists.isEmpty(profissionais)}" method="get" th:action="@{/admin/agenda}" class="row g-2 mb-4">
+    <div class="col-7">
+      <label for="professionalId" class="visually-hidden">Profissional</label>
+      <select id="professionalId" name="professionalId" class="form-select" onchange="this.form.submit()">
+        <option th:each="profissional : ${profissionais}" th:value="${profissional.id}"
+                th:selected="${profissional.id == professionalId}"
+                th:text="${profissional.name}">Profissional</option>
+      </select>
+    </div>
+    <div class="col-5">
+      <label for="date" class="visually-hidden">Data</label>
+      <input type="date" id="date" name="date" class="form-control" th:value="${date}"
+             onchange="this.form.submit()">
+    </div>
+  </form>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(agendamentos)}">
+    <li class="list-group-item" th:each="agendamento : ${agendamentos}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <strong th:text="${#temporals.format(agendamento.startsAt(), 'HH:mm')}">08:00</strong>
+          — <span th:text="${agendamento.serviceName()}">Serviço</span>
+          <span class="badge text-bg-secondary"
+                th:if="${agendamento.status().name() == 'SCHEDULED'}">Agendado</span>
+          <span class="badge text-bg-success"
+                th:if="${agendamento.status().name() == 'CONFIRMED'}">Confirmado</span>
+          <span class="badge text-bg-danger"
+                th:if="${agendamento.status().name() == 'CANCELLED'}">Cancelado</span>
+          <div class="text-body-secondary small">
+            <span th:text="${agendamento.customerName()}">Cliente</span>
+            · <span th:text="${agendamento.customerPhone()}">telefone</span>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-1" style="min-width: 8rem">
+          <form th:if="${agendamento.canConfirm()}" method="post"
+                th:action="@{/admin/agenda/agendamentos/{id}/confirmar(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+            <button type="submit" class="btn btn-sm btn-success w-100">Confirmar</button>
+          </form>
+          <a th:if="${agendamento.canReschedule()}" class="btn btn-sm btn-outline-secondary"
+             th:href="@{/admin/agenda/agendamentos/{id}/reagendar(id=${agendamento.id()})}">
+            Reagendar
+          </a>
+          <form th:if="${agendamento.canCancel()}" method="post"
+                th:action="@{/admin/agenda/agendamentos/{id}/cancelar(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="alert alert-secondary" role="status"
+       th:if="${not #lists.isEmpty(profissionais) and #lists.isEmpty(agendamentos)}">
+    Nenhum agendamento nesse dia.
+  </div>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

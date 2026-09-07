@@ -1,0 +1,72 @@
+<!doctype html>
+<!--/*
+  Reagendamento pelo dono (agenda-profissional, TODO-008, US-4).
+
+  A nova oferta pode ser de outro profissional — trocar de profissional ao
+  reagendar é intencional (decisão do dono do produto), não um bug.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Reagendar')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 34rem">
+
+  <h1 class="h4 mb-1">Reagendar</h1>
+  <p class="text-body-secondary mb-4">
+    Agendamento atual: <strong th:text="${agendamento.serviceName()}">Serviço</strong>
+    com <span th:text="${agendamento.professionalName()}">Profissional</span>
+    em <span th:text="${#temporals.format(agendamento.startsAt(), 'dd/MM/yyyy HH:mm')}">01/01/2026 08:00</span>,
+    cliente <span th:text="${agendamento.customerName()}">Cliente</span>.
+  </p>
+
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(ofertas)}">
+    Cadastre uma <a th:href="@{/admin/ofertas}">oferta</a> antes de reagendar.
+  </div>
+
+  <form th:if="${not #lists.isEmpty(ofertas)}"
+        th:action="@{/admin/agenda/agendamentos/{id}/reagendar(id=${agendamento.id()})}"
+        th:object="${form}" method="post" novalidate>
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="serviceOfferingId" class="form-label">Serviço (e profissional)</label>
+      <select id="serviceOfferingId" th:field="*{serviceOfferingId}"
+              class="form-select" th:classappend="${#fields.hasErrors('serviceOfferingId')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="oferta : ${ofertas}" th:value="${oferta.id}"
+                th:text="${oferta.serviceName} + ' — ' + ${oferta.professionalName} + ' (' + ${oferta.durationMinutes} + ' min, ' + ${oferta.priceFormatted} + ')'">
+          Serviço — Profissional
+        </option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('serviceOfferingId')}"
+           th:errors="*{serviceOfferingId}">erro</div>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-7">
+        <label for="date" class="form-label">Nova data</label>
+        <input type="date" id="date" th:field="*{date}"
+               class="form-control" th:classappend="${#fields.hasErrors('date')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('date')}" th:errors="*{date}">erro</div>
+      </div>
+      <div class="col-5">
+        <label for="time" class="form-label">Novo horário</label>
+        <input type="time" id="time" th:field="*{time}"
+               class="form-control" th:classappend="${#fields.hasErrors('time')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('time')}" th:errors="*{time}">erro</div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Reagendar</button>
+    <a class="btn btn-link" th:href="@{/admin/agenda}">Cancelar</a>
+  </form>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

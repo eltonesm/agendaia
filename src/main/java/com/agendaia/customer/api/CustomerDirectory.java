@@ -1,5 +1,7 @@
 package com.agendaia.customer.api;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +27,12 @@ public interface CustomerDirectory {
      * confirmacao-e-cancelamento, TODO-007).
      */
     Optional<CustomerRef> find(UUID id);
+
+    /**
+     * Clientes de um lote de ids, sempre revalidados contra o tenant da
+     * sessão — uma única consulta, nunca uma por agendamento (agenda-
+     * profissional, TODO-008, DD-4). Ids que não existem, ou existem em
+     * outro tenant, simplesmente não aparecem no resultado.
+     */
+    List<CustomerRef> findByIds(Collection<UUID> ids);
 }

@@ -1,6 +1,8 @@
 package com.agendaia.customer.application.port.out;
 
 import com.agendaia.customer.domain.Customer;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +20,7 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
     /** Resolução por id, sempre revalidada por tenant (confirmacao-e-cancelamento, DD-8). */
     Optional<Customer> findByTenantIdAndId(UUID tenantId, UUID id);
+
+    /** Consulta em lote para a agenda do dono (agenda-profissional, TODO-008). */
+    List<Customer> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
 }
