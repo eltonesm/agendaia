@@ -177,9 +177,11 @@ stages:
     approved_at: 2026-09-07T17:14:37Z
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-07
+    completed: 2026-09-07
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T00:00:00Z
 
   implementation:
     started: null
@@ -193,12 +195,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null
-  chosen_date: null
+  type: batched
+  chosen_date: 2026-09-07
   estimated_agent_time: null
   estimated_tokens: null
   actual_agent_time: null
-  rationale: null
+  rationale: "16 tarefas, maioria Camada 1 independente (4 no nivel 0)"
 ```
 
 ---
