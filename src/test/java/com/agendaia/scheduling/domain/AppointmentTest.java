@@ -286,4 +286,22 @@ class AppointmentTest {
         assertThat(scheduled.cancel(antesDoHorario).status()).isEqualTo(AppointmentStatus.CANCELLED);
         assertThat(confirmed.cancel(antesDoHorario).status()).isEqualTo(AppointmentStatus.CANCELLED);
     }
+
+    @Test
+    @DisplayName("cancelByOwner() muda para CANCELLED mesmo com startsAt no passado (BR-2, agenda-profissional)")
+    void cancelByOwnerIgnoraHorario() {
+        var scheduled = agendamentoValido();
+        var confirmed = reconstituirCom(AppointmentStatus.CONFIRMED);
+
+        assertThat(scheduled.cancelByOwner().status()).isEqualTo(AppointmentStatus.CANCELLED);
+        assertThat(confirmed.cancelByOwner().status()).isEqualTo(AppointmentStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("cancelByOwner() é no-op quando já CANCELLED — idempotência")
+    void cancelByOwnerEIdempotente() {
+        var cancelado = reconstituirCom(AppointmentStatus.CANCELLED);
+
+        assertThat(cancelado.cancelByOwner()).isSameAs(cancelado);
+    }
 }
