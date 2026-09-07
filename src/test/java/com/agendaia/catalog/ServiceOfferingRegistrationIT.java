@@ -14,7 +14,9 @@ import com.agendaia.catalog.application.port.out.ServiceOfferingRepository;
 import com.agendaia.catalog.application.port.out.ServiceRepository;
 import com.agendaia.organization.application.port.out.BusinessRepository;
 import com.agendaia.organization.application.port.out.ProfessionalRepository;
+import com.agendaia.organization.application.port.out.TimeOffRepository;
 import com.agendaia.organization.application.port.out.UserRepository;
+import com.agendaia.organization.application.port.out.WorkScheduleRepository;
 import com.agendaia.organization.domain.Business;
 import com.agendaia.organization.domain.Professional;
 import com.agendaia.organization.domain.User;
@@ -39,10 +41,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * transação, e a limpeza é feita à mão no {@code @BeforeEach}.
  *
  * <p>Ordem de limpeza: {@code service_offering} antes de {@code service}
- * (FK dentro do próprio contexto) e {@code professional} antes de
- * {@code business} (FK de {@code organization}) — mesma disciplina
- * documentada em {@code PATTERNS.md} para IT que compartilha o Postgres do
- * Testcontainers com as demais.
+ * (FK dentro do próprio contexto); {@code time_off} e {@code work_schedule}
+ * antes de {@code professional} antes de {@code business} (FK de
+ * {@code organization}) — mesma disciplina documentada em
+ * {@code PATTERNS.md} para IT que compartilha o Postgres do Testcontainers
+ * com as demais.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,6 +61,8 @@ class ServiceOfferingRegistrationIT {
     @Autowired private ProfessionalRepository professionalRepository;
     @Autowired private ServiceRepository serviceRepository;
     @Autowired private ServiceOfferingRepository serviceOfferingRepository;
+    @Autowired private WorkScheduleRepository workScheduleRepository;
+    @Autowired private TimeOffRepository timeOffRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Business barbearia;
@@ -67,6 +72,8 @@ class ServiceOfferingRegistrationIT {
     void semear() {
         serviceOfferingRepository.deleteAllInBatch();
         serviceRepository.deleteAllInBatch();
+        timeOffRepository.deleteAllInBatch();
+        workScheduleRepository.deleteAllInBatch();
         professionalRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         businessRepository.deleteAllInBatch();
