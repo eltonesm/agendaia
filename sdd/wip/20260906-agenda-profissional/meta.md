@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-06
 **Last Updated**: 2026-09-06
-**Current Stage**: functional
+**Current Stage**: technical
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `Appointment`,
 > `BookAppointmentHandler` (TODO-006) e `ManageAppointmentHandler`
@@ -172,11 +172,11 @@ auto_generated:
 stages:
   functional:
     started: 2026-09-06
-    completed: null
-    status: in_progress
+    completed: 2026-09-07
+    status: approved
     owner: Elton Marques
-    approved_by: null
-    approved_at: null
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T13:41:21Z
     iterations: 0
 
   technical:
