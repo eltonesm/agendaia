@@ -1,0 +1,84 @@
+<!doctype html>
+<!--/*
+  Criação manual de agendamento pelo dono (agenda-profissional, TODO-008, US-2).
+
+  Dropdown único de oferta ("Serviço — Profissional"), sem cascata de
+  JavaScript (DD-10) — mesmo raciocínio de /admin/ofertas.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Novo agendamento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container" style="max-width: 34rem">
+
+  <h1 class="h4 mb-1">Novo agendamento</h1>
+  <p class="text-body-secondary mb-4">Marcado diretamente pelo painel — sem limite de agendamentos por telefone.</p>
+
+  <div class="alert alert-warning" role="alert" th:if="${#lists.isEmpty(ofertas)}">
+    Cadastre uma <a th:href="@{/admin/ofertas}">oferta</a> antes de criar um agendamento.
+  </div>
+
+  <form th:if="${not #lists.isEmpty(ofertas)}"
+        th:action="@{/admin/agenda/novo}" th:object="${form}" method="post" novalidate>
+
+    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="serviceOfferingId" class="form-label">Serviço</label>
+      <select id="serviceOfferingId" th:field="*{serviceOfferingId}"
+              class="form-select" th:classappend="${#fields.hasErrors('serviceOfferingId')} ? 'is-invalid'">
+        <option value="" disabled selected>Selecione</option>
+        <option th:each="oferta : ${ofertas}" th:value="${oferta.id}"
+                th:text="${oferta.serviceName} + ' — ' + ${oferta.professionalName} + ' (' + ${oferta.durationMinutes} + ' min, ' + ${oferta.priceFormatted} + ')'">
+          Serviço — Profissional
+        </option>
+      </select>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('serviceOfferingId')}"
+           th:errors="*{serviceOfferingId}">erro</div>
+    </div>
+
+    <div class="row g-2 mb-2">
+      <div class="col-7">
+        <label for="date" class="form-label">Data</label>
+        <input type="date" id="date" th:field="*{date}"
+               class="form-control" th:classappend="${#fields.hasErrors('date')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('date')}" th:errors="*{date}">erro</div>
+      </div>
+      <div class="col-5">
+        <label for="time" class="form-label">Horário</label>
+        <input type="time" id="time" th:field="*{time}"
+               class="form-control" th:classappend="${#fields.hasErrors('time')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('time')}" th:errors="*{time}">erro</div>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <label for="customerName" class="form-label">Cliente</label>
+      <input type="text" id="customerName" th:field="*{customerName}"
+             class="form-control" th:classappend="${#fields.hasErrors('customerName')} ? 'is-invalid'"
+             placeholder="Nome do cliente">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('customerName')}"
+           th:errors="*{customerName}">erro</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="customerPhone" class="form-label">Telefone</label>
+      <input type="text" id="customerPhone" th:field="*{customerPhone}"
+             class="form-control" th:classappend="${#fields.hasErrors('customerPhone')} ? 'is-invalid'"
+             placeholder="+5511999999999">
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('customerPhone')}"
+           th:errors="*{customerPhone}">erro</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agendar</button>
+    <a class="btn btn-link" th:href="@{/admin/agenda}">Cancelar</a>
+  </form>
+
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
