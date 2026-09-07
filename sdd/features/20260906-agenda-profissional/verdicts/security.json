@@ -1,0 +1,23 @@
+{
+  "skill": "sdd-code-reviewer",
+  "mode": "security",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "notes": [
+    "tenantId nunca vem do cliente: AgendaController nao aceita tenantId em nenhuma rota; ProfessionalAgendaHandler sempre usa TenantContext.require() (resolvido da sessao autenticada via TenantContextFilter, ADR 0004) — nunca de parametro de formulario ou query string.",
+    "Toda resolucao por id e revalidada contra o tenant: AppointmentRepository.findByTenantIdAndId, ProfessionalDirectory.find, ServiceOfferingDirectory.find e CustomerDirectory.findByIds filtram sempre pelos dois campos juntos; id de outro tenant devolve vazio/lista vazia, nunca vaza dado (confirmado nos testes E2E-5 de AgendaProfissionalIT e no teste de AC-2 de AgendaControllerTest).",
+    "Id de outro tenant nas rotas de acao (/confirmar, /cancelar, GET e POST /reagendar) devolve 404 via ResponseStatusException, nunca o 422 generico do GlobalExceptionHandler nem um erro que revele existencia do recurso em outro tenant.",
+    "/admin/agenda/** exige sessao com role OWNER por omissao (SecurityConfig ja tinha anyRequest().hasRole('OWNER') antes desta feature) — nenhuma rota nova precisou de configuracao adicional, reduzindo risco de rota exposta por esquecimento.",
+    "CSRF continua ativo: nenhuma rota nova foi adicionada a lista de permitAll(); os 3 formularios (agenda.html, agenda-novo.html, agenda-reagendar.html) enviam o token via th:action padrao do Thymeleaf, confirmado pelo teste semCsrfERecusado (403 sem token).",
+    "XSS: os tres templates novos usam so th:text, nenhum th:utext, inclusive nos campos que vem de dado do cliente (nome, telefone).",
+    "Nenhum segredo novo hardcoded (sem chave de API, sem credencial) nesta feature.",
+    "CustomerRef.phone (novo campo) so e exposto na tela admin (autenticada, sessao OWNER) — nunca na tela publica de confirmacao-e-cancelamento, que continua usando so o nome.",
+    "ManualAppointmentRequest/RescheduleRequest validam formato de telefone (mesmo regex de PublicBookingRequest/Customer.normalizePhone) antes de chegar no dominio."
+  ],
+  "files_reviewed": 24,
+  "timestamp": "2026-09-07T14:20:00Z"
+}

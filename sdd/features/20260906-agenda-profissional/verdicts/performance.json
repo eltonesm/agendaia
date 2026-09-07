@@ -1,0 +1,19 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "notes": [
+    "ViewAgendaUseCase.handle: no maximo 3 consultas fixas por chamada (ProfessionalDirectory.find, AppointmentRepository.findByTenantIdAndProfessionalIdAndDate, CustomerDirectory.findByIds em lote) — nenhuma em laco por agendamento.",
+    "ServiceOfferingDirectory.listActive: ProfessionalDirectory.listActive() e ServiceRepository.findByTenantIdAndActiveTrueOrderByNameAsc chamados uma vez so, cruzados em memoria via Map — mesma tecnica de listActiveByService (TODO-006).",
+    "CustomerDirectory.findByIds: uma unica consulta em lote (findByTenantIdAndIdIn); devolve lista vazia sem consultar o banco quando o conjunto de ids esta vazio.",
+    "AppointmentFactory.buildAndSave: 1 SELECT (oferta ja resolvida antes) + 1 INSERT, sem alocacao extra.",
+    "create()/reschedule(): no maximo 2-3 consultas + 1 escrita cada, nenhuma delas em loop.",
+    "RECOMENDACAO (nao bloqueante): findByProfessionalAndDay (nova query JPQL, usada por ViewAgendaUseCase) nao filtra por status — por isso NAO pode usar o indice GiST parcial de appointment_no_overlap (V8), que so cobre SCHEDULED/CONFIRMED. Sem indice btree (tenant_id, professional_id, starts_at) cobrindo todos os status, a consulta tende a sequential scan. Aceitavel no volume de dados do piloto (MVP, poucas centenas de linhas); registrar como DEBT para quando o volume justificar um indice novo."
+  ],
+  "patterns_checked": ["n+1", "regex", "string_concat", "unbounded_collections", "memory_leaks"],
+  "timestamp": "2026-09-07T14:20:00Z"
+}

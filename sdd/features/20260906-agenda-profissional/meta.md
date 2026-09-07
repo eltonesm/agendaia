@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-06
 **Last Updated**: 2026-09-06
-**Current Stage**: tasks
+**Current Stage**: implementation
 
 > **Sobre o modo brownfield aqui**: `scheduling` já tem `Appointment`,
 > `BookAppointmentHandler` (TODO-006) e `ManageAppointmentHandler`
@@ -189,14 +189,16 @@ stages:
     services_count: 0
 
   tasks:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-07
+    completed: 2026-09-07
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T00:00:00Z
 
   implementation:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-07
+    completed: 2026-09-07
+    status: done
 ```
 
 ---
@@ -205,12 +207,12 @@ stages:
 
 ```yaml
 execution_strategy:
-  type: null
-  chosen_date: null
+  type: batched
+  chosen_date: 2026-09-07
   estimated_agent_time: null
   estimated_tokens: null
   actual_agent_time: null
-  rationale: null
+  rationale: "Mesma estrategia da TODO-007: 14 tarefas, maioria Camada 1 independente"
 ```
 
 ---
@@ -221,7 +223,7 @@ execution_strategy:
 metrics:
   timeline: { estimated_days: null, actual_days: null, variance_percent: null }
   effort: { estimated_hours: null, actual_hours: null, variance_percent: null }
-  quality: { test_coverage: null, tests_total: null, tests_passing: null, linter_errors: null, type_errors: null }
+  quality: { test_coverage: "89%", tests_total: 451, tests_passing: 451, linter_errors: 0, type_errors: 0 }
   velocity: { avg_hours_per_task: null, estimation_accuracy: null }
 ```
 
