@@ -164,8 +164,10 @@ auto_generated:
 stages:
   functional:
     started: 2026-09-07
-    completed: null
-    status: pending
+    completed: 2026-09-07
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-07T17:09:39Z
 
   technical:
     started: null
