@@ -3,10 +3,10 @@ package com.agendaia.platform.web;
 import com.agendaia.shared.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.UUID;
 import org.springframework.web.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -72,7 +72,10 @@ public class GlobalExceptionHandler {
             return new ModelAndView(status == 404 ? "error/404" : "error/500");
         }
 
-        var requestId = UUID.randomUUID().toString().substring(0, 8);
+        // Lido do MDC, populado por RequestIdFilter (TODO-108, observabilidade,
+        // DD-2) — o mesmo id que já aparece em toda outra linha de log desta
+        // requisição, não mais um gerado só para esta linha.
+        var requestId = MDC.get(RequestIdFilter.MDC_REQUEST_ID);
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         // O identificador vai para o log E para a tela. Sem ele, "deu erro"
