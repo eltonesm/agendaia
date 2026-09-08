@@ -140,10 +140,18 @@ mostram o mesmo id.
 `scheduling.application` (mesmo pacote de `BookAppointmentHandler`,
 `ManageAppointmentHandler`, `ProfessionalAgendaHandler` — não precisa ser
 pública), injetada nos três. Nomes Micrometer:
-`agendaia.appointments.created`, `agendaia.appointments.cancelled`,
+`agendaia.appointments.booked`, `agendaia.appointments.cancelled`,
 `agendaia.appointments.slot_conflict` — o `PrometheusMeterRegistry` já
-traduz para `agendaia_appointments_created_total` etc. no formato de
+traduz para `agendaia_appointments_booked_total` etc. no formato de
 scrape, sem configuração extra.
+
+> **Achado durante a implementação**: o nome óbvio seria
+> `agendaia.appointments.created`, não `booked` — mas o Prometheus/
+> Micrometer trata o sufixo `.created` como a convenção reservada do
+> OpenMetrics para timestamp de criação de um contador, e a métrica saía
+> como `agendaia_appointments_total` (sem "created" nenhum no nome,
+> indistinguível de qualquer outro contador). `booked` evita a colisão e
+> continua na linguagem do domínio (glossário: "reservar, agendar").
 
 **Options Considered**:
 - **Instrumentar dentro de `AppointmentFactory`/`Appointment` (domínio)**
