@@ -46,19 +46,6 @@ passa por `/sdd.start`.
 
 ---
 
-### TODO-108: Observabilidade — log estruturado e métricas
-- **Priority**: Medium
-- **Status**: in-progress
-- **Created**: 2026-08-30
-- **Started**: 2026-09-07
-- **Origin**: convenções do time
-- **Context**: Log em JSON com `tenantId` e `requestId` no MDC, saindo em toda linha da requisição. Actuator com `/health` e `/prometheus`, ambos protegidos. Métricas de negócio junto com as técnicas: agendamentos criados, cancelados e falhas por conflito de horário. Proibido logar telefone e nome de cliente (LGPD).
-- **Affected Files**: `platform`, `application.yaml`
-- **Feature**: `sdd/wip/20260907-observabilidade/`
-- **Complexity**: Medium
-
----
-
 ### TODO-109: Recuperação de senha
 - **Priority**: High
 - **Status**: pending
@@ -443,6 +430,22 @@ passa por `/sdd.start`.
 
 ## ✅ Resolved Items
 
+### TODO-108: Observabilidade — log estruturado e métricas
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-08-30
+- **Started**: 2026-09-07
+- **Resolved**: 2026-09-07
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260907-observabilidade/`
+- **Origin**: convenções do time
+- **Context**: Feature transversal, sem tela nem agregado novo. Log estruturado (JSON, formato ECS nativo do Spring Boot) com `tenantId` e `requestId` no MDC em toda linha; `/actuator/health` continua público (sonda de container); `/actuator/prometheus` passou a funcionar de verdade (faltava a dependência do Micrometer) e ficou protegido por credencial HTTP Basic dedicada; três contadores de negócio (agendamentos reservados, cancelados, falhas por conflito de horário) instrumentados nos handlers já existentes. 16 tasks, 538 testes no projeto inteiro, 91% de cobertura de instrução.
+- **Decisões tomadas antes da spec**: `/health` continua público mesmo o backlog pedindo protegido (decisão já tomada em TODO-101/102 para a sonda de container); `/prometheus` com Basic Auth dedicado, não a sessão do dono; métricas sem tag de tenant (só um piloto hoje).
+- **Nasceu aqui**: `RequestIdFilter`, `SchedulingMetrics` (3 contadores Micrometer, pacote-privado), `MetricsSecurityConfig` (3ª `SecurityFilterChain`).
+- **Gotcha real**: o nome de métrica `agendaia.appointments.created` colidia com a convenção reservada do OpenMetrics para timestamp de criação de contador — o Prometheus descartava "created" e expunha só `agendaia_appointments_total`. Renomeado para `agendaia.appointments.booked`. Um segundo achado: o suporte de teste do Spring Boot desliga a exportação de métricas por padrão, exigindo `@AutoConfigureMetrics` para `/actuator/prometheus` existir no contexto de teste. Um terceiro: capturar log JSON via redirecionamento de `System.out` não funciona (o `ConsoleAppender` do Logback fixa a referência na inicialização) — trocado por um `ListAppender` verificando o MDC de cada evento diretamente.
+
+---
+
 ### TODO-008: Agenda do profissional — criar, cancelar, reagendar
 - **Priority**: Medium
 - **Status**: resolved
@@ -709,6 +712,8 @@ passa por `/sdd.start`.
 ---
 
 ## Last Updated
+
+2026-09-07 — TODO-108 (observabilidade) resolvida e arquivada.
 
 2026-09-07 — TODO-008 (agenda-profissional) resolvida e arquivada; DEBT-018 e IDEA-017 registrados.
 
