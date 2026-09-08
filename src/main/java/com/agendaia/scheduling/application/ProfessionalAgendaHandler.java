@@ -18,6 +18,7 @@ import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
+import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -50,16 +51,19 @@ public class ProfessionalAgendaHandler
     private final ServiceOfferingDirectory serviceOfferingDirectory;
     private final CustomerDirectory customerDirectory;
     private final ProfessionalDirectory professionalDirectory;
+    private final SchedulingMetrics schedulingMetrics;
 
     public ProfessionalAgendaHandler(
             AppointmentRepository appointmentRepository,
             ServiceOfferingDirectory serviceOfferingDirectory,
             CustomerDirectory customerDirectory,
-            ProfessionalDirectory professionalDirectory) {
+            ProfessionalDirectory professionalDirectory,
+            SchedulingMetrics schedulingMetrics) {
         this.appointmentRepository = appointmentRepository;
         this.serviceOfferingDirectory = serviceOfferingDirectory;
         this.customerDirectory = customerDirectory;
         this.professionalDirectory = professionalDirectory;
+        this.schedulingMetrics = schedulingMetrics;
     }
 
     /**
@@ -121,8 +125,15 @@ public class ProfessionalAgendaHandler
 
         var customerId = customerDirectory.findOrCreate(command.customerName(), command.customerPhone());
 
-        var salvo = AppointmentFactory.buildAndSave(
-                appointmentRepository, tenantId, oferta.professionalId(), customerId, oferta, command.startsAt());
+        Appointment salvo;
+        try {
+            salvo = AppointmentFactory.buildAndSave(
+                    appointmentRepository, tenantId, oferta.professionalId(), customerId, oferta, command.startsAt());
+        } catch (SlotUnavailableException e) {
+            schedulingMetrics.slotConflict();
+            throw e;
+        }
+        schedulingMetrics.appointmentCreated();
 
         return paraBookedAppointment(salvo);
     }
@@ -139,6 +150,7 @@ public class ProfessionalAgendaHandler
         var depois = antes.cancelByOwner();
         if (depois.status() != antes.status()) {
             appointmentRepository.updateStatus(tenantId, antes.id(), depois.status(), Instant.now());
+            schedulingMetrics.appointmentCancelled();
         }
     }
 
@@ -160,13 +172,22 @@ public class ProfessionalAgendaHandler
                 .find(command.newServiceOfferingId())
                 .orElseThrow(ServiceOfferingNotFoundException::new);
 
-        var novo = AppointmentFactory.buildAndSave(
-                appointmentRepository,
-                tenantId,
-                novaOferta.professionalId(),
-                antigo.customerId(),
-                novaOferta,
-                command.newStartsAt());
+        Appointment novo;
+        try {
+            novo = AppointmentFactory.buildAndSave(
+                    appointmentRepository,
+                    tenantId,
+                    novaOferta.professionalId(),
+                    antigo.customerId(),
+                    novaOferta,
+                    command.newStartsAt());
+        } catch (SlotUnavailableException e) {
+            // Reagendar é "mover", não "criar+cancelar" (DD-3 da spec técnica
+            // de observabilidade) — só a falha conta, o antigo permanece
+            // intacto (DD-9 da spec técnica de agenda-profissional).
+            schedulingMetrics.slotConflict();
+            throw e;
+        }
 
         appointmentRepository.updateStatus(tenantId, antigo.id(), AppointmentStatus.CANCELLED, Instant.now());
 

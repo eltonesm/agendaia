@@ -7,8 +7,10 @@ import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.BookAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.BookedAppointment;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
+import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.exception.PhoneAppointmentLimitExceededException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
+import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
 import java.time.Instant;
 import java.time.ZoneId;
 import org.springframework.stereotype.Service;
@@ -31,14 +33,17 @@ public class BookAppointmentHandler implements BookAppointmentUseCase {
     private final ServiceOfferingDirectory serviceOfferingDirectory;
     private final CustomerDirectory customerDirectory;
     private final AppointmentRepository appointmentRepository;
+    private final SchedulingMetrics schedulingMetrics;
 
     public BookAppointmentHandler(
             ServiceOfferingDirectory serviceOfferingDirectory,
             CustomerDirectory customerDirectory,
-            AppointmentRepository appointmentRepository) {
+            AppointmentRepository appointmentRepository,
+            SchedulingMetrics schedulingMetrics) {
         this.serviceOfferingDirectory = serviceOfferingDirectory;
         this.customerDirectory = customerDirectory;
         this.appointmentRepository = appointmentRepository;
+        this.schedulingMetrics = schedulingMetrics;
     }
 
     @Override
@@ -60,8 +65,15 @@ public class BookAppointmentHandler implements BookAppointmentUseCase {
             throw new PhoneAppointmentLimitExceededException();
         }
 
-        var salvo = AppointmentFactory.buildAndSave(
-                appointmentRepository, tenantId, oferta.professionalId(), customerId, oferta, command.startsAt());
+        Appointment salvo;
+        try {
+            salvo = AppointmentFactory.buildAndSave(
+                    appointmentRepository, tenantId, oferta.professionalId(), customerId, oferta, command.startsAt());
+        } catch (SlotUnavailableException e) {
+            schedulingMetrics.slotConflict();
+            throw e;
+        }
+        schedulingMetrics.appointmentCreated();
 
         return new BookedAppointment(
                 salvo.id(), salvo.serviceName(), salvo.startsAt().atZone(ZoneId.systemDefault()).toLocalDateTime());
