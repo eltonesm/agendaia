@@ -3,8 +3,10 @@ package com.agendaia.platform.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.agendaia.shared.DomainException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -27,6 +29,13 @@ class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
     private final MockHttpServletRequest request = new MockHttpServletRequest("GET", "/admin/x");
     private final MockHttpServletResponse response = new MockHttpServletResponse();
+
+    @AfterEach
+    void limparMdc() {
+        // Mesma disciplina de RequestIdFilter: nunca deixar vazar para o
+        // próximo teste (ou para a próxima requisição, em produção).
+        MDC.remove(RequestIdFilter.MDC_REQUEST_ID);
+    }
 
     /** Exceção de negócio concreta — a base é abstrata. */
     private static final class RegraQualquer extends DomainException {
@@ -76,17 +85,20 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("defeito de verdade vira 500 com identificador rastreável")
+    @DisplayName("defeito de verdade vira 500 com identificador rastreável, lido do MDC (TODO-108)")
     void defeitoDeVerdade() {
+        // Simula o que RequestIdFilter já teria posto no MDC antes deste
+        // handler rodar, numa requisição de verdade.
+        MDC.put(RequestIdFilter.MDC_REQUEST_ID, "abcd1234");
+
         var mav = handler.erroInesperado(new IllegalStateException("boom"), request, response);
 
         assertThat(response.getStatus()).isEqualTo(500);
         assertThat(mav.getViewName()).isEqualTo("error/500");
 
-        var requestId = (String) mav.getModel().get("requestId");
-        // O mesmo identificador vai para a tela e para o log: sem ele, "deu
-        // erro" é irrastreável.
-        assertThat(requestId).isNotNull().hasSize(8);
+        // O mesmo identificador vai para a tela e para toda linha de log da
+        // requisição (via MDC) — não mais um gerado só para esta linha.
+        assertThat(mav.getModel().get("requestId")).isEqualTo("abcd1234");
     }
 
     @Test

@@ -38,14 +38,17 @@ public class ManageAppointmentHandler
     private final AppointmentRepository appointmentRepository;
     private final ProfessionalDirectory professionalDirectory;
     private final CustomerDirectory customerDirectory;
+    private final SchedulingMetrics schedulingMetrics;
 
     public ManageAppointmentHandler(
             AppointmentRepository appointmentRepository,
             ProfessionalDirectory professionalDirectory,
-            CustomerDirectory customerDirectory) {
+            CustomerDirectory customerDirectory,
+            SchedulingMetrics schedulingMetrics) {
         this.appointmentRepository = appointmentRepository;
         this.professionalDirectory = professionalDirectory;
         this.customerDirectory = customerDirectory;
+        this.schedulingMetrics = schedulingMetrics;
     }
 
     @Override
@@ -84,7 +87,9 @@ public class ManageAppointmentHandler
     @Override
     @Transactional
     public void cancel(UUID appointmentId) {
-        gravarSeMudou(resolverOuFalhar(appointmentId), Appointment::cancel);
+        if (gravarSeMudou(resolverOuFalhar(appointmentId), Appointment::cancel)) {
+            schedulingMetrics.appointmentCancelled();
+        }
     }
 
     private Appointment resolverOuFalhar(UUID appointmentId) {
@@ -94,11 +99,14 @@ public class ManageAppointmentHandler
                 .orElseThrow(AppointmentNotFoundException::new);
     }
 
-    private void gravarSeMudou(Appointment antes, BiFunction<Appointment, Instant, Appointment> transicao) {
+    /** @return {@code true} se houve transição real (e portanto gravação). */
+    private boolean gravarSeMudou(Appointment antes, BiFunction<Appointment, Instant, Appointment> transicao) {
         var agora = Instant.now();
         var depois = transicao.apply(antes, agora);
-        if (depois.status() != antes.status()) {
-            appointmentRepository.updateStatus(antes.tenantId(), antes.id(), depois.status(), agora);
+        if (depois.status() == antes.status()) {
+            return false;
         }
+        appointmentRepository.updateStatus(antes.tenantId(), antes.id(), depois.status(), agora);
+        return true;
     }
 }

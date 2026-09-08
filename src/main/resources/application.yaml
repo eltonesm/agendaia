@@ -51,6 +51,14 @@ management:
 logging:
   level:
     org.flywaydb: INFO
+  structured:
+    format:
+      # Nativo do Spring Boot desde a série 3.4 — sem dependência nova
+      # (TODO-108, observabilidade, DD-1). tenantId e requestId do MDC
+      # entram automaticamente em cada linha. ECS por ser o schema mais
+      # genérico hoje, sem ferramenta de coleta escolhida ainda — trocar
+      # para "logstash"/"gelf" é uma linha só, se um dia fizer sentido.
+      console: ecs
 
 agendaia:
   # Base do link que o estabelecimento compartilha com os clientes.
@@ -68,3 +76,13 @@ agendaia:
     password-hash: ${AGENDAIA_OPERADOR_PASSWORD_HASH:$2a$10$zSFQowP01ztnCjjSs4LJMu3i5dvrHCRK/.Zm82i0EYIlciTHxaXz6}
     whatsapp: ${AGENDAIA_OPERADOR_WHATSAPP:}
     pix-chave: ${AGENDAIA_OPERADOR_PIX_CHAVE:}
+
+  # Credencial dedicada de /actuator/prometheus (TODO-108, observabilidade,
+  # DD-4) -- independente da sessão OWNER/OPERATOR: uma ferramenta de coleta
+  # automatizada não faz login por formulário. Mesmo padrão do operador
+  # acima: hash BCrypt já pronto, valor de desenvolvimento local só
+  # ("metrics-dev-only"); QUALQUER implantação real precisa sobrescrever as
+  # duas variáveis com valores próprios.
+  metrics:
+    username: ${AGENDAIA_METRICS_USERNAME:metrics}
+    password-hash: ${AGENDAIA_METRICS_PASSWORD_HASH:$2a$10$hzINeeDTPaNliIp9BlIc6OZvpXq0DRDtgs8JAKHywp7rYLZlhuJzq}

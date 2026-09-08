@@ -49,6 +49,7 @@ class ProfessionalAgendaHandlerTest {
     @Mock private ServiceOfferingDirectory serviceOfferingDirectory;
     @Mock private CustomerDirectory customerDirectory;
     @Mock private ProfessionalDirectory professionalDirectory;
+    @Mock private SchedulingMetrics schedulingMetrics;
 
     private ProfessionalAgendaHandler handler;
 
@@ -62,7 +63,11 @@ class ProfessionalAgendaHandlerTest {
     @BeforeEach
     void montar() {
         handler = new ProfessionalAgendaHandler(
-                appointmentRepository, serviceOfferingDirectory, customerDirectory, professionalDirectory);
+                appointmentRepository,
+                serviceOfferingDirectory,
+                customerDirectory,
+                professionalDirectory,
+                schedulingMetrics);
         TenantContext.set(tenant);
     }
 
@@ -144,6 +149,23 @@ class ProfessionalAgendaHandlerTest {
         assertThat(resultado.serviceName()).isEqualTo("Corte de Cabelo");
         verify(appointmentRepository, never()).countFutureActive(any(), any(), any());
         verify(appointmentRepository).save(any());
+        verify(schedulingMetrics).appointmentCreated();
+        verify(schedulingMetrics, never()).slotConflict();
+    }
+
+    @Test
+    @DisplayName("create: horario colidindo incrementa a metrica de falha por conflito, nunca a de criado (TODO-108)")
+    void createComColisaoIncrementaSlotConflict() {
+        when(serviceOfferingDirectory.find(serviceOfferingId)).thenReturn(Optional.of(oferta()));
+        when(customerDirectory.findOrCreate("João", "+5511999990000")).thenReturn(customerId);
+        when(appointmentRepository.save(any())).thenThrow(new SlotUnavailableException());
+
+        assertThatThrownBy(() -> handler.create(
+                        new BookAppointmentCommand(serviceOfferingId, startsAt, "João", "+5511999990000")))
+                .isInstanceOf(SlotUnavailableException.class);
+
+        verify(schedulingMetrics).slotConflict();
+        verify(schedulingMetrics, never()).appointmentCreated();
     }
 
     // --- CancelAppointmentByOwnerUseCase --------------------------------
@@ -158,6 +180,7 @@ class ProfessionalAgendaHandlerTest {
         handler.cancel(appointmentId);
 
         verify(appointmentRepository).updateStatus(eq(tenant), eq(appointmentId), eq(AppointmentStatus.CANCELLED), any());
+        verify(schedulingMetrics).appointmentCancelled();
     }
 
     @Test
@@ -191,6 +214,11 @@ class ProfessionalAgendaHandlerTest {
         verify(appointmentRepository).save(any());
         verify(appointmentRepository)
                 .updateStatus(eq(tenant), eq(appointmentId), eq(AppointmentStatus.CANCELLED), any());
+        // Reagendar é "mover", não "criar+cancelar" (DD-3 da spec técnica de
+        // observabilidade) — nenhuma das duas métricas é incrementada.
+        verify(schedulingMetrics, never()).appointmentCreated();
+        verify(schedulingMetrics, never()).appointmentCancelled();
+        verify(schedulingMetrics, never()).slotConflict();
     }
 
     @Test
@@ -207,6 +235,9 @@ class ProfessionalAgendaHandlerTest {
                 .isInstanceOf(SlotUnavailableException.class);
 
         verify(appointmentRepository, never()).updateStatus(any(), any(), any(), any());
+        verify(schedulingMetrics).slotConflict();
+        verify(schedulingMetrics, never()).appointmentCreated();
+        verify(schedulingMetrics, never()).appointmentCancelled();
     }
 
     @Test

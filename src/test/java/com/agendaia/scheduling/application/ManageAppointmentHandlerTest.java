@@ -39,6 +39,7 @@ class ManageAppointmentHandlerTest {
     @Mock private AppointmentRepository appointmentRepository;
     @Mock private ProfessionalDirectory professionalDirectory;
     @Mock private CustomerDirectory customerDirectory;
+    @Mock private SchedulingMetrics schedulingMetrics;
 
     private ManageAppointmentHandler handler;
 
@@ -50,7 +51,8 @@ class ManageAppointmentHandlerTest {
 
     @BeforeEach
     void montar() {
-        handler = new ManageAppointmentHandler(appointmentRepository, professionalDirectory, customerDirectory);
+        handler = new ManageAppointmentHandler(
+                appointmentRepository, professionalDirectory, customerDirectory, schedulingMetrics);
         TenantContext.set(tenant);
     }
 
@@ -149,6 +151,7 @@ class ManageAppointmentHandlerTest {
         handler.cancel(appointmentId);
 
         verify(appointmentRepository).updateStatus(eq(tenant), eq(appointmentId), eq(AppointmentStatus.CANCELLED), any());
+        verify(schedulingMetrics).appointmentCancelled();
     }
 
     @Test
@@ -160,6 +163,7 @@ class ManageAppointmentHandlerTest {
         handler.cancel(appointmentId);
 
         verify(appointmentRepository, never()).updateStatus(any(), any(), any(), any());
+        verify(schedulingMetrics, never()).appointmentCancelled();
     }
 
     @Test

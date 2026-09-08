@@ -15,6 +15,7 @@ import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.exception.PhoneAppointmentLimitExceededException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
+import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
 import com.agendaia.shared.Money;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.UuidV7;
@@ -37,6 +38,7 @@ class BookAppointmentHandlerTest {
     @Mock private ServiceOfferingDirectory serviceOfferingDirectory;
     @Mock private CustomerDirectory customerDirectory;
     @Mock private AppointmentRepository appointmentRepository;
+    @Mock private SchedulingMetrics schedulingMetrics;
 
     private BookAppointmentHandler handler;
 
@@ -48,7 +50,8 @@ class BookAppointmentHandlerTest {
 
     @BeforeEach
     void montar() {
-        handler = new BookAppointmentHandler(serviceOfferingDirectory, customerDirectory, appointmentRepository);
+        handler = new BookAppointmentHandler(
+                serviceOfferingDirectory, customerDirectory, appointmentRepository, schedulingMetrics);
         TenantContext.set(tenant);
     }
 
@@ -76,6 +79,8 @@ class BookAppointmentHandlerTest {
         var resultado = handler.handle(comando());
 
         assertThat(resultado.serviceName()).isEqualTo("Corte de Cabelo");
+        verify(schedulingMetrics).appointmentCreated();
+        verify(schedulingMetrics, never()).slotConflict();
 
         var captor = ArgumentCaptor.forClass(com.agendaia.scheduling.domain.Appointment.class);
         verify(appointmentRepository).save(captor.capture());
@@ -140,5 +145,19 @@ class BookAppointmentHandlerTest {
         var captor = ArgumentCaptor.forClass(com.agendaia.scheduling.domain.Appointment.class);
         verify(appointmentRepository).save(captor.capture());
         assertThat(captor.getValue().customerId()).isEqualTo(customerId);
+    }
+
+    @Test
+    @DisplayName("horario colidindo incrementa a metrica de falha por conflito, nunca a de criado (TODO-108)")
+    void colisaoDeHorarioIncrementaSlotConflict() {
+        when(serviceOfferingDirectory.find(offeringId)).thenReturn(Optional.of(ofertaValida()));
+        when(customerDirectory.findOrCreate(any(), any())).thenReturn(customerId);
+        when(appointmentRepository.countFutureActive(any(), any(), any())).thenReturn(0L);
+        when(appointmentRepository.save(any())).thenThrow(new SlotUnavailableException());
+
+        assertThatThrownBy(() -> handler.handle(comando())).isInstanceOf(SlotUnavailableException.class);
+
+        verify(schedulingMetrics).slotConflict();
+        verify(schedulingMetrics, never()).appointmentCreated();
     }
 }

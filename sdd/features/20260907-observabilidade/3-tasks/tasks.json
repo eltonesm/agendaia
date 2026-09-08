@@ -1,0 +1,283 @@
+{
+  "feature": "observabilidade",
+  "local_config": {
+    "postgres": "docker-compose-dev + Testcontainers no teste de integracao",
+    "note": "Nenhuma migration nova — feature transversal, sem agregado nem tabela."
+  },
+  "stats": { "total": 16, "done": 16, "by_layer": { "1": 13, "2": 0, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Dependencia micrometer-registry-prometheus",
+      "description": "Adiciona io.micrometer:micrometer-registry-prometheus ao pom.xml (sem versao explicita, gerenciada pelo BOM do Spring Boot) — sem ela /actuator/prometheus nunca e autoconfigurado, mesmo com management.endpoints.web.exposure.include ja correto.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["pom.xml"],
+      "acceptance_criteria": [
+        "AC-1: GET /actuator/prometheus (sem seguranca temporaria pra teste) devolve 200 com corpo no formato de exposicao do Prometheus, nao mais 404",
+        "GATE: ./mvnw -q -o compile passa"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-5"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "RequestIdFilter",
+      "description": "Filtro novo em platform.web: @Order(Ordered.HIGHEST_PRECEDENCE) — roda antes de tudo, inclusive do Spring Security. Gera UUID truncado a 8 hex (mesmo formato ja usado em GlobalExceptionHandler), poe em MDC.put(\"requestId\", id), adiciona X-Request-Id na resposta, limpa no finally.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/platform/web/RequestIdFilter.java"],
+      "acceptance_criteria": [
+        "AC-1: toda requisicao HTTP, resolvendo tenant ou nao, tem requestId novo no MDC durante seu ciclo",
+        "AC-2: cabecalho X-Request-Id presente em toda resposta, com o mesmo valor do MDC daquela requisicao",
+        "AC-3: MDC.remove chamado no finally — nunca vaza pra proxima requisicao na mesma thread"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "SchedulingMetrics",
+      "description": "Classe pacote-privada em scheduling.application com 3 Counter do Micrometer: agendaia.appointments.booked, agendaia.appointments.cancelled, agendaia.appointments.slot_conflict (booked, nao created -- Prometheus trata .created como sufixo reservado de timestamp). Metodos appointmentCreated()/appointmentCancelled()/slotConflict() incrementam cada um.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/java/com/agendaia/scheduling/application/SchedulingMetrics.java"],
+      "acceptance_criteria": [
+        "AC-1: os 3 contadores existem desde a subida da aplicacao, comecando em zero",
+        "AC-2: classe pacote-privada — nao precisa ser publica, so os 3 handlers do mesmo pacote a usam"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "application.yaml: log estruturado + credenciais de metrics",
+      "description": "logging.structured.format.console: ecs (nativo do Spring Boot, sem dependencia nova). Novas variaveis AGENDAIA_METRICS_USERNAME (padrao dev: metrics) e AGENDAIA_METRICS_PASSWORD_HASH (hash BCrypt, padrao de desenvolvimento, mesmo aviso ja usado em AGENDAIA_OPERADOR_*).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/resources/application.yaml"],
+      "acceptance_criteria": [
+        "AC-1: toda linha de log da aplicacao sai como JSON valido apos essa mudanca",
+        "AC-2: tenantId e requestId do MDC aparecem automaticamente no JSON, sem configuracao extra alem do format",
+        "AC-3: credenciais de metrics nunca hardcoded fora de variavel de ambiente com valor padrao so de desenvolvimento"
+      ],
+      "references": ["US-1", "US-4"],
+      "design_decisions": ["DD-1", "DD-4"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "GlobalExceptionHandler le requestId do MDC",
+      "description": "erroInesperado() para de gerar UUID.randomUUID().toString().substring(0,8) e passa a ler MDC.get(\"requestId\") (gerado pelo RequestIdFilter) — unifica o identificador que ja aparecia so na tela de erro 500 com o que agora aparece em toda linha de log da mesma requisicao.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-002"],
+      "files": ["src/main/java/com/agendaia/platform/web/GlobalExceptionHandler.java"],
+      "acceptance_criteria": [
+        "AC-1: o requestId mostrado na tela de erro 500 e exatamente o mesmo que aparece em toda outra linha de log da mesma requisicao",
+        "AC-2: nenhuma mudanca de comportamento visivel ao usuario alem do valor do id (mesma tela error/500, mesmo status 500)"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "MetricsSecurityConfig",
+      "description": "3a SecurityFilterChain, platform.security, @Order(0) — roda antes de OperatorSecurityConfig (@Order(1)) e SecurityConfig (@Order(2)). securityMatcher(\"/actuator/prometheus\"), httpBasic(), anyRequest().hasRole(\"METRICS\"). InMemoryUserDetailsManager com 1 usuario, senha vinda de AGENDAIA_METRICS_PASSWORD_HASH (ja BCrypt).",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-004"],
+      "files": ["src/main/java/com/agendaia/platform/security/MetricsSecurityConfig.java"],
+      "acceptance_criteria": [
+        "AC-1: GET /actuator/prometheus sem credencial devolve 401",
+        "AC-2: GET /actuator/prometheus com credencial de METRICS devolve 200 com os contadores",
+        "AC-3: a sessao OWNER ou OPERATOR autenticada NAO da acesso a /actuator/prometheus — precisa da credencial dedicada",
+        "AC-4: /actuator/health continua publico, sem nenhuma mudanca — securityMatcher desta cadeia so cobre /actuator/prometheus"
+      ],
+      "references": ["US-3", "US-4"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-007",
+      "title": "BookAppointmentHandler instrumentado",
+      "description": "Injeta SchedulingMetrics. Sucesso de handle() chama appointmentCreated(); catch de SlotUnavailableException chama slotConflict() antes de relancar.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"],
+      "acceptance_criteria": [
+        "AC-1: reserva publica com sucesso incrementa created, nunca slot_conflict",
+        "AC-2: reserva publica que colide com outro agendamento incrementa slot_conflict, nunca created",
+        "GATE: BookAppointmentHandlerTest (TODO-006) continua verde"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "ManageAppointmentHandler instrumentado",
+      "description": "Injeta SchedulingMetrics. cancel() chama appointmentCancelled() só quando gravarSeMudou grava de verdade (transicao real para CANCELLED) — no-op (ja CANCELLED) nao incrementa.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/main/java/com/agendaia/scheduling/application/ManageAppointmentHandler.java"],
+      "acceptance_criteria": [
+        "AC-1: cancelamento pelo cliente com transicao real incrementa cancelled",
+        "AC-2: cancelar um agendamento ja CANCELLED (idempotente) nao incrementa nada",
+        "GATE: ManageAppointmentHandlerTest (TODO-007) continua verde"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "ProfessionalAgendaHandler instrumentado",
+      "description": "Injeta SchedulingMetrics. create(): sucesso -> created, SlotUnavailableException -> slot_conflict. cancel(): transicao real -> cancelled. reschedule(): NAO incrementa created nem cancelled (e 'mover', nao 'criar+cancelar'); SlotUnavailableException no novo horario -> slot_conflict.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"],
+      "acceptance_criteria": [
+        "AC-1: criacao manual com sucesso incrementa created; falha por conflito incrementa slot_conflict",
+        "AC-2: cancelamento pelo dono com transicao real incrementa cancelled; no-op nao incrementa nada",
+        "AC-3: reagendar com sucesso NAO incrementa created nem cancelled",
+        "AC-4: reagendar cujo novo horario colide incrementa slot_conflict, e o agendamento antigo continua intacto (comportamento da TODO-008, sem mudanca)",
+        "GATE: ProfessionalAgendaHandlerTest (TODO-008) continua verde"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "Testes de RequestIdFilter e GlobalExceptionHandler",
+      "description": "RequestIdFilterTest (novo): MDC populado durante a cadeia, limpo depois, header X-Request-Id presente. GlobalExceptionHandlerTest (editado): erroInesperado usa o requestId do MDC, nao gera um novo.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-002", "TASK-005"],
+      "files": [
+        "src/test/java/com/agendaia/platform/web/RequestIdFilterTest.java",
+        "src/test/java/com/agendaia/platform/web/GlobalExceptionHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: teste confirma que o MDC tem requestId != null durante a requisicao e null depois (finally executado)",
+        "AC-2: teste confirma que o id mostrado na tela de erro bate com MDC.get(\"requestId\") no momento da chamada",
+        "GATE: ./mvnw test -Dtest=RequestIdFilterTest,GlobalExceptionHandlerTest passa"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-011",
+      "title": "SchedulingMetricsTest",
+      "description": "Testa os 3 metodos isoladamente com um SimpleMeterRegistry (Micrometer, em memoria) — cada metodo incrementa o contador certo, os outros dois permanecem em zero.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/test/java/com/agendaia/scheduling/application/SchedulingMetricsTest.java"],
+      "acceptance_criteria": [
+        "AC-1: appointmentCreated() incrementa so o contador de criado",
+        "AC-2: appointmentCancelled() incrementa so o de cancelado",
+        "AC-3: slotConflict() incrementa so o de falha por conflito",
+        "GATE: ./mvnw test -Dtest=SchedulingMetricsTest passa"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-012",
+      "title": "Testes dos handlers instrumentados",
+      "description": "BookAppointmentHandlerTest, ManageAppointmentHandlerTest, ProfessionalAgendaHandlerTest (editados) — cada um ganha casos verificando a chamada certa em SchedulingMetrics (mock), conforme a tabela de contagem da DD-3, incluindo o caso de reagendar NAO incrementar created/cancelled.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
+      "files": [
+        "src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java",
+        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: cada handler tem pelo menos um teste por linha da tabela de contagem da DD-3 que ele participa",
+        "GATE: ./mvnw test -Dtest=BookAppointmentHandlerTest,ManageAppointmentHandlerTest,ProfessionalAgendaHandlerTest passa"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-013",
+      "title": "ObservabilidadeIT — E2E-1 a E2E-4",
+      "description": "Integracao contra Postgres real (Testcontainers) e a aplicacao subida de verdade. E2E-1: log de requisicao autenticada e JSON com tenantId+requestId. E2E-2: /actuator/health sem auth. E2E-3: /actuator/prometheus exige credencial e expoe os 3 contadores incrementados apos operacoes reais. E2E-4: nenhuma linha de log de um fluxo de agendamento contem nome nem telefone do cliente.",
+      "status": "done",
+      "layer": 1,
+      "depends_on": ["TASK-006", "TASK-010", "TASK-011", "TASK-012"],
+      "files": ["src/test/java/com/agendaia/platform/ObservabilidadeIT.java"],
+      "acceptance_criteria": [
+        "AC-1: E2E-1 a E2E-4 da spec funcional, um teste por cenario, nomeados por @DisplayName",
+        "AC-2: MDC de cada evento capturado por um ListAppender do Logback e verificado diretamente -- redirecionar System.out foi tentado e descartado (o ConsoleAppender fixa a referencia de System.out na inicializacao do contexto, entao a troca em tempo de teste nao e capturada)",
+        "GATE: ./mvnw verify -Dtest=ObservabilidadeIT passa"
+      ],
+      "references": ["US-1", "US-2", "US-3", "US-4", "US-5"],
+      "design_decisions": ["DD-1", "DD-2", "DD-3", "DD-4", "DD-5"]
+    },
+    {
+      "id": "TASK-014",
+      "title": "Code Review",
+      "description": "Skill sdd-code-reviewer sobre toda a feature: SchedulingMetrics pacote-privado e correto (nao vaza pra outro contexto); metricas nunca dentro de dominio puro (Appointment/AppointmentFactory continuam sem import de Micrometer); MetricsSecurityConfig segue exatamente o padrao de OperatorSecurityConfig; GlobalExceptionHandler sem regressao de comportamento visivel.",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/code_review.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Performance Review",
+      "description": "Skill sdd-performance-expert: RequestIdFilter e SchedulingMetrics.increment() sao O(1), sem I/O; log estruturado nao introduz alocacao desproporcional; nenhuma consulta nova ao banco nesta feature inteira.",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/performance.json com verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS",
+        "GATE: nenhum achado critico sem correcao"
+      ],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-016",
+      "title": "Security Review",
+      "description": "Skill sdd-code-reviewer em modo seguranca: credenciais de metrics nunca hardcoded (so env var, hash BCrypt); /actuator/prometheus realmente exige autenticacao (nao cai no anyRequest().hasRole(OWNER) por engano, nem fica sem protecao nenhuma); /actuator/health continua publico de proposito, sem vazar dado sensivel; nenhum log novo desta feature imprime nome/telefone de cliente (LGPD, BR-4).",
+      "status": "done",
+      "layer": 3,
+      "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
+      "files": [],
+      "acceptance_criteria": [
+        "AC-1: verdicts/security.json com verdict APPROVED",
+        "GATE: nenhum achado critico ou major sem correcao"
+      ],
+      "references": ["BR-2", "BR-4"],
+      "design_decisions": ["DD-4"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": {
+        "level_0": ["TASK-001", "TASK-002", "TASK-003", "TASK-004"],
+        "level_1": ["TASK-005", "TASK-006", "TASK-007", "TASK-008", "TASK-009"],
+        "level_2": ["TASK-010", "TASK-011", "TASK-012"],
+        "level_3": ["TASK-013"]
+      },
+      "3": {
+        "level_0": ["TASK-014", "TASK-015", "TASK-016"]
+      }
+    }
+  }
+}
