@@ -4,7 +4,7 @@
     "postgres": "docker-compose-dev + Testcontainers no teste de integracao",
     "note": "Nenhuma migration nova — feature transversal, sem agregado nem tabela."
   },
-  "stats": { "total": 16, "done": 13, "by_layer": { "1": 13, "2": 0, "3": 3 } },
+  "stats": { "total": 16, "done": 16, "by_layer": { "1": 13, "2": 0, "3": 3 } },
   "tasks": [
     {
       "id": "TASK-001",
@@ -225,7 +225,7 @@
       "id": "TASK-014",
       "title": "Code Review",
       "description": "Skill sdd-code-reviewer sobre toda a feature: SchedulingMetrics pacote-privado e correto (nao vaza pra outro contexto); metricas nunca dentro de dominio puro (Appointment/AppointmentFactory continuam sem import de Micrometer); MetricsSecurityConfig segue exatamente o padrao de OperatorSecurityConfig; GlobalExceptionHandler sem regressao de comportamento visivel.",
-      "status": "pending",
+      "status": "done",
       "layer": 3,
       "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
       "files": [],
@@ -240,7 +240,7 @@
       "id": "TASK-015",
       "title": "Performance Review",
       "description": "Skill sdd-performance-expert: RequestIdFilter e SchedulingMetrics.increment() sao O(1), sem I/O; log estruturado nao introduz alocacao desproporcional; nenhuma consulta nova ao banco nesta feature inteira.",
-      "status": "pending",
+      "status": "done",
       "layer": 3,
       "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
       "files": [],
@@ -255,7 +255,7 @@
       "id": "TASK-016",
       "title": "Security Review",
       "description": "Skill sdd-code-reviewer em modo seguranca: credenciais de metrics nunca hardcoded (so env var, hash BCrypt); /actuator/prometheus realmente exige autenticacao (nao cai no anyRequest().hasRole(OWNER) por engano, nem fica sem protecao nenhuma); /actuator/health continua publico de proposito, sem vazar dado sensivel; nenhum log novo desta feature imprime nome/telefone de cliente (LGPD, BR-4).",
-      "status": "pending",
+      "status": "done",
       "layer": 3,
       "depends_on": ["TASK-010", "TASK-011", "TASK-012", "TASK-013"],
       "files": [],
