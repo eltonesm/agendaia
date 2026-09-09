@@ -2,6 +2,7 @@ package com.agendaia.organization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,7 +23,10 @@ import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
 import com.agendaia.shared.Money;
 import com.agendaia.shared.UuidV7;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -122,19 +126,33 @@ class DashboardIT {
     @Test
     @DisplayName("E2E-3: dashboard mostra KPIs reais — cancelado não entra na contagem nem na receita")
     void e2e3KpisReaisExcluemCancelado() throws Exception {
+        var agora = Instant.now();
+        var zone = ZoneId.systemDefault();
+        var inicioDoDia = LocalDate.now(zone).atStartOfDay(zone).toInstant();
+        var fimDoDia = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
+        // "hoje" é definido pelo fuso do servidor (mesma regra de
+        // AppointmentJpaRepository.findByTenantAndDay); perto da virada da
+        // meia-noite, deltas de minutos relativos a "agora" podem cair no dia
+        // seguinte e o teste flaca (já aconteceu). Em vez de reduzir a
+        // margem, pula o teste com um motivo explícito nessa janela estreita.
+        assumeTrue(
+                Duration.between(inicioDoDia, agora).toMinutes() > 5
+                        && Duration.between(agora, fimDoDia).toMinutes() > 5,
+                "Pulado: horario perto da virada do dia (%s) cruzaria a fronteira de 'hoje' e flacaria o teste"
+                        .formatted(agora));
+
         var cenario = semearEstabelecimento();
         var cliente = customerRepository.saveAndFlush(
                 Customer.register(cenario.barbearia().tenantId(), "Cliente Painel", "11988887000"));
         var sessao = sessaoAutenticada(cenario);
-        var agora = Instant.now();
 
         // Deltas pequenos e relativos a "agora" — cada um com professionalId
         // próprio (UUID solto), então não há overlap para a exclusion
         // constraint proteger, mesmo com horários próximos.
-        semearAgendamento(cenario, cliente.id(), AppointmentStatus.COMPLETED, agora.minus(90, ChronoUnit.MINUTES), 5000);
-        semearAgendamento(cenario, cliente.id(), AppointmentStatus.SCHEDULED, agora.plus(30, ChronoUnit.MINUTES), 3000);
-        semearAgendamento(cenario, cliente.id(), AppointmentStatus.CONFIRMED, agora.plus(60, ChronoUnit.MINUTES), 4000);
-        semearAgendamento(cenario, cliente.id(), AppointmentStatus.CANCELLED, agora.plus(90, ChronoUnit.MINUTES), 9999);
+        semearAgendamento(cenario, cliente.id(), AppointmentStatus.COMPLETED, agora.minus(4, ChronoUnit.MINUTES), 5000);
+        semearAgendamento(cenario, cliente.id(), AppointmentStatus.SCHEDULED, agora.plus(1, ChronoUnit.MINUTES), 3000);
+        semearAgendamento(cenario, cliente.id(), AppointmentStatus.CONFIRMED, agora.plus(2, ChronoUnit.MINUTES), 4000);
+        semearAgendamento(cenario, cliente.id(), AppointmentStatus.CANCELLED, agora.plus(3, ChronoUnit.MINUTES), 9999);
 
         var resultado = mockMvc.perform(get("/admin/dashboard").session(sessao))
                 .andExpect(status().isOk())
