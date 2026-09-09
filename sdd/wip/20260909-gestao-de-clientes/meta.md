@@ -8,7 +8,7 @@
 **User Profile**: technical
 **Created**: 2026-09-09
 **Last Updated**: 2026-09-09
-**Current Stage**: functional
+**Current Stage**: tasks
 
 ---
 
@@ -64,12 +64,13 @@ spec_language: pt   # herdado de sdd/PROJECT.md -> language.specs
 
 ```yaml
 migration:
-  detected: true   # provavel: status de pagamento no agendamento (IDEA-006) precisa de coluna nova
-  service_name: null
-  service_type: null
+  detected: true
+  service_name: postgres   # Flyway simples, sem servico gerenciado (ver compose.yaml)
+  service_type: postgresql
   branch_name: null
   branch_status: pending
-  migration_files: []
+  migration_files:
+    - db/migration/V10__scheduling_add_appointment_payment_status.sql
 ```
 
 ---
@@ -161,13 +162,17 @@ em `/admin/**`, entra na sidebar já existente desde a TODO-110)
 stages:
   functional:
     started: 2026-09-09
-    completed: null
-    status: pending
+    completed: 2026-09-09
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-09T22:18:20Z
 
   technical:
-    started: null
-    completed: null
-    status: pending
+    started: 2026-09-09
+    completed: 2026-09-09
+    status: approved
+    approved_by: Elton Marques
+    approved_at: 2026-09-09T22:24:52Z
 
   tasks:
     started: null
