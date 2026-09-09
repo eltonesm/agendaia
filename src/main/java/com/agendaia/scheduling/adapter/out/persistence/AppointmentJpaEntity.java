@@ -1,6 +1,7 @@
 package com.agendaia.scheduling.adapter.out.persistence;
 
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -56,6 +57,10 @@ public class AppointmentJpaEntity {
     @Column(name = "price_cents", nullable = false)
     private long priceCents;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false, length = 20)
+    private PaymentStatus paymentStatus;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -79,6 +84,7 @@ public class AppointmentJpaEntity {
             String serviceName,
             int durationMinutes,
             long priceCents,
+            PaymentStatus paymentStatus,
             Instant createdAt,
             Instant updatedAt) {
         this.id = id;
@@ -92,6 +98,7 @@ public class AppointmentJpaEntity {
         this.serviceName = serviceName;
         this.durationMinutes = durationMinutes;
         this.priceCents = priceCents;
+        this.paymentStatus = paymentStatus;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -138,5 +145,9 @@ public class AppointmentJpaEntity {
 
     long priceCents() {
         return priceCents;
+    }
+
+    PaymentStatus paymentStatus() {
+        return paymentStatus;
     }
 }

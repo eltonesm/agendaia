@@ -42,6 +42,66 @@ class AppointmentTest {
     }
 
     @Test
+    @DisplayName("nasce sempre com status de pagamento PENDING (gestao-de-clientes, BR-3)")
+    void nasceSemprePendente() {
+        assertThat(agendamentoValido().paymentStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("markPaymentAsPaid() transiciona de qualquer valor para PAID (BR-2)")
+    void markPaymentAsPaidTransiciona() {
+        assertThat(reconstituirCom(AppointmentStatus.SCHEDULED, PaymentStatus.PENDING)
+                        .markPaymentAsPaid()
+                        .paymentStatus())
+                .isEqualTo(PaymentStatus.PAID);
+        assertThat(reconstituirCom(AppointmentStatus.COMPLETED, PaymentStatus.ON_CREDIT)
+                        .markPaymentAsPaid()
+                        .paymentStatus())
+                .isEqualTo(PaymentStatus.PAID);
+    }
+
+    @Test
+    @DisplayName("markPaymentAsPending() transiciona de qualquer valor para PENDING (BR-2)")
+    void markPaymentAsPendingTransiciona() {
+        assertThat(reconstituirCom(AppointmentStatus.COMPLETED, PaymentStatus.PAID)
+                        .markPaymentAsPending()
+                        .paymentStatus())
+                .isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("markPaymentAsOnCredit() transiciona de qualquer valor para ON_CREDIT (BR-2)")
+    void markPaymentAsOnCreditTransiciona() {
+        assertThat(reconstituirCom(AppointmentStatus.COMPLETED, PaymentStatus.PAID)
+                        .markPaymentAsOnCredit()
+                        .paymentStatus())
+                .isEqualTo(PaymentStatus.ON_CREDIT);
+    }
+
+    @Test
+    @DisplayName("marcar o mesmo status de pagamento absorve — sem transição (idempotência)")
+    void marcarMesmoStatusAbsorve() {
+        var pago = reconstituirCom(AppointmentStatus.COMPLETED, PaymentStatus.PAID);
+        var pendente = reconstituirCom(AppointmentStatus.SCHEDULED, PaymentStatus.PENDING);
+        var fiado = reconstituirCom(AppointmentStatus.COMPLETED, PaymentStatus.ON_CREDIT);
+
+        assertThat(pago.markPaymentAsPaid()).isSameAs(pago);
+        assertThat(pendente.markPaymentAsPending()).isSameAs(pendente);
+        assertThat(fiado.markPaymentAsOnCredit()).isSameAs(fiado);
+    }
+
+    @Test
+    @DisplayName("status de pagamento é independente do status do agendamento (BR-2)")
+    void statusDePagamentoNaoAfetaStatusDoAgendamento() {
+        var cancelado = reconstituirCom(AppointmentStatus.CANCELLED, PaymentStatus.PENDING);
+
+        var depois = cancelado.markPaymentAsOnCredit();
+
+        assertThat(depois.status()).isEqualTo(AppointmentStatus.CANCELLED);
+        assertThat(depois.paymentStatus()).isEqualTo(PaymentStatus.ON_CREDIT);
+    }
+
+    @Test
     @DisplayName("guarda o retrato de serviço/duração/preço informado, não uma referência viva (BR-2)")
     void guardaORetrato() {
         var agendamento = agendamentoValido();
@@ -214,13 +274,19 @@ class AppointmentTest {
                 ENDS_AT,
                 "Corte de Cabelo",
                 30,
-                new Money(3000));
+                new Money(3000),
+                PaymentStatus.ON_CREDIT);
 
         assertThat(agendamento.id()).isEqualTo(id);
         assertThat(agendamento.status()).isEqualTo(AppointmentStatus.CANCELLED);
+        assertThat(agendamento.paymentStatus()).isEqualTo(PaymentStatus.ON_CREDIT);
     }
 
     private static Appointment reconstituirCom(AppointmentStatus status) {
+        return reconstituirCom(status, PaymentStatus.PENDING);
+    }
+
+    private static Appointment reconstituirCom(AppointmentStatus status, PaymentStatus paymentStatus) {
         return Appointment.reconstitute(
                 UuidV7.generate(),
                 TENANT,
@@ -232,7 +298,8 @@ class AppointmentTest {
                 ENDS_AT,
                 "Corte de Cabelo",
                 30,
-                new Money(3000));
+                new Money(3000),
+                paymentStatus);
     }
 
     @Test

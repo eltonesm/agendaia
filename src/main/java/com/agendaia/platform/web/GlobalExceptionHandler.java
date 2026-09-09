@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -49,6 +50,21 @@ public class GlobalExceptionHandler {
         var mav = new ModelAndView("error/500");
         mav.addObject("mensagem", e.getMessage());
         return mav;
+    }
+
+    /**
+     * Parâmetro que não converte para o tipo esperado (ex.: {@code status}
+     * fora dos valores de um enum, como {@code PaymentStatus} em
+     * gestao-de-clientes) — não implementa {@link ErrorResponse} no Spring
+     * Framework, cairia no handler genérico como "defeito" (ERROR, 500) se
+     * não tratado aqui. É uso incorreto do formulário, não bug: mesmo
+     * espírito de {@link #regraDeNegocioViolada}.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ModelAndView parametroInvalido(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+        log.warn("Parâmetro inválido em {}: {}", request.getRequestURI(), e.getMessage());
+        return new ModelAndView("error/500");
     }
 
     @ExceptionHandler(Exception.class)

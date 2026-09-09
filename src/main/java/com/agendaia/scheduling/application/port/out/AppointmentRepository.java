@@ -2,11 +2,14 @@ package com.agendaia.scheduling.application.port.out;
 
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.TimeRange;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,4 +74,28 @@ public interface AppointmentRepository {
      * TODO-110, DD-6/DD-7).
      */
     List<Appointment> findByTenantIdAndDate(TenantId tenantId, LocalDate date);
+
+    /**
+     * Grava só o status de pagamento (+ {@code updatedAt}) — nunca via
+     * {@link #save} (gestao-de-clientes, IDEA-006). Mesma forma de
+     * {@link #updateStatus}, conceito independente (BR-2 da spec funcional).
+     */
+    void updatePaymentStatus(TenantId tenantId, UUID id, PaymentStatus paymentStatus, Instant agora);
+
+    /**
+     * Histórico completo de atendimentos do cliente — só {@code COMPLETED}
+     * (BR-1/BR-5), mais recente primeiro. Usado no detalhe do cliente
+     * (gestao-de-clientes, US-2); os totais são somados em memória sobre
+     * esta lista, mesmo padrão de {@code DailyScheduleSummaryHandler}.
+     */
+    List<Appointment> findCompletedByTenantIdAndCustomerId(TenantId tenantId, UUID customerId);
+
+    /**
+     * Atividade agregada (visitas, gasto, em aberto) por cliente, em lote —
+     * uma única consulta agrupada (GROUP BY), nunca uma por cliente
+     * (gestao-de-clientes, DD-2). Cliente sem nenhum agendamento
+     * {@code COMPLETED} simplesmente não aparece no mapa — quem chama trata
+     * a ausência como "zero atividade" (BR-1).
+     */
+    Map<UUID, CustomerActivity> findActivityByCustomerIds(TenantId tenantId, Collection<UUID> customerIds);
 }

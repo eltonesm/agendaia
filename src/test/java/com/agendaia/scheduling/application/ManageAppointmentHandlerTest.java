@@ -15,6 +15,7 @@ import com.agendaia.organization.api.ProfessionalRef;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.shared.Money;
@@ -73,7 +74,8 @@ class ManageAppointmentHandlerTest {
                 startsAt.plus(30, ChronoUnit.MINUTES),
                 "Corte de Cabelo",
                 30,
-                new Money(3000));
+                new Money(3000),
+                PaymentStatus.PENDING);
     }
 
     private void mockarNomes() {

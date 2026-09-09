@@ -1,6 +1,7 @@
 package com.agendaia.scheduling.adapter.out.persistence;
 
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -92,4 +93,49 @@ interface AppointmentJpaRepository extends JpaRepository<AppointmentJpaEntity, U
             @Param("tenantId") UUID tenantId,
             @Param("dayStart") Instant dayStart,
             @Param("dayEnd") Instant dayEnd);
+
+    /**
+     * Grava só o status de pagamento e updatedAt — nunca via save()/merge,
+     * que sobrescreveria createdAt (mesma disciplina de {@link #updateStatus},
+     * gestao-de-clientes).
+     */
+    @Modifying
+    @Query("""
+            update AppointmentJpaEntity a
+               set a.paymentStatus = :paymentStatus, a.updatedAt = :agora
+             where a.tenantId = :tenantId and a.id = :id
+            """)
+    int updatePaymentStatus(
+            @Param("tenantId") UUID tenantId,
+            @Param("id") UUID id,
+            @Param("paymentStatus") PaymentStatus paymentStatus,
+            @Param("agora") Instant agora);
+
+    /**
+     * Histórico completo do cliente — só COMPLETED (gestao-de-clientes,
+     * US-2, BR-1/BR-5), mais recente primeiro.
+     */
+    List<AppointmentJpaEntity> findByTenantIdAndCustomerIdAndStatusOrderByStartsAtDesc(
+            UUID tenantId, UUID customerId, AppointmentStatus status);
+
+    /**
+     * Atividade agregada por cliente, em lote — uma única consulta GROUP BY
+     * (gestao-de-clientes, DD-2). appointment_customer_idx (tenant_id,
+     * customer_id, status), da V8, cobre bem o filtro por lote de
+     * customer_id + status.
+     */
+    @Query("""
+            select a.customerId as customerId,
+                   count(a) as visitCount,
+                   sum(a.priceCents) as totalCents,
+                   sum(case when a.paymentStatus = com.agendaia.scheduling.domain.PaymentStatus.ON_CREDIT
+                            then a.priceCents else 0 end) as owedCents
+              from AppointmentJpaEntity a
+             where a.tenantId = :tenantId
+               and a.customerId in :customerIds
+               and a.status = com.agendaia.scheduling.domain.AppointmentStatus.COMPLETED
+             group by a.customerId
+            """)
+    List<CustomerActivityProjection> findActivityByCustomerIds(
+            @Param("tenantId") UUID tenantId, @Param("customerIds") Collection<UUID> customerIds);
 }

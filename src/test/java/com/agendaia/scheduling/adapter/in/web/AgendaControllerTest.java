@@ -30,8 +30,10 @@ import com.agendaia.scheduling.application.port.in.CompleteAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.ConfirmAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentUseCase;
+import com.agendaia.scheduling.application.port.in.UpdatePaymentStatusUseCase;
 import com.agendaia.scheduling.application.port.in.ViewAgendaUseCase;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.shared.UuidV7;
 import java.time.Instant;
@@ -64,6 +66,7 @@ class AgendaControllerTest {
     @MockitoBean private CancelAppointmentByOwnerUseCase cancelAppointmentByOwner;
     @MockitoBean private RescheduleAppointmentUseCase rescheduleAppointment;
     @MockitoBean private CompleteAppointmentUseCase completeAppointment;
+    @MockitoBean private UpdatePaymentStatusUseCase updatePaymentStatus;
     @MockitoBean private AppointmentDetailsUseCase appointmentDetails;
     @MockitoBean private ProfessionalDirectory professionalDirectory;
     @MockitoBean private ServiceOfferingDirectory serviceOfferingDirectory;
@@ -111,6 +114,7 @@ class AgendaControllerTest {
                         startsAt,
                         startsAt.plus(30, ChronoUnit.MINUTES),
                         AppointmentStatus.SCHEDULED,
+                        PaymentStatus.PENDING,
                         true,
                         true,
                         true,
@@ -229,6 +233,50 @@ class AgendaControllerTest {
                 .andExpect(status().isForbidden());
 
         verify(completeAppointment, never()).complete(any());
+    }
+
+    @Test
+    @DisplayName("POST pagamento chama UpdatePaymentStatusUseCase e redireciona (PRG)")
+    void pagamentoChamaCasoDeUso() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId)
+                        .with(csrf())
+                        .param("status", "ON_CREDIT"))
+                .andExpect(status().is3xxRedirection());
+
+        verify(updatePaymentStatus).updatePaymentStatus(appointmentId, PaymentStatus.ON_CREDIT);
+    }
+
+    @Test
+    @DisplayName("POST pagamento com id de outro tenant devolve 404 (AC-5)")
+    void pagamentoComIdDeOutroTenantDevolve404() throws Exception {
+        doThrow(new AppointmentNotFoundException())
+                .when(updatePaymentStatus)
+                .updatePaymentStatus(appointmentId, PaymentStatus.PAID);
+
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId)
+                        .with(csrf())
+                        .param("status", "PAID"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST pagamento com status fora do enum devolve 400, nao 500 (GlobalExceptionHandler)")
+    void pagamentoComStatusInvalidoDevolve400() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId)
+                        .with(csrf())
+                        .param("status", "XPTO"))
+                .andExpect(status().isBadRequest());
+
+        verify(updatePaymentStatus, never()).updatePaymentStatus(any(), any());
+    }
+
+    @Test
+    @DisplayName("POST pagamento sem token CSRF e recusado")
+    void pagamentoSemCsrfERecusado() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId).param("status", "PAID"))
+                .andExpect(status().isForbidden());
+
+        verify(updatePaymentStatus, never()).updatePaymentStatus(any(), any());
     }
 
     @Test

@@ -1,0 +1,647 @@
+{
+    "feature":  "gestao-de-clientes",
+    "local_config":  {
+                         "mysql":  null,
+                         "postgres":  "existing",
+                         "kvs":  null,
+                         "bigqueue":  null
+                     },
+    "stats":  {
+                  "total":  22,
+                  "done":  22,
+                  "by_layer":  {
+                                   "1":  19,
+                                   "2":  0,
+                                   "3":  3
+                               }
+              },
+    "tasks":  [
+                  {
+                      "id":  "TASK-001",
+                      "title":  "Migration V10: coluna payment_status",
+                      "description":  "Cria a migration Flyway V10__scheduling_add_appointment_payment_status.sql, adicionando a coluna payment_status VARCHAR(20) NOT NULL DEFAULT \u0027PENDING\u0027 na tabela appointment.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/resources/db/migration/V10__scheduling_add_appointment_payment_status.sql"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: coluna criada com default PENDING, sem quebrar linhas existentes",
+                                                  "GATE: ./mvnw flyway:validate (ou subida da app) aplica a migration sem erro"
+                                              ],
+                      "references":  [
+                                         "BR-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-002",
+                      "title":  "PaymentStatus e métodos de domínio em Appointment",
+                      "description":  "Cria o enum PaymentStatus (PAID, PENDING, ON_CREDIT) em scheduling.domain. Adiciona o campo paymentStatus a Appointment (schedule() nasce sempre PENDING) e os métodos markPaymentAsPaid()/markPaymentAsPending()/markPaymentAsOnCredit(), imutáveis, absorvendo quando já no valor pedido.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/domain/PaymentStatus.java",
+                                    "src/main/java/com/agendaia/scheduling/domain/Appointment.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: schedule() sempre cria Appointment com paymentStatus=PENDING (BR-3)",
+                                                  "AC-2: cada método markPaymentAsX transiciona de qualquer valor para o seu, e absorve (retorna this) se já estiver naquele valor",
+                                                  "AC-3: nenhum setter público — só os três métodos nomeados"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "BR-2",
+                                         "BR-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-003",
+                      "title":  "Persistência do paymentStatus (entidade JPA + mapper)",
+                      "description":  "Adiciona a coluna payment_status a AppointmentJpaEntity (@Enumerated(EnumType.STRING)) e propaga o campo nos dois sentidos em AppointmentMapper.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-001",
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaEntity.java",
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentMapper.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: toEntity/toDomain preservam paymentStatus sem perda",
+                                                  "GATE: ./mvnw compile"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-004",
+                      "title":  "Novas consultas em AppointmentRepository (atividade por cliente)",
+                      "description":  "Adiciona a AppointmentRepository (port.out) e sua implementação: updatePaymentStatus(tenantId, id, status, agora) (mesma forma de updateStatus, nunca via save); findCompletedByTenantIdAndCustomerId(tenantId, customerId) para o histórico do cliente; findActivityByCustomerIds(tenantId, customerIds), agregação em lote (GROUP BY customer_id, status=COMPLETED, com soma condicional para ON_CREDIT). Cria o record CustomerActivity(visitCount, totalSpent, totalOwed).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-003"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/out/CustomerActivity.java",
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: updatePaymentStatus grava só a coluna + updatedAt, nunca sobrescreve createdAt",
+                                                  "AC-2: findCompletedByTenantIdAndCustomerId filtra só status=COMPLETED, ordenado por startsAt",
+                                                  "AC-3: findActivityByCustomerIds é uma única query agregada (GROUP BY), nunca uma consulta por customerId",
+                                                  "AC-4: nenhuma das novas queries precisa de índice novo — appointment_customer_idx (V8) já cobre tenant_id+customer_id+status"
+                                              ],
+                      "references":  [
+                                         "US-2",
+                                         "BR-7",
+                                         "BR-8",
+                                         "BR-9"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-2",
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-005",
+                      "title":  "Novas portas de entrada (records e interfaces)",
+                      "description":  "Cria em scheduling.application.port.in: ListCustomerActivityUseCase, CustomerActivityDetailUseCase, UpdatePaymentStatusUseCase (interfaces), e os records CustomerListEntry, CustomerActivityDetail, VisitEntry, PagedResult\u003cT\u003e. PagedResult é genérico e não depende de Spring Data (evita vazar Page através do port.in).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/ListCustomerActivityUseCase.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/CustomerActivityDetailUseCase.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/UpdatePaymentStatusUseCase.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/CustomerListEntry.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/CustomerActivityDetail.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/VisitEntry.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/PagedResult.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: PagedResult\u003cT\u003e não importa nenhum tipo de org.springframework.*",
+                                                  "GATE: ./mvnw compile"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-006",
+                      "title":  "AgendaEntry ganha paymentStatus",
+                      "description":  "Adiciona o campo paymentStatus a AgendaEntry (record) e atualiza ProfessionalAgendaHandler.paraAgendaEntry para preenchê-lo a partir do Appointment. Sem novo canX — qualquer valor pode mudar para qualquer outro (BR-2).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/AgendaEntry.java",
+                                    "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: toda linha da agenda expõe o paymentStatus atual do agendamento"
+                                              ],
+                      "references":  [
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-007",
+                      "title":  "customer.api: listForTenant paginado",
+                      "description":  "Adiciona listForTenant(page, size) a CustomerDirectory (customer.api), com o novo record PagedCustomers. Implementa em CustomerDirectoryHandler, com o novo método findByTenantIdAndAnonymizedAtIsNullOrderByNameAsc em CustomerRepository (exclui cliente anonimizado, ordena por nome).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/customer/api/CustomerDirectory.java",
+                                    "src/main/java/com/agendaia/customer/api/PagedCustomers.java",
+                                    "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
+                                    "src/main/java/com/agendaia/customer/application/port/out/CustomerRepository.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: resultado ordenado por nome, paginado, sempre revalidado por tenantId da sessão",
+                                                  "AC-2: cliente com anonymizedAt != null não aparece (campo já existe, ainda sem escritor — filtro preventivo)"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "BR-4",
+                                         "BR-6"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-2"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-008",
+                      "title":  "CustomerActivityHandler (lista e detalhe)",
+                      "description":  "Cria CustomerActivityHandler em scheduling.application, implementando ListCustomerActivityUseCase e CustomerActivityDetailUseCase (mesma classe, IDEA-017). list() combina CustomerDirectory.listForTenant com AppointmentRepository.findActivityByCustomerIds, marcando isNew=true para cliente ausente do mapa de atividade. detail() soma os três totais em memória a partir de findCompletedByTenantIdAndCustomerId e devolve Optional.empty() para cliente de outro tenant.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-004",
+                                         "TASK-005",
+                                         "TASK-007"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/CustomerActivityHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: cliente sem nenhum COMPLETED aparece com visitCount=0 e isNew=true (BR-1)",
+                                                  "AC-2: total de visitas/gasto/em aberto batem com BR-7/BR-8/BR-9",
+                                                  "AC-3: detail() de cliente de outro tenant devolve Optional.empty(), nunca lança nem vaza dado"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2",
+                                         "BR-1",
+                                         "BR-4",
+                                         "BR-7",
+                                         "BR-8",
+                                         "BR-9"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-2",
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-009",
+                      "title":  "ProfessionalAgendaHandler.updatePaymentStatus",
+                      "description":  "Implementa UpdatePaymentStatusUseCase em ProfessionalAgendaHandler (mesma classe multi-porta já existente, IDEA-017). Chama o método de domínio correspondente ao status pedido e grava só quando há mudança real, mesma disciplina de complete()/cancel().",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-004",
+                                         "TASK-005"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: grava updatePaymentStatus só quando antes.paymentStatus() != depois.paymentStatus()",
+                                                  "AC-2: tenantId revalidado via findByTenantIdAndId — id de outro tenant lança AppointmentNotFoundException"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "BR-2",
+                                         "BR-5"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3",
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-010",
+                      "title":  "CustomerAdminController (lista e detalhe)",
+                      "description":  "Cria CustomerAdminController em scheduling.adapter.in.web, com GET /admin/clientes (paginado, parâmetros page/size) e GET /admin/clientes/{id} (404 via ResponseStatusException para cliente de outro tenant ou inexistente, mesmo padrão de AgendaController.detalhesOuFalhar).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/CustomerAdminController.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: /admin/clientes pagina corretamente (page/size)",
+                                                  "AC-2: /admin/clientes/{id} de outro tenant devolve 404",
+                                                  "AC-3: nenhuma configuração nova em SecurityConfig — cai no hasRole(\"OWNER\") já existente de /admin/**"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2",
+                                         "BR-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-011",
+                      "title":  "AgendaController: rota de status de pagamento",
+                      "description":  "Adiciona POST /admin/agenda/agendamentos/{id}/pagamento ao AgendaController já existente, mesmo padrão PRG de confirmar/cancelar/concluir, chamando UpdatePaymentStatusUseCase.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-009"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: sucesso redireciona para a agenda (PRG)",
+                                                  "AC-2: id de outro tenant devolve 404",
+                                                  "AC-3: CSRF obrigatório (padrão do formulário HTML)"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "BR-5"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-5"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-012",
+                      "title":  "Template admin/clientes.html + item na sidebar",
+                      "description":  "Cria a tela de lista de clientes: nome, telefone, contador de visitas, badge \"Novo\" (US-1), link de WhatsApp (US-3), paginação no rodapé. Adiciona o item \"Clientes\" a adminSidebar em fragments/layout.html.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-010"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/clientes.html",
+                                    "src/main/resources/templates/fragments/layout.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: lista mostra contador de visitas e sinalização de novo por cliente",
+                                                  "AC-2: paginação funcional (próxima/anterior)",
+                                                  "AC-3: link de WhatsApp aponta para wa.me/{telefone do cliente}",
+                                                  "AC-4: sidebar ganha o item \"Clientes\", mesmo padrão visual dos demais (TODO-110)"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-013",
+                      "title":  "Template admin/cliente-detalhe.html",
+                      "description":  "Cria a tela de detalhe do cliente: cabeçalho (nome, telefone, WhatsApp) e os três totais (visitas, gasto, em aberto), seguidos do histórico completo (data, serviço, valor, status de pagamento por atendimento).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-010"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/cliente-detalhe.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os três totais aparecem corretos e batem com o backend",
+                                                  "AC-2: histórico lista só atendimentos COMPLETED, mais recente primeiro",
+                                                  "AC-3: link de WhatsApp aponta para o telefone certo"
+                                              ],
+                      "references":  [
+                                         "US-2",
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-014",
+                      "title":  "Template admin/agenda.html: controle de status de pagamento",
+                      "description":  "Cada linha da agenda ganha um controle (ex.: três botões ou seletor) para marcar pago/pendente/fiado, ao lado das ações já existentes (confirmar/cancelar/concluir), chamando a nova rota de pagamento.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-011"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/agenda.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: status de pagamento atual visível em cada linha",
+                                                  "AC-2: trocar o status funciona em qualquer direção, mesmo depois de já concluído"
+                                              ],
+                      "references":  [
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-015",
+                      "title":  "Glossário: PaymentStatus",
+                      "description":  "Documenta em docs/domain/glossary.md os termos novos: status de pagamento (PaymentStatus), e seus três valores — pago (PAID), pendente (PENDING), fiado (ON_CREDIT).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "docs/domain/glossary.md"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os quatro termos aparecem documentados, com a distinção clara de AppointmentStatus"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-016",
+                      "title":  "Testes de domínio: PaymentStatus em Appointment",
+                      "description":  "Cobre em AppointmentTest as transições markPaymentAsPaid/Pending/OnCredit (de qualquer valor para qualquer outro), a absorção quando já no valor pedido, e que schedule() sempre nasce PENDING.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: cobertura das 3 transições x absorção x default no schedule()",
+                                                  "GATE: ./mvnw test -Dtest=AppointmentTest"
+                                              ],
+                      "references":  [
+                                         "BR-2",
+                                         "BR-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-017",
+                      "title":  "Testes de aplicação: CustomerActivityHandler e updatePaymentStatus",
+                      "description":  "Cria CustomerActivityHandlerTest (list combina os dois mocks corretamente, isNew para ausente do mapa, detail soma totais e isola tenant) e adiciona a ProfessionalAgendaHandlerTest a cobertura de updatePaymentStatus (grava só quando muda, revalida tenant).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008",
+                                         "TASK-009"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/application/CustomerActivityHandlerTest.java",
+                                    "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: ./mvnw test -Dtest=CustomerActivityHandlerTest,ProfessionalAgendaHandlerTest"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2",
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-2",
+                                               "DD-3",
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-018",
+                      "title":  "Testes de camada web: CustomerAdminController e rota de pagamento",
+                      "description":  "Cria CustomerAdminControllerTest (@WebMvcTest: paginação, 404 tenant errado) e adiciona a AgendaControllerTest a cobertura da rota pagamento (sucesso/PRG, 404, CSRF), mesmo trio de testes já usado para concluir.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-010",
+                                         "TASK-011"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/adapter/in/web/CustomerAdminControllerTest.java",
+                                    "src/test/java/com/agendaia/scheduling/adapter/in/web/AgendaControllerTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: ./mvnw test -Dtest=CustomerAdminControllerTest,AgendaControllerTest"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2",
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-5"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-019",
+                      "title":  "Testes de integração: E2E-1 a E2E-6 (Testcontainers)",
+                      "description":  "Cria CustomerActivityIT cobrindo E2E-1 (paginação real), E2E-2 (cliente novo), E2E-3 (histórico e totais, incluindo ON_CREDIT), E2E-4 (link de WhatsApp) e E2E-6 (isolamento entre tenants). Adiciona a AgendaProfissionalIT o cenário E2E-5 (marcar ON_CREDIT reflete no total em aberto do cliente).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-012",
+                                         "TASK-013",
+                                         "TASK-014",
+                                         "TASK-018"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/CustomerActivityIT.java",
+                                    "src/test/java/com/agendaia/scheduling/AgendaProfissionalIT.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os 6 cenários E2E da spec funcional passam contra Postgres real",
+                                                  "GATE: ./mvnw verify"
+                                              ],
+                      "references":  [
+                                         "E2E-1",
+                                         "E2E-2",
+                                         "E2E-3",
+                                         "E2E-4",
+                                         "E2E-5",
+                                         "E2E-6"
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-020",
+                      "title":  "Layer 3: Code Review",
+                      "description":  "Revisão de código completa da feature via skill sdd-code-reviewer — verifica aderência a PATTERNS.md (sem setter, imutabilidade, uma classe/várias portas, fronteira entre contextos), e ausência de regressão nas telas/rotas já existentes (agenda, dashboard).",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-016",
+                                         "TASK-017",
+                                         "TASK-018",
+                                         "TASK-019"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: verdicts/code_review.json com verdict APPROVED"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-021",
+                      "title":  "Layer 3: Performance Review",
+                      "description":  "Revisão de performance via skill sdd-performance-expert — confirma que a paginação da lista de clientes é real (SQL, não em memória), que a agregação por lote não vira N+1, e que o detalhe do cliente não carrega dado desnecessário.",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-020"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: verdicts/performance.json com verdict APPROVED"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+                                               "DD-2"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-022",
+                      "title":  "Layer 3: Security Review",
+                      "description":  "Revisão de segurança via skill sdd-code-reviewer (modo auditoria) — confirma isolamento de tenant nas rotas e consultas novas, CSRF nas rotas POST novas, e que nenhum dado pessoal novo é exposto além do já existente.",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-020"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: verdicts/security.json com verdict APPROVED"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  }
+              ],
+    "dependency_graph":  {
+                             "by_layer":  {
+                                              "1":  {
+                                                        "level_0":  [
+                                                                        "TASK-001",
+                                                                        "TASK-002",
+                                                                        "TASK-007"
+                                                                    ],
+                                                        "level_1":  [
+                                                                        "TASK-003",
+                                                                        "TASK-005",
+                                                                        "TASK-006"
+                                                                    ],
+                                                        "level_2":  [
+                                                                        "TASK-004"
+                                                                    ],
+                                                        "level_3":  [
+                                                                        "TASK-008",
+                                                                        "TASK-009",
+                                                                        "TASK-015",
+                                                                        "TASK-016"
+                                                                    ],
+                                                        "level_4":  [
+                                                                        "TASK-010",
+                                                                        "TASK-011",
+                                                                        "TASK-017"
+                                                                    ],
+                                                        "level_5":  [
+                                                                        "TASK-012",
+                                                                        "TASK-013",
+                                                                        "TASK-014",
+                                                                        "TASK-018"
+                                                                    ],
+                                                        "level_6":  [
+                                                                        "TASK-019"
+                                                                    ]
+                                                    },
+                                              "3":  {
+                                                        "level_0":  [
+                                                                        "TASK-020"
+                                                                    ],
+                                                        "level_1":  [
+                                                                        "TASK-021",
+                                                                        "TASK-022"
+                                                                    ]
+                                                    }
+                                          }
+                         }
+}

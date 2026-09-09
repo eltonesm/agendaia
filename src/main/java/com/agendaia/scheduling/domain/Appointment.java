@@ -31,6 +31,7 @@ public final class Appointment {
     private final String serviceName;
     private final int durationMinutes;
     private final Money price;
+    private final PaymentStatus paymentStatus;
 
     private Appointment(
             UUID id,
@@ -43,7 +44,8 @@ public final class Appointment {
             Instant endsAt,
             String serviceName,
             int durationMinutes,
-            Money price) {
+            Money price,
+            PaymentStatus paymentStatus) {
         this.id = id;
         this.tenantId = tenantId;
         this.professionalId = professionalId;
@@ -55,6 +57,7 @@ public final class Appointment {
         this.serviceName = serviceName;
         this.durationMinutes = durationMinutes;
         this.price = price;
+        this.paymentStatus = paymentStatus;
     }
 
     /** Nasce sempre {@link AppointmentStatus#SCHEDULED} (BR-1). */
@@ -98,7 +101,8 @@ public final class Appointment {
                 endsAt,
                 nomeLimpo,
                 durationMinutes,
-                price);
+                price,
+                PaymentStatus.PENDING);
     }
 
     /** Reconstrói a partir de dado persistido — usado só pelo mapper (adapter.out.persistence). */
@@ -113,7 +117,8 @@ public final class Appointment {
             Instant endsAt,
             String serviceName,
             int durationMinutes,
-            Money price) {
+            Money price,
+            PaymentStatus paymentStatus) {
         return new Appointment(
                 id,
                 tenantId.value(),
@@ -125,7 +130,8 @@ public final class Appointment {
                 endsAt,
                 serviceName,
                 durationMinutes,
-                price);
+                price,
+                paymentStatus);
     }
 
     public UUID id() {
@@ -172,6 +178,10 @@ public final class Appointment {
         return price;
     }
 
+    public PaymentStatus paymentStatus() {
+        return paymentStatus;
+    }
+
     /**
      * {@code SCHEDULED} → {@code CONFIRMED} (US-2, confirmacao-e-cancelamento,
      * TODO-007). Absorve estado terminal sem lançar exceção — devolve a
@@ -187,7 +197,7 @@ public final class Appointment {
         }
         return new Appointment(
                 id, tenantId, professionalId, serviceOfferingId, customerId,
-                AppointmentStatus.CONFIRMED, startsAt, endsAt, serviceName, durationMinutes, price);
+                AppointmentStatus.CONFIRMED, startsAt, endsAt, serviceName, durationMinutes, price, paymentStatus);
     }
 
     /**
@@ -203,7 +213,7 @@ public final class Appointment {
         }
         return new Appointment(
                 id, tenantId, professionalId, serviceOfferingId, customerId,
-                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
+                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price, paymentStatus);
     }
 
     /**
@@ -224,7 +234,7 @@ public final class Appointment {
         }
         return new Appointment(
                 id, tenantId, professionalId, serviceOfferingId, customerId,
-                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
+                AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price, paymentStatus);
     }
 
     /**
@@ -245,7 +255,45 @@ public final class Appointment {
         }
         return new Appointment(
                 id, tenantId, professionalId, serviceOfferingId, customerId,
-                AppointmentStatus.COMPLETED, startsAt, endsAt, serviceName, durationMinutes, price);
+                AppointmentStatus.COMPLETED, startsAt, endsAt, serviceName, durationMinutes, price, paymentStatus);
+    }
+
+    /**
+     * Marca como pago (gestao-de-clientes, IDEA-006). Sem guard de transição
+     * (BR-2): qualquer valor pode virar {@code PAID} a qualquer momento —
+     * absorve (retorna {@code this}) só quando já está nesse valor.
+     */
+    public Appointment markPaymentAsPaid() {
+        if (paymentStatus == PaymentStatus.PAID) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                status, startsAt, endsAt, serviceName, durationMinutes, price, PaymentStatus.PAID);
+    }
+
+    /** Marca como pendente (gestao-de-clientes, IDEA-006). Mesma disciplina de {@link #markPaymentAsPaid()}. */
+    public Appointment markPaymentAsPending() {
+        if (paymentStatus == PaymentStatus.PENDING) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                status, startsAt, endsAt, serviceName, durationMinutes, price, PaymentStatus.PENDING);
+    }
+
+    /**
+     * Marca como fiado (gestao-de-clientes, IDEA-006) — o dono decide
+     * conscientemente confiar no cliente e receber depois. Mesma disciplina
+     * de {@link #markPaymentAsPaid()}.
+     */
+    public Appointment markPaymentAsOnCredit() {
+        if (paymentStatus == PaymentStatus.ON_CREDIT) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                status, startsAt, endsAt, serviceName, durationMinutes, price, PaymentStatus.ON_CREDIT);
     }
 
     @Override

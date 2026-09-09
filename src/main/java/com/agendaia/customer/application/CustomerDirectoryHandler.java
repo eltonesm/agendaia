@@ -2,6 +2,7 @@ package com.agendaia.customer.application;
 
 import com.agendaia.customer.api.CustomerDirectory;
 import com.agendaia.customer.api.CustomerRef;
+import com.agendaia.customer.api.PagedCustomers;
 import com.agendaia.customer.application.port.out.CustomerRepository;
 import com.agendaia.customer.domain.Customer;
 import com.agendaia.platform.tenant.TenantContext;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,5 +77,19 @@ public class CustomerDirectoryHandler implements CustomerDirectory {
         return customerRepository.findByTenantIdAndIdIn(tenantId.value(), ids).stream()
                 .map(cliente -> new CustomerRef(cliente.id(), cliente.name(), cliente.phone()))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedCustomers listForTenant(int page, int size) {
+        var tenantId = TenantContext.require();
+
+        var pagina = customerRepository.findByTenantIdAndAnonymizedAtIsNullOrderByNameAsc(
+                tenantId.value(), PageRequest.of(page, size));
+
+        var itens = pagina.getContent().stream()
+                .map(cliente -> new CustomerRef(cliente.id(), cliente.name(), cliente.phone()))
+                .toList();
+        return new PagedCustomers(itens, page, size, pagina.getTotalElements());
     }
 }

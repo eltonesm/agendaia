@@ -70,6 +70,18 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-020: Parametro de pagina fora do intervalo (negativo) vira 500 generico
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: code review da gestao-de-clientes (TASK-020)
+- **Context**: `CustomerAdminController.listar` aceita `page` como `int` sem validar limite inferior — `?page=-1` faz `PageRequest.of(-1, ...)` lancar `IllegalArgumentException`, que cai no handler generico (`GlobalExceptionHandler.erroInesperado`, ERROR + 500), nao um 400 tratado. Mesma familia do achado real desta feature (`MethodArgumentTypeMismatchException` para `PaymentStatus` invalido, ja corrigido) — mas so acontece com URL manualmente adulterada, nunca pela navegacao normal (os links de paginacao do template nunca geram valor negativo). Nao e exclusivo desta tela: qualquer `@RequestParam int` do projeto tem o mesmo gap.
+- **Affected Files**: `scheduling/adapter/in/web/CustomerAdminController.java`, potencialmente `platform/web/GlobalExceptionHandler.java` (handler generico para `IllegalArgumentException` de parametro, se o padrao se repetir em outra tela)
+- **Complexity**: Low
+- **Risk if Ignored**: Log ERROR com stack trace por uso incorreto de URL, nao por defeito real — ruido de observabilidade, sem risco de seguranca ou de dado
+
+---
+
 ### DEBT-018: Consulta da agenda do dono sem indice cobrindo todos os status
 - **Priority**: Low
 - **Status**: pending
@@ -332,12 +344,15 @@ passa por `/sdd.start`.
 
 ### IDEA-006: Financeiro — pago, pendente, fiado
 - **Priority**: Low
-- **Status**: pending
+- **Status**: resolved
 - **Created**: 2026-08-29
+- **Resolved**: 2026-09-09
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260909-gestao-de-clientes/`
 - **Origin**: escopo excluído do MVP
-- **Context**: Começa como campo no agendamento, não como módulo. É assim que se descobre se o financeiro merece existir. Atualizado em 2026-09-09: os três valores (`PAGO`/`PENDENTE`/`FIADO`) formam um enum de **pagamento**, deliberadamente separado de `AppointmentStatus` — são perguntas diferentes ("o atendimento aconteceu?" vs. "foi pago?"); um `COMPLETED` pode estar em qualquer um dos três. `PENDENTE` é "vai pagar já" (ex.: aguardando Pix cair); `FIADO` é o dono decidindo conscientemente confiar e receber depois — risco e follow-up diferentes, por isso não viram o mesmo valor. Sem campo de vencimento/motivo por enquanto — só o status, crescendo depois se o uso real pedir.
+- **Context**: Começa como campo no agendamento, não como módulo. É assim que se descobre se o financeiro merece existir. Os três valores (`PAID`/`PENDING`/`ON_CREDIT`) formam um enum de **pagamento**, deliberadamente separado de `AppointmentStatus` — são perguntas diferentes ("o atendimento aconteceu?" vs. "foi pago?"); um `COMPLETED` pode estar em qualquer um dos três. `PENDING` é "vai pagar já" (ex.: aguardando Pix cair); `ON_CREDIT` (fiado) é o dono decidindo conscientemente confiar e receber depois — risco e follow-up diferentes, por isso não viram o mesmo valor. Sem campo de vencimento/motivo por enquanto — só o status, sem histórico de mudança.
 - **Potential Impact**: Retenção, controle de caixa do dono
-- **Notes**: Gatilho — se o barbeiro pedir "marcar como pago". Combina com **IDEA-018** (perfil do cliente): dá pra mostrar "total em aberto" (soma de `FIADO`) no histórico do cliente. Combina também com **IDEA-020** (relatório financeiro): `FIADO` provavelmente não deveria contar como receita recebida até virar `PAGO`.
+- **Notes**: Entregue junto com IDEA-018/IDEA-019 na feature `gestao-de-clientes`, por formarem uma tela só. "Total em aberto" (soma de `ON_CREDIT`) aparece no perfil do cliente (IDEA-018). Combina também com **IDEA-020** (relatório financeiro, ainda não puxada): `ON_CREDIT` provavelmente não deveria contar como receita recebida até virar `PAID`.
 
 ---
 
@@ -456,23 +471,29 @@ passa por `/sdd.start`.
 
 ### IDEA-018: Lista de clientes com histórico e contador de visitas
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: resolved
 - **Created**: 2026-09-09
+- **Resolved**: 2026-09-09
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260909-gestao-de-clientes/`
 - **Origin**: análise do relatório de features do dono (2026-09-09)
-- **Context**: Tela `/admin/clientes` (não existe hoje) com contador de visitas por cliente (independente do serviço) e sinalização de "cliente novo" (sem histórico — risco maior de no-show, merece atenção redobrada). Ao abrir o cliente: histórico completo (data, serviço, valor pago em cada visita) e totais (total de visitas, valor total gasto), para decisão de desconto/fidelização. `Customer` e `Appointment` já se relacionam por `customerId` — é leitura agregada nova, não mudança de domínio.
+- **Context**: Tela `/admin/clientes` com contador de visitas por cliente (independente do serviço) e sinalização de "cliente novo" (zero atendimentos `COMPLETED` — risco maior de no-show, merece atenção redobrada). Ao abrir o cliente (`/admin/clientes/{id}`): histórico completo (data, serviço, valor, status de pagamento por visita) e três totais (visitas, valor gasto, valor em aberto — IDEA-006). Paginação real via agregação SQL em lote (`GROUP BY`), pedido explícito do dono por performance.
 - **Potential Impact**: Retenção, decisão de desconto/fidelização, mitigação de no-show de cliente novo
-- **Notes**: Maior valor por esforço do relatório de 2026-09-09 — não exige campo novo, só agregação sobre dado que já existe (`Appointment.customerId`/`price`/`startsAt`).
+- **Notes**: Maior valor por esforço do relatório de 2026-09-09 — não exigiu campo novo, só agregação sobre dado que já existia (`Appointment.customerId`/`price`/`startsAt`). Decisão de arquitetura central: a tela mora em `scheduling`, não em `customer` (reaproveita a dependência que `scheduling` já tinha de `customer.api` desde a TODO-008, evitando o ciclo que a direção contrária fecharia).
 
 ---
 
 ### IDEA-019: WhatsApp do dono para o cliente, no admin
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: resolved
 - **Created**: 2026-09-09
+- **Resolved**: 2026-09-09
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260909-gestao-de-clientes/`
 - **Origin**: análise do relatório de features do dono (2026-09-09)
-- **Context**: Hoje só existe o caminho inverso — cliente contata o estabelecimento (`Business.whatsapp`, link na tela pública de confirmação). Falta um link `wa.me/{telefone do cliente}` na agenda ou na lista de clientes, para o dono contatar o cliente direto (confirmar presença, avisar atraso). `Customer.phone` já existe — é só renderizar o link, sem campo novo.
+- **Context**: Hoje só existia o caminho inverso — cliente contata o estabelecimento (`Business.whatsapp`, link na tela pública de confirmação). Faltava um link `wa.me/{telefone do cliente}` na lista e no detalhe de clientes, para o dono contatar o cliente direto (confirmar presença, avisar atraso, cobrar fiado). `Customer.phone` já existia — foi só renderizar o link, sem campo novo.
 - **Potential Impact**: Comunicação direta sem trocar de tela/app
-- **Notes**: Trivial o suficiente para entrar junto da IDEA-018 (mesma tela de cliente/agenda).
+- **Notes**: Entregue junto da IDEA-018 (mesma tela de cliente).
 
 ---
 
@@ -809,6 +830,8 @@ passa por `/sdd.start`.
 ---
 
 ## Last Updated
+
+2026-09-09 — IDEA-018, IDEA-019 e IDEA-006 resolvidas e arquivadas em `gestao-de-clientes`; DEBT-020 registrado.
 
 2026-09-09 — análise do relatório de features do dono: IDEA-009 e IDEA-015 marcadas como entregues pela TODO-110 (deixavam de refletir a realidade); registrados TODO-111 (e-mail transacional) e IDEA-018 a IDEA-022 (lista de clientes, WhatsApp por cliente, relatório financeiro, comissão, pagamento online); IDEA-001 e IDEA-008 atualizadas com recomendação de canal de notificação e de armazenamento de imagem, respectivamente. Item "duplicar agenda do dia anterior" do relatório deliberadamente não registrado — caso de uso incerto, precisa de conversa com o dono antes.
 

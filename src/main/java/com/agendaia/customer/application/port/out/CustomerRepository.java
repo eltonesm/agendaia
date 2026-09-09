@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -23,4 +25,10 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
     /** Consulta em lote para a agenda do dono (agenda-profissional, TODO-008). */
     List<Customer> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
+
+    /**
+     * Clientes do tenant, paginados, ordenados por nome, excluindo
+     * anonimizado (gestao-de-clientes, US-1).
+     */
+    Page<Customer> findByTenantIdAndAnonymizedAtIsNullOrderByNameAsc(UUID tenantId, Pageable pageable);
 }

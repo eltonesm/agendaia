@@ -13,7 +13,9 @@ import com.agendaia.scheduling.application.port.in.ConfirmAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentUseCase;
+import com.agendaia.scheduling.application.port.in.UpdatePaymentStatusUseCase;
 import com.agendaia.scheduling.application.port.in.ViewAgendaUseCase;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.shared.DomainException;
 import jakarta.validation.Valid;
@@ -58,6 +60,7 @@ public class AgendaController {
     private final CancelAppointmentByOwnerUseCase cancelAppointmentByOwner;
     private final RescheduleAppointmentUseCase rescheduleAppointment;
     private final CompleteAppointmentUseCase completeAppointment;
+    private final UpdatePaymentStatusUseCase updatePaymentStatus;
     private final AppointmentDetailsUseCase appointmentDetails;
     private final ProfessionalDirectory professionalDirectory;
     private final ServiceOfferingDirectory serviceOfferingDirectory;
@@ -69,6 +72,7 @@ public class AgendaController {
             CancelAppointmentByOwnerUseCase cancelAppointmentByOwner,
             RescheduleAppointmentUseCase rescheduleAppointment,
             CompleteAppointmentUseCase completeAppointment,
+            UpdatePaymentStatusUseCase updatePaymentStatus,
             AppointmentDetailsUseCase appointmentDetails,
             ProfessionalDirectory professionalDirectory,
             ServiceOfferingDirectory serviceOfferingDirectory) {
@@ -78,6 +82,7 @@ public class AgendaController {
         this.cancelAppointmentByOwner = cancelAppointmentByOwner;
         this.rescheduleAppointment = rescheduleAppointment;
         this.completeAppointment = completeAppointment;
+        this.updatePaymentStatus = updatePaymentStatus;
         this.appointmentDetails = appointmentDetails;
         this.professionalDirectory = professionalDirectory;
         this.serviceOfferingDirectory = serviceOfferingDirectory;
@@ -166,6 +171,16 @@ public class AgendaController {
             @RequestParam(required = false) UUID professionalId,
             @RequestParam(required = false) LocalDate date) {
         executarOuFalhar(() -> completeAppointment.complete(id));
+        return redirecionarParaAgenda(professionalId, date);
+    }
+
+    @PostMapping("/agendamentos/{id}/pagamento")
+    public String marcarPagamento(
+            @PathVariable UUID id,
+            @RequestParam PaymentStatus status,
+            @RequestParam(required = false) UUID professionalId,
+            @RequestParam(required = false) LocalDate date) {
+        executarOuFalhar(() -> updatePaymentStatus.updatePaymentStatus(id, status));
         return redirecionarParaAgenda(professionalId, date);
     }
 

@@ -71,6 +71,32 @@
             <span th:text="${agendamento.customerName()}">Cliente</span>
             · <span th:text="${agendamento.customerPhone()}">telefone</span>
           </div>
+          <div class="btn-group btn-group-sm mt-1" role="group" aria-label="Status de pagamento">
+            <form method="post"
+                  th:action="@{/admin/agenda/agendamentos/{id}/pagamento(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+              <input type="hidden" name="status" value="PAID">
+              <button type="submit" class="btn"
+                      th:classappend="${agendamento.paymentStatus().name() == 'PAID'} ? 'btn-success' : 'btn-outline-success'">
+                Pago
+              </button>
+            </form>
+            <form method="post"
+                  th:action="@{/admin/agenda/agendamentos/{id}/pagamento(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+              <input type="hidden" name="status" value="PENDING">
+              <button type="submit" class="btn"
+                      th:classappend="${agendamento.paymentStatus().name() == 'PENDING'} ? 'btn-secondary' : 'btn-outline-secondary'">
+                Pendente
+              </button>
+            </form>
+            <form method="post"
+                  th:action="@{/admin/agenda/agendamentos/{id}/pagamento(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+              <input type="hidden" name="status" value="ON_CREDIT">
+              <button type="submit" class="btn"
+                      th:classappend="${agendamento.paymentStatus().name() == 'ON_CREDIT'} ? 'btn-warning' : 'btn-outline-warning'">
+                Fiado
+              </button>
+            </form>
+          </div>
         </div>
         <div class="d-flex flex-column gap-1" style="min-width: 8rem">
           <form th:if="${agendamento.canConfirm()}" method="post"

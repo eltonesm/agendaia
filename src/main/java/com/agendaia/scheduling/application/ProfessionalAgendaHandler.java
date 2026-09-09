@@ -13,10 +13,12 @@ import com.agendaia.scheduling.application.port.in.CompleteAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentUseCase;
+import com.agendaia.scheduling.application.port.in.UpdatePaymentStatusUseCase;
 import com.agendaia.scheduling.application.port.in.ViewAgendaUseCase;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.scheduling.domain.exception.ServiceOfferingNotFoundException;
 import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
@@ -47,7 +49,8 @@ public class ProfessionalAgendaHandler
                 CreateAppointmentManuallyUseCase,
                 CancelAppointmentByOwnerUseCase,
                 RescheduleAppointmentUseCase,
-                CompleteAppointmentUseCase {
+                CompleteAppointmentUseCase,
+                UpdatePaymentStatusUseCase {
 
     private final AppointmentRepository appointmentRepository;
     private final ServiceOfferingDirectory serviceOfferingDirectory;
@@ -117,6 +120,7 @@ public class ProfessionalAgendaHandler
                 agendamento.startsAt(),
                 agendamento.endsAt(),
                 agendamento.status(),
+                agendamento.paymentStatus(),
                 estaAberto && aindaNoFuturo && agendamento.status() == AppointmentStatus.SCHEDULED,
                 estaAberto,
                 estaAberto,
@@ -178,6 +182,30 @@ public class ProfessionalAgendaHandler
         if (depois.status() != antes.status()) {
             appointmentRepository.updateStatus(tenantId, antes.id(), depois.status(), agora);
             schedulingMetrics.appointmentCompleted();
+        }
+    }
+
+    /**
+     * Sem restrição de transição (BR-2, gestao-de-clientes): qualquer valor
+     * de pagamento pode virar qualquer outro, a qualquer momento. Grava só
+     * quando há mudança real, mesma disciplina de {@link #complete}.
+     */
+    @Override
+    @Transactional
+    public void updatePaymentStatus(UUID appointmentId, PaymentStatus status) {
+        var tenantId = TenantContext.require();
+        var antes = appointmentRepository
+                .findByTenantIdAndId(tenantId, appointmentId)
+                .orElseThrow(AppointmentNotFoundException::new);
+
+        var depois =
+                switch (status) {
+                    case PAID -> antes.markPaymentAsPaid();
+                    case PENDING -> antes.markPaymentAsPending();
+                    case ON_CREDIT -> antes.markPaymentAsOnCredit();
+                };
+        if (depois.paymentStatus() != antes.paymentStatus()) {
+            appointmentRepository.updatePaymentStatus(tenantId, antes.id(), depois.paymentStatus(), Instant.now());
         }
     }
 

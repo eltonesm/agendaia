@@ -294,6 +294,23 @@ com.agendaia.<contexto>
   Sem a correção, uma sessão de dono autenticada em `/admin/**` abriria
   `/operador/**` e veria dado de todos os tenants.
 
+### `@RequestParam` de enum: valor inválido não vira 400 sozinho
+
+- Um `@RequestParam MeuEnum campo` que recebe um valor fora do enum gera
+  `MethodArgumentTypeMismatchException` — essa exceção **não** implementa
+  `ErrorResponse` no Spring Framework (confirmado via `javap`, não deduzido),
+  diferente de outras exceções do próprio framework
+  (`NoResourceFoundException`, `HttpRequestMethodNotSupportedException`)
+  que já carregam o status certo sozinhas.
+- Sem um `@ExceptionHandler(MethodArgumentTypeMismatchException.class)`
+  dedicado, ela cai no handler genérico de "defeito" (`Exception.class`)
+  — vira log `ERROR` com stack trace e 500, quando é uso incorreto de
+  formulário (usuário/URL adulterada), não bug.
+- Why: achado no code review da `gestao-de-clientes` — a rota nova de
+  status de pagamento foi a primeira do projeto a fazer bind direto de
+  enum via `@RequestParam`. Corrigido com um handler dedicado (400, log
+  `WARN`, mesmo espírito do handler de `DomainException`).
+
 ### Contexto composto na view de outro sem import: `@ControllerAdvice`
 
 - Quando um contexto precisa injetar dado no model de uma view que pertence
@@ -324,6 +341,25 @@ com.agendaia.<contexto>
   94 classes de `@WebMvcTest` que não tinham nenhuma relação com dashboard
   ou KPI — o dependency scan do Spring Boot para slice test é global, e a
   correção não exigiu tocar em nenhum dos 94 arquivos de teste.
+
+**Tela nova que cruza dois contextos mora no lado que já depende do
+outro, não no lado "óbvio" pelo nome da URL**:
+- Quando uma tela nova precisa de dado de dois contextos ao mesmo tempo
+  (ex.: `/admin/clientes` precisa de `Customer` e de `Appointment`), a
+  tentação é colocá-la no contexto "dono do nome" (`customer`, porque a
+  URL é sobre cliente). Verifique primeiro **qual dependência já existe**
+  entre os dois: se `scheduling` já depende de `customer.api` (para
+  resolver nome/telefone na agenda, por exemplo), a tela deve morar em
+  `scheduling` — reaproveitando essa aresta já declarada — mesmo que o
+  nome da URL sugira o contrário.
+- Colocá-la no lado "óbvio" (`customer`) exigiria abrir a dependência
+  contrária (`customer` → `scheduling.api`), fechando um ciclo — a mesma
+  classe de erro da DD-6 da TODO-110, só que descoberta *antes* de
+  escrever código, perguntando "quem já depende de quem?" antes de
+  decidir onde a tela mora.
+- Why: `gestao-de-clientes` (IDEA-018/019/006) aplicou essa pergunta
+  antes de implementar e evitou repetir o ciclo `organization ⇄
+  scheduling` da TODO-110 — desta vez seria `customer ⇄ scheduling`.
 
 ## Database Patterns
 
@@ -724,3 +760,10 @@ composição entre contextos via `@ControllerAdvice` (evita ciclo de módulo
 sem inverter dependência) e `ObjectProvider<T>` em advice global (evita
 quebrar toda a suíte de `@WebMvcTest` quando o bean só existe fora daquela
 fatia de teste).
+2026-09-09 — promovidos os aprendizados da gestao-de-clientes
+(IDEA-018/019/006): tela que cruza dois contextos mora no lado que já
+depende do outro, não no lado "óbvio" pelo nome da URL (pergunta a fazer
+antes de escrever código, não depois); `@RequestParam` de enum precisa de
+`@ExceptionHandler(MethodArgumentTypeMismatchException.class)` dedicado,
+senão um valor inválido vira "defeito" (500) em vez de uso incorreto
+(400).
