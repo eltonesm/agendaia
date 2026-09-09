@@ -332,7 +332,8 @@ passa por `/sdd.start`.
 
 ### IDEA-006: Financeiro — pago, pendente, fiado
 - **Priority**: Low
-- **Status**: pending
+- **Status**: in-progress
+- **Feature**: `sdd/wip/20260909-gestao-de-clientes/`
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
 - **Context**: Começa como campo no agendamento, não como módulo. É assim que se descobre se o financeiro merece existir. Atualizado em 2026-09-09: os três valores (`PAGO`/`PENDENTE`/`FIADO`) formam um enum de **pagamento**, deliberadamente separado de `AppointmentStatus` — são perguntas diferentes ("o atendimento aconteceu?" vs. "foi pago?"); um `COMPLETED` pode estar em qualquer um dos três. `PENDENTE` é "vai pagar já" (ex.: aguardando Pix cair); `FIADO` é o dono decidindo conscientemente confiar e receber depois — risco e follow-up diferentes, por isso não viram o mesmo valor. Sem campo de vencimento/motivo por enquanto — só o status, crescendo depois se o uso real pedir.
@@ -456,7 +457,8 @@ passa por `/sdd.start`.
 
 ### IDEA-018: Lista de clientes com histórico e contador de visitas
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: in-progress
+- **Feature**: `sdd/wip/20260909-gestao-de-clientes/`
 - **Created**: 2026-09-09
 - **Origin**: análise do relatório de features do dono (2026-09-09)
 - **Context**: Tela `/admin/clientes` (não existe hoje) com contador de visitas por cliente (independente do serviço) e sinalização de "cliente novo" (sem histórico — risco maior de no-show, merece atenção redobrada). Ao abrir o cliente: histórico completo (data, serviço, valor pago em cada visita) e totais (total de visitas, valor total gasto), para decisão de desconto/fidelização. `Customer` e `Appointment` já se relacionam por `customerId` — é leitura agregada nova, não mudança de domínio.
@@ -467,7 +469,8 @@ passa por `/sdd.start`.
 
 ### IDEA-019: WhatsApp do dono para o cliente, no admin
 - **Priority**: Medium
-- **Status**: pending
+- **Status**: in-progress
+- **Feature**: `sdd/wip/20260909-gestao-de-clientes/`
 - **Created**: 2026-09-09
 - **Origin**: análise do relatório de features do dono (2026-09-09)
 - **Context**: Hoje só existe o caminho inverso — cliente contata o estabelecimento (`Business.whatsapp`, link na tela pública de confirmação). Falta um link `wa.me/{telefone do cliente}` na agenda ou na lista de clientes, para o dono contatar o cliente direto (confirmar presença, avisar atraso). `Customer.phone` já existe — é só renderizar o link, sem campo novo.
