@@ -55,6 +55,17 @@ class SchedulingMetricsTest {
     }
 
     @Test
+    @DisplayName("appointmentCompleted() incrementa so o contador de concluido")
+    void appointmentCompletedIncrementaSoConcluido() {
+        metrics.appointmentCompleted();
+
+        assertThat(valor("agendaia.appointments.completed")).isEqualTo(1.0);
+        assertThat(valor("agendaia.appointments.booked")).isEqualTo(0.0);
+        assertThat(valor("agendaia.appointments.cancelled")).isEqualTo(0.0);
+        assertThat(valor("agendaia.appointments.slot_conflict")).isEqualTo(0.0);
+    }
+
+    @Test
     @DisplayName("contadores comecam em zero e sao cumulativos")
     void contadoresComecamEmZeroESaoCumulativos() {
         assertThat(valor("agendaia.appointments.booked")).isEqualTo(0.0);

@@ -347,4 +347,59 @@ class AgendaProfissionalIT {
         assertThat(agendamento).isPresent();
         assertThat(agendamento.get().status()).isEqualTo(AppointmentStatus.CONFIRMED);
     }
+
+    @Test
+    @DisplayName("E2E-8: dono conclui agendamento com horário já passado — SCHEDULED vira COMPLETED (sistema-de-design-admin)")
+    void e2e8ConcluirAgendamentoPassado() throws Exception {
+        var cenario = semearCenario();
+        var sessao = sessaoAutenticada(cenario);
+        var horario = LocalTime.of(9, 30);
+        criarManualmente(cenario, sessao, ONTEM, horario, "Cliente Concluido", "11988880008")
+                .andExpect(status().is3xxRedirection());
+        var id = idPorHorario(cenario, ONTEM, horario);
+
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", id).with(csrf()).session(sessao))
+                .andExpect(status().is3xxRedirection());
+
+        var agendamento = appointmentRepository.findByTenantIdAndId(cenario.barbearia().tenantId(), id);
+        assertThat(agendamento).isPresent();
+        assertThat(agendamento.get().status()).isEqualTo(AppointmentStatus.COMPLETED);
+
+        mockMvc.perform(get("/admin/agenda")
+                        .session(sessao)
+                        .param("professionalId", cenario.profissional().id().toString())
+                        .param("date", ONTEM.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Concluído")));
+    }
+
+    @Test
+    @DisplayName("E2E-9: não é possível concluir antes do horário chegar nem um agendamento já cancelado (BR-1/BR-3)")
+    void e2e9NaoConcluiForaDaJanelaPermitida() throws Exception {
+        var cenario = semearCenario();
+        var sessao = sessaoAutenticada(cenario);
+
+        // Ainda não começou.
+        criarManualmente(cenario, sessao, SEGUNDA, LocalTime.of(15, 0), "Cliente Futuro", "11988880009")
+                .andExpect(status().is3xxRedirection());
+        var idFuturo = idPorHorario(cenario, SEGUNDA, LocalTime.of(15, 0));
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", idFuturo).with(csrf()).session(sessao))
+                .andExpect(status().is3xxRedirection());
+        var futuro = appointmentRepository.findByTenantIdAndId(cenario.barbearia().tenantId(), idFuturo);
+        assertThat(futuro).isPresent();
+        assertThat(futuro.get().status()).isEqualTo(AppointmentStatus.SCHEDULED);
+
+        // Já cancelado.
+        criarManualmente(cenario, sessao, ONTEM, LocalTime.of(16, 0), "Cliente Cancelado", "11988880010")
+                .andExpect(status().is3xxRedirection());
+        var idCancelado = idPorHorario(cenario, ONTEM, LocalTime.of(16, 0));
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/cancelar", idCancelado).with(csrf()).session(sessao))
+                .andExpect(status().is3xxRedirection());
+
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", idCancelado).with(csrf()).session(sessao))
+                .andExpect(status().is3xxRedirection());
+        var cancelado = appointmentRepository.findByTenantIdAndId(cenario.barbearia().tenantId(), idCancelado);
+        assertThat(cancelado).isPresent();
+        assertThat(cancelado.get().status()).isEqualTo(AppointmentStatus.CANCELLED);
+    }
 }
