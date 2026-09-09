@@ -26,6 +26,7 @@ import com.agendaia.scheduling.application.port.in.AppointmentDetailsUseCase;
 import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.BookedAppointment;
 import com.agendaia.scheduling.application.port.in.CancelAppointmentByOwnerUseCase;
+import com.agendaia.scheduling.application.port.in.CompleteAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.ConfirmAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentUseCase;
@@ -62,6 +63,7 @@ class AgendaControllerTest {
     @MockitoBean private ConfirmAppointmentUseCase confirmAppointment;
     @MockitoBean private CancelAppointmentByOwnerUseCase cancelAppointmentByOwner;
     @MockitoBean private RescheduleAppointmentUseCase rescheduleAppointment;
+    @MockitoBean private CompleteAppointmentUseCase completeAppointment;
     @MockitoBean private AppointmentDetailsUseCase appointmentDetails;
     @MockitoBean private ProfessionalDirectory professionalDirectory;
     @MockitoBean private ServiceOfferingDirectory serviceOfferingDirectory;
@@ -111,7 +113,8 @@ class AgendaControllerTest {
                         AppointmentStatus.SCHEDULED,
                         true,
                         true,
-                        true)));
+                        true,
+                        false)));
 
         mockMvc.perform(get("/admin/agenda").param("professionalId", professionalId.toString()))
                 .andExpect(status().isOk())
@@ -199,6 +202,33 @@ class AgendaControllerTest {
 
         mockMvc.perform(post("/admin/agenda/agendamentos/{id}/cancelar", appointmentId).with(csrf()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST concluir chama CompleteAppointmentUseCase e redireciona")
+    void concluirChamaCasoDeUso() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", appointmentId).with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        verify(completeAppointment).complete(appointmentId);
+    }
+
+    @Test
+    @DisplayName("POST concluir com id de outro tenant devolve 404 (AC-2)")
+    void concluirComIdDeOutroTenantDevolve404() throws Exception {
+        doThrow(new AppointmentNotFoundException()).when(completeAppointment).complete(appointmentId);
+
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", appointmentId).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST concluir sem token CSRF e recusado")
+    void concluirSemCsrfERecusado() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", appointmentId))
+                .andExpect(status().isForbidden());
+
+        verify(completeAppointment, never()).complete(any());
     }
 
     @Test

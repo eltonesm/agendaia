@@ -212,15 +212,40 @@ public final class Appointment {
      * contrário de {@link #cancel(Instant)}, não tem restrição de horário
      * (BR-2 — o dono corrige erro de digitação ou desiste em nome do cliente
      * mesmo depois do horário já ter passado). Idempotente se já
-     * {@code CANCELLED}.
+     * {@code CANCELLED}; absorve sem transição também se já {@code
+     * COMPLETED} (BR-2 de sistema-de-design-admin, TODO-110: {@code
+     * COMPLETED} é terminal, sem volta — {@link #cancel(Instant)} e {@link
+     * #confirm(Instant)} já ganham essa proteção de graça pela checagem de
+     * horário, que {@code cancelByOwner} deliberadamente não tem).
      */
     public Appointment cancelByOwner() {
-        if (status == AppointmentStatus.CANCELLED) {
+        if (status == AppointmentStatus.CANCELLED || status == AppointmentStatus.COMPLETED) {
             return this;
         }
         return new Appointment(
                 id, tenantId, professionalId, serviceOfferingId, customerId,
                 AppointmentStatus.CANCELLED, startsAt, endsAt, serviceName, durationMinutes, price);
+    }
+
+    /**
+     * {@code SCHEDULED}/{@code CONFIRMED} → {@code COMPLETED}, pelo dono ou
+     * profissional, depois do atendimento (US-4, sistema-de-design-admin,
+     * TODO-110). Absorve sem transição — mesma filosofia de {@link #confirm}
+     * — quando já {@code COMPLETED} (idempotência), {@code CANCELLED}/
+     * {@code NO_SHOW} (BR-1: só sai de aberto), ou {@code agora} ainda não
+     * alcançou {@code startsAt} (BR-3: não dá para concluir o que ainda não
+     * começou).
+     */
+    public Appointment complete(Instant agora) {
+        if (status == AppointmentStatus.COMPLETED
+                || status == AppointmentStatus.CANCELLED
+                || status == AppointmentStatus.NO_SHOW
+                || agora.isBefore(startsAt)) {
+            return this;
+        }
+        return new Appointment(
+                id, tenantId, professionalId, serviceOfferingId, customerId,
+                AppointmentStatus.COMPLETED, startsAt, endsAt, serviceName, durationMinutes, price);
     }
 
     @Override

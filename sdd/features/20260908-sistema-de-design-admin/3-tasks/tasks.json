@@ -1,0 +1,617 @@
+{
+    "feature":  "sistema-de-design-admin",
+    "local_config":  {
+                         "postgres":  "docker-compose-dev + Testcontainers no teste de integracao",
+                         "note":  "Nenhuma migration nova — appointment.status ja e VARCHAR(20), COMPLETED cabe sem alterar schema."
+                     },
+    "stats":  {
+                  "total":  21,
+                  "done":  21,
+                  "by_layer":  {
+                                   "1":  18,
+                                   "2":  0,
+                                   "3":  3
+                               }
+              },
+    "tasks":  [
+                  {
+                      "id":  "TASK-001",
+                      "title":  "AppointmentStatus.COMPLETED e Appointment.complete()",
+                      "description":  "Adiciona COMPLETED ao enum AppointmentStatus. Adiciona Appointment.complete(Instant agora), mesma forma imutavel de confirm()/cancel(): absorve sem transicao se ja COMPLETED, CANCELLED, NO_SHOW, ou se agora ainda nao alcancou startsAt; senao devolve nova instancia com status COMPLETED.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/domain/AppointmentStatus.java",
+                                    "src/main/java/com/agendaia/scheduling/domain/Appointment.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: AppointmentStatus tem 5 valores (SCHEDULED, CONFIRMED, CANCELLED, NO_SHOW, COMPLETED)",
+                                                  "AC-2: complete() so transiciona a partir de SCHEDULED/CONFIRMED, e so quando agora nao e antes de startsAt",
+                                                  "AC-3: complete() absorve (devolve this) para CANCELLED, NO_SHOW, ja COMPLETED, ou antes de startsAt — nunca lanca excecao"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "BR-1",
+                                         "BR-2",
+                                         "BR-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-002",
+                      "title":  "SchedulingMetrics.appointmentCompleted()",
+                      "description":  "Novo Counter agendaia.appointments.completed em SchedulingMetrics, com metodo appointmentCompleted() que o incrementa — mesmo padrao dos 3 contadores ja existentes (TODO-108).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/SchedulingMetrics.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: contador existe desde a subida da aplicacao, comecando em zero",
+                                                  "AC-2: nome da metrica e agendaia.appointments.completed (sem sufixo .created, mesma licao da TODO-108)"
+                                              ],
+                      "references":  [
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-003",
+                      "title":  "CompleteAppointmentUseCase, ProfessionalAgendaHandler.complete() e correcao do guard canCancel/canReschedule",
+                      "description":  "Nova porta CompleteAppointmentUseCase (void complete(UUID)). ProfessionalAgendaHandler implementa, mesma forma de cancel(): resolve por tenant+id, chama Appointment.complete(Instant.now()), grava so se status mudou, incrementa a metrica. Corrige paraAgendaEntry: variavel naoCancelado vira estaAberto (exclui tambem NO_SHOW e COMPLETED), usada por canCancel/canReschedule; AgendaEntry ganha canComplete = estaAberto \u0026\u0026 !aindaNoFuturo.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-001",
+                                         "TASK-002"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/CompleteAppointmentUseCase.java",
+                                    "src/main/java/com/agendaia/scheduling/application/port/in/AgendaEntry.java",
+                                    "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: complete() grava e incrementa a metrica so quando ha transicao real (mesmo padrao de cancel())",
+                                                  "AC-2: canComplete e verdadeiro so para SCHEDULED/CONFIRMED com startsAt ja alcancado",
+                                                  "AC-3: um agendamento COMPLETED tem canCancel e canReschedule falsos (bug corrigido pela DD-4 — hoje so exclui CANCELLED)",
+                                                  "AC-4: tenantId de outro tenant lanca AppointmentNotFoundException, nunca grava"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "BR-1",
+                                         "BR-5"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3",
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-004",
+                      "title":  "AgendaController: rota /admin/agenda/agendamentos/{id}/concluir",
+                      "description":  "Novo POST mirror de cancelar/confirmar: chama CompleteAppointmentUseCase.complete(id), PRG de volta para /admin/agenda. Id de outro tenant ou inexistente vira 404, mesmo tratamento das rotas irmas.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-003"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: POST valido redireciona para /admin/agenda preservando professionalId/date",
+                                                  "AC-2: id de outro tenant devolve 404",
+                                                  "AC-3: sem CSRF e recusado (403) — mesma protecao das rotas irmas"
+                                              ],
+                      "references":  [
+                                         "US-4",
+                                         "AC-2",
+                                         "AC-6"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-005",
+                      "title":  "AppointmentRepository.findByTenantIdAndDate",
+                      "description":  "Nova porta de saida: List\u003cAppointment\u003e findByTenantIdAndDate(TenantId, LocalDate), sem filtro de profissional — mesmo calculo de dayStart/dayEnd com ZoneId.systemDefault() ja usado por findByTenantIdAndProfessionalIdAndDate (nao Business.timezone — DD-7). Nova query JPA findByTenantAndDay ao lado de findByProfessionalAndDay.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
+                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: devolve todos os agendamentos do tenant no dia, de qualquer profissional e qualquer status",
+                                                  "AC-2: usa o mesmo fuso (ZoneId.systemDefault()) do metodo irmao ja existente — nao Business.timezone"
+                                              ],
+                      "references":  [
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-7"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-006",
+                      "title":  "Primeiro pacote scheduling.api: DailyScheduleDirectory",
+                      "description":  "Novo pacote scheduling.api (@NamedInterface), com DailyScheduleSummary (totalToday, completedToday, estimatedRevenue: Money, nextClient: NextClientRef nullable) e NextClientRef (customerName, startsAt). Interface DailyScheduleDirectory.summaryFor(LocalDate) — tenant via TenantContext. Implementado por DailyScheduleSummaryHandler em scheduling.application: uma chamada a findByTenantIdAndDate, computa os 4 numeros em memoria (revenue exclui CANCELLED/NO_SHOW), resolve o nome do proximo cliente com uma unica chamada a CustomerDirectory.find (nunca em laco).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-005",
+                                         "TASK-001"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/api/package-info.java",
+                                    "src/main/java/com/agendaia/scheduling/api/DailyScheduleDirectory.java",
+                                    "src/main/java/com/agendaia/scheduling/api/DailyScheduleSummary.java",
+                                    "src/main/java/com/agendaia/scheduling/api/NextClientRef.java",
+                                    "src/main/java/com/agendaia/scheduling/application/DailyScheduleSummaryHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: totalToday conta SCHEDULED/CONFIRMED/COMPLETED do dia, exclui CANCELLED/NO_SHOW",
+                                                  "AC-2: completedToday conta so COMPLETED",
+                                                  "AC-3: estimatedRevenue soma price de SCHEDULED/CONFIRMED/COMPLETED",
+                                                  "AC-4: nextClient e o de menor startsAt ainda no futuro entre SCHEDULED/CONFIRMED, null se nao houver",
+                                                  "AC-5: CustomerDirectory.find e chamado no maximo uma vez (so para o proximo cliente)"
+                                              ],
+                      "references":  [
+                                         "US-3",
+                                         "AC-1",
+                                         "AC-2",
+                                         "AC-3",
+                                         "AC-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-6",
+                                               "DD-7"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-007",
+                      "title":  "DashboardKpiAdvice: os 4 KPIs no model, sem organization importar scheduling",
+                      "description":  "Tentativa original (DashboardView + ViewDashboardHandler com DailyScheduleDirectory direto) foi descartada em build: ModuleStructureTest (Spring Modulith) pegou um ciclo organization\u003c-\u003escheduling (scheduling ja depende de organization.api). Corrigido com @ControllerAdvice novo em scheduling.adapter.in.web (DashboardKpiAdvice), mesmo mecanismo de billing.adapter.in.web.BillingBannerAdvice: soma os 4 atributos ao model so quando a URI e /admin/dashboard. DashboardView/ViewDashboardHandler voltam a forma original (3 campos).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-006"
+                                     ],
+                      "files":  [
+                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/DashboardKpiAdvice.java",
+                                    "src/main/java/com/agendaia/organization/application/port/in/DashboardView.java",
+                                    "src/main/java/com/agendaia/organization/application/ViewDashboardHandler.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os 4 KPIs aparecem no model quando GET /admin/dashboard, resolvidos por uma unica chamada a scheduling.api",
+                                                  "AC-2: organization nao importa scheduling.api nem scheduling.application — ModuleStructureTest sem ciclo",
+                                                  "AC-3: fora da URI /admin/dashboard, DailyScheduleDirectory.summaryFor nunca e chamado"
+                                              ],
+                      "references":  [
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-6"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-008",
+                      "title":  "fragments/layout.html: fragmento adminSidebar + carenciaBanner/whatsappButton extraidos + CSS generica",
+                      "description":  "Novo th:fragment adminSidebar(activeItem): aside com os 8 itens de /admin/**, item ativo destacado por comparacao de string. carenciaAte e o botao de WhatsApp, hoje dentro do th:block navbar, viram fragmentos proprios (carenciaBanner, whatsappButton) reutilizados tanto por navbar (inalterado visualmente) quanto pelo novo shell admin. Classes CSS (.app-sidebar, .app-main, .app-nav .nav-link.active, .co-avatar) generalizadas no \u003cstyle\u003e compartilhado, a partir do que hoje so existe (com nome .operador-*) em operador/painel.html.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/fragments/layout.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: adminSidebar(activeItem) renderiza os 8 itens com o correto destacado",
+                                                  "AC-2: navbar continua igual visualmente para quem ainda a usa (error/404, error/500)",
+                                                  "AC-3: carenciaBanner e whatsappButton funcionam identicos ao comportamento anterior (aparecem/somem nas mesmas condicoes)"
+                                              ],
+                      "references":  [
+                                         "US-1"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-009",
+                      "title":  "operador/painel.html: retrofit para CSS generica + badge soft",
+                      "description":  "Remove as classes .operador-* locais, passa a usar as classes genericas de fragments/layout.html (DD-1). Badge de status de billing troca de text-bg-* para bg-*-subtle + text-*-emphasis (DD-2).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/operador/painel.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: nenhuma classe .operador-* sobra no arquivo",
+                                                  "AC-2: todo badge de status usa bg-*-subtle + text-*-emphasis",
+                                                  "AC-3: OperadorBackofficeIT e OperatorPanelControllerTest continuam passando sem alteracao (verificam texto, nao classe CSS)"
+                                              ],
+                      "references":  [
+                                         "US-2"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-2"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-010",
+                      "title":  "admin/dashboard.html: sidebar + 4 cards de KPI reais",
+                      "description":  "Troca fragments/layout::navbar por adminSidebar(\u0027dashboard\u0027). Adiciona a linha de 4 cards (agendamentos de hoje, proximo cliente, atendidos hoje, receita estimada), lendo de ${agendamentosHoje} etc. (atributos de model no nivel raiz, via DashboardKpiAdvice — TASK-007) — nenhum numero fixo no HTML.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-007",
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/dashboard.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: sidebar substitui a navbar, item \u0027Painel\u0027 destacado",
+                                                  "AC-2: os 4 cards mostram os valores de ${painel.*}, nenhum hardcoded",
+                                                  "AC-3: card de proximo cliente mostra estado vazio quando painel.proximoCliente e null"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-011",
+                      "title":  "admin/agenda.html: sidebar + badge soft (incl. COMPLETED) + botao Concluir",
+                      "description":  "Troca navbar por adminSidebar(\u0027agenda\u0027). Badges de status viram soft/subtle, com o 5o caso para COMPLETED. Novo botao \u0027Concluir\u0027 (form POST para .../concluir), visivel so quando agendamento.canComplete() e verdadeiro, ao lado dos ja existentes.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-004",
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/agenda.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: sidebar substitui a navbar, item \u0027Agenda\u0027 destacado",
+                                                  "AC-2: 5 badges de status (SCHEDULED, CONFIRMED, CANCELLED, NO_SHOW, COMPLETED), todos soft/subtle",
+                                                  "AC-3: botao \u0027Concluir\u0027 so aparece quando canComplete e verdadeiro"
+                                              ],
+                      "references":  [
+                                         "US-1",
+                                         "US-2",
+                                         "US-4",
+                                         "AC-1"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1",
+                                               "DD-2"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-012",
+                      "title":  "Sidebar em admin/agenda-novo.html e admin/agenda-reagendar.html",
+                      "description":  "Troca navbar por adminSidebar(\u0027agenda\u0027) nas duas telas — herdam o item \u0027Agenda\u0027 destacado por serem sub-telas do mesmo fluxo. Nenhuma outra mudanca de conteudo.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/agenda-novo.html",
+                                    "src/main/resources/templates/admin/agenda-reagendar.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: as duas telas usam adminSidebar(\u0027agenda\u0027) em vez de navbar",
+                                                  "AC-2: nenhum campo de formulario nem comportamento existente muda"
+                                              ],
+                      "references":  [
+                                         "US-1"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-013",
+                      "title":  "Sidebar em bloqueios, horario-funcionamento e jornadas",
+                      "description":  "Troca navbar por adminSidebar(activeItem correspondente) nas 3 telas. Nenhuma outra mudanca de conteudo.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/bloqueios.html",
+                                    "src/main/resources/templates/admin/horario-funcionamento.html",
+                                    "src/main/resources/templates/admin/jornadas.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: as 3 telas usam adminSidebar com o item correto destacado",
+                                                  "AC-2: nenhum campo de formulario nem comportamento existente muda"
+                                              ],
+                      "references":  [
+                                         "US-1"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-014",
+                      "title":  "Sidebar em ofertas, profissionais e servicos",
+                      "description":  "Troca navbar por adminSidebar(activeItem correspondente) nas 3 telas. Nenhuma outra mudanca de conteudo.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-008"
+                                     ],
+                      "files":  [
+                                    "src/main/resources/templates/admin/ofertas.html",
+                                    "src/main/resources/templates/admin/profissionais.html",
+                                    "src/main/resources/templates/admin/servicos.html"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: as 3 telas usam adminSidebar com o item correto destacado",
+                                                  "AC-2: nenhum campo de formulario nem comportamento existente muda"
+                                              ],
+                      "references":  [
+                                         "US-1"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-1"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-015",
+                      "title":  "Testes unitarios: Appointment.complete(), ProfessionalAgendaHandler, SchedulingMetrics",
+                      "description":  "AppointmentTest: complete() a partir de SCHEDULED/CONFIRMED apos startsAt transiciona; antes de startsAt e a partir de CANCELLED/NO_SHOW/COMPLETED absorve. ProfessionalAgendaHandlerTest: complete() grava e incrementa metrica so com transicao real; canComplete/canCancel/canReschedule corretos para cada combinacao de status, incluindo COMPLETED (bug da DD-4). SchedulingMetricsTest: appointmentCompleted() incrementa o contador certo.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-001",
+                                         "TASK-002",
+                                         "TASK-003"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
+                                    "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java",
+                                    "src/test/java/com/agendaia/scheduling/application/SchedulingMetricsTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: cobertura das transicoes de complete() descritas em BR-1/BR-2/BR-3",
+                                                  "AC-2: teste explicito de que COMPLETED tem canCancel/canReschedule falsos (prova da correcao DD-4)"
+                                              ],
+                      "references":  [
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3",
+                                               "DD-4"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-016",
+                      "title":  "Teste unitario: DailyScheduleSummaryHandler",
+                      "description":  "Mocks de AppointmentRepository e CustomerDirectory. Cobre contagem, exclusao de CANCELLED/NO_SHOW na receita, selecao do proximo cliente por menor startsAt futuro, e ausencia de proximo cliente (null).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-006"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/application/DailyScheduleSummaryHandlerTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os 5 criterios de aceite da US-3 (AC-1 a AC-5 da spec funcional) tem teste correspondente",
+                                                  "AC-2: CustomerDirectory.find verificado como chamado no maximo uma vez"
+                                              ],
+                      "references":  [
+                                         "US-3"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-6"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-017",
+                      "title":  "Teste de camada web: AgendaController rota concluir",
+                      "description":  "WebMvcTest cobrindo sucesso (redireciona, PRG), id de outro tenant (404) e ausencia de CSRF (403) — mesmo trio ja existente para cancelar.",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-004"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/adapter/in/web/AgendaControllerTest.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: os 3 cenarios (sucesso, 404, CSRF) cobertos para a rota concluir"
+                                              ],
+                      "references":  [
+                                         "US-4"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-018",
+                      "title":  "Integracao Postgres real: concluir agendamento, sidebar e KPIs do dashboard",
+                      "description":  "Estende AgendaProfissionalIT com E2E-8 (concluir de verdade muda status no banco, metrica incrementa) e E2E-9 (nao concluir antes do horario nem de agendamento cancelado). Novo DashboardIT cobrindo E2E-1 (sidebar aparece no painel) e E2E-3 (dashboard mostra KPIs batendo com o banco semeado, incluindo caso com um CANCELLED que nao deve entrar na contagem/receita).",
+                      "status":  "completed",
+                      "layer":  1,
+                      "depends_on":  [
+                                         "TASK-009",
+                                         "TASK-010",
+                                         "TASK-011",
+                                         "TASK-012",
+                                         "TASK-013",
+                                         "TASK-014",
+                                         "TASK-015",
+                                         "TASK-016",
+                                         "TASK-017"
+                                     ],
+                      "files":  [
+                                    "src/test/java/com/agendaia/scheduling/AgendaProfissionalIT.java",
+                                    "src/test/java/com/agendaia/organization/DashboardIT.java"
+                                ],
+                      "acceptance_criteria":  [
+                                                  "AC-1: E2E-4 e E2E-5 da spec funcional passam contra Postgres real",
+                                                  "AC-2: E2E-1 e E2E-3 da spec funcional passam contra Postgres real"
+                                              ],
+                      "references":  [
+                                         "E2E-1",
+                                         "E2E-3",
+                                         "E2E-4",
+                                         "E2E-5"
+                                     ],
+                      "design_decisions":  [
+                                               "DD-3",
+                                               "DD-6",
+                                               "DD-7"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-019",
+                      "title":  "Code Review",
+                      "description":  "Revisao de codigo de todos os arquivos tocados pela feature.",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-015",
+                                         "TASK-016",
+                                         "TASK-017",
+                                         "TASK-018"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: sdd-code-reviewer aprova sem achado critico ou maior"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-020",
+                      "title":  "Performance Review",
+                      "description":  "Revisao de performance, com foco na consulta nova findByTenantIdAndDate (uma so, sem laco) e no calculo dos 4 KPIs em memoria.",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-015",
+                                         "TASK-016",
+                                         "TASK-017",
+                                         "TASK-018"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: sdd-performance-expert aprova sem achado critico"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+                                               "DD-7"
+                                           ]
+                  },
+                  {
+                      "id":  "TASK-021",
+                      "title":  "Security Review",
+                      "description":  "Revisao de seguranca, com foco em: rota concluir cai no mesmo hasRole(OWNER) de /admin/**, revalidacao de tenantId em complete(), CSRF no novo formulario, e nenhum vazamento de dado entre tenants no scheduling.api novo.",
+                      "status":  "completed",
+                      "layer":  3,
+                      "depends_on":  [
+                                         "TASK-015",
+                                         "TASK-016",
+                                         "TASK-017",
+                                         "TASK-018"
+                                     ],
+                      "files":  [
+
+                                ],
+                      "acceptance_criteria":  [
+                                                  "GATE: sdd-code-reviewer (modo seguranca) aprova sem achado critico ou maior"
+                                              ],
+                      "references":  [
+
+                                     ],
+                      "design_decisions":  [
+                                               "DD-6"
+                                           ]
+                  }
+              ],
+    "dependency_graph":  {
+                             "by_layer":  {
+                                              "1":  {
+                                                        "level_0":  [
+                                                                        "TASK-001",
+                                                                        "TASK-002",
+                                                                        "TASK-005",
+                                                                        "TASK-008"
+                                                                    ],
+                                                        "level_1":  [
+                                                                        "TASK-003",
+                                                                        "TASK-006",
+                                                                        "TASK-009"
+                                                                    ],
+                                                        "level_2":  [
+                                                                        "TASK-004",
+                                                                        "TASK-007",
+                                                                        "TASK-012",
+                                                                        "TASK-013",
+                                                                        "TASK-014"
+                                                                    ],
+                                                        "level_3":  [
+                                                                        "TASK-010",
+                                                                        "TASK-011",
+                                                                        "TASK-015",
+                                                                        "TASK-016",
+                                                                        "TASK-017"
+                                                                    ],
+                                                        "level_4":  [
+                                                                        "TASK-018"
+                                                                    ]
+                                                    },
+                                              "3":  {
+                                                        "level_0":  [
+                                                                        "TASK-019",
+                                                                        "TASK-020",
+                                                                        "TASK-021"
+                                                                    ]
+                                                    }
+                                          }
+                         }
+}

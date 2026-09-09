@@ -91,6 +91,17 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
                 .toList();
     }
 
+    @Override
+    public List<Appointment> findByTenantIdAndDate(TenantId tenantId, LocalDate date) {
+        var zone = ZoneId.systemDefault();
+        var dayStart = date.atStartOfDay(zone).toInstant();
+        var dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant();
+
+        return appointmentJpaRepository.findByTenantAndDay(tenantId.value(), dayStart, dayEnd).stream()
+                .map(AppointmentMapper::toDomain)
+                .toList();
+    }
+
     private static LocalTime clipStart(Instant startsAt, Instant dayStart, ZoneId zone) {
         if (!startsAt.isAfter(dayStart)) {
             return LocalTime.MIN;

@@ -17,5 +17,12 @@ public enum AppointmentStatus {
     CANCELLED,
 
     /** Cliente não compareceu. Libera o horário retroativamente. */
-    NO_SHOW
+    NO_SHOW,
+
+    /**
+     * Atendimento realmente aconteceu — marcado pelo dono/profissional pela
+     * agenda (sistema-de-design-admin, TODO-110). Terminal, sem transição de
+     * volta.
+     */
+    COMPLETED
 }

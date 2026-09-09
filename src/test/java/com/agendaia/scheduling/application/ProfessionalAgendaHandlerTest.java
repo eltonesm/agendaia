@@ -135,6 +135,49 @@ class ProfessionalAgendaHandlerTest {
         assertThat(linhaCancelada.canReschedule()).isFalse();
     }
 
+    @Test
+    @DisplayName("handle: COMPLETED nao mostra canCancel/canReschedule (DD-4, correcao do guard antigo que so excluia CANCELLED)")
+    void handleAgendamentoConcluidoSemAcoesDeAbrirDeNovo() {
+        when(professionalDirectory.find(professionalId))
+                .thenReturn(Optional.of(new ProfessionalRef(professionalId, "Maria")));
+        var passado = Instant.now().minus(1, ChronoUnit.HOURS);
+        var concluido = agendamento(AppointmentStatus.COMPLETED, passado);
+        when(appointmentRepository.findByTenantIdAndProfessionalIdAndDate(tenant, professionalId, LocalDate.now()))
+                .thenReturn(List.of(concluido));
+        when(customerDirectory.findByIds(Set.of(customerId)))
+                .thenReturn(List.of(new CustomerRef(customerId, "João", "+5511999990000")));
+
+        var linha = handler.handle(professionalId, LocalDate.now()).get(0);
+
+        assertThat(linha.canConfirm()).isFalse();
+        assertThat(linha.canCancel()).isFalse();
+        assertThat(linha.canReschedule()).isFalse();
+        assertThat(linha.canComplete()).isFalse();
+    }
+
+    @Test
+    @DisplayName("handle: canComplete e verdadeiro so quando SCHEDULED/CONFIRMED e o horario ja comecou")
+    void handleCanCompleteSoDepoisDoHorarioComecar() {
+        when(professionalDirectory.find(professionalId))
+                .thenReturn(Optional.of(new ProfessionalRef(professionalId, "Maria")));
+        var jaComecou = agendamento(AppointmentStatus.SCHEDULED, Instant.now().minus(10, ChronoUnit.MINUTES));
+        var aindaNaoComecou = agendamento(AppointmentStatus.CONFIRMED, startsAt);
+        when(appointmentRepository.findByTenantIdAndProfessionalIdAndDate(tenant, professionalId, LocalDate.now()))
+                .thenReturn(List.of(jaComecou, aindaNaoComecou));
+        when(customerDirectory.findByIds(Set.of(customerId)))
+                .thenReturn(List.of(new CustomerRef(customerId, "João", "+5511999990000")));
+
+        var agenda = handler.handle(professionalId, LocalDate.now());
+
+        var linhaJaComecou =
+                agenda.stream().filter(e -> e.status() == AppointmentStatus.SCHEDULED).findFirst().get();
+        assertThat(linhaJaComecou.canComplete()).isTrue();
+
+        var linhaAindaNaoComecou =
+                agenda.stream().filter(e -> e.status() == AppointmentStatus.CONFIRMED).findFirst().get();
+        assertThat(linhaAindaNaoComecou.canComplete()).isFalse();
+    }
+
     // --- CreateAppointmentManuallyUseCase -------------------------------
 
     @Test
@@ -184,11 +227,74 @@ class ProfessionalAgendaHandlerTest {
     }
 
     @Test
+    @DisplayName("cancel: agendamento ja COMPLETED nao reabre, nao grava nem incrementa metrica (BR-2, sistema-de-design-admin)")
+    void cancelNaoReabreCompleted() {
+        var passado = Instant.now().minus(1, ChronoUnit.DAYS);
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamento(AppointmentStatus.COMPLETED, passado)));
+
+        handler.cancel(appointmentId);
+
+        verify(appointmentRepository, never()).updateStatus(any(), any(), any(), any());
+        verify(schedulingMetrics, never()).appointmentCancelled();
+    }
+
+    @Test
     @DisplayName("cancel: id de outro tenant lança AppointmentNotFoundException")
     void cancelTenantErradoLancaNaoEncontrado() {
         when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> handler.cancel(appointmentId)).isInstanceOf(AppointmentNotFoundException.class);
+    }
+
+    // --- CompleteAppointmentUseCase ---------------------------------------
+
+    @Test
+    @DisplayName("complete: SCHEDULED com startsAt ja passado vira COMPLETED e incrementa a metrica (BR-1/BR-3)")
+    void completeTransicionaQuandoHorarioJaChegou() {
+        var passado = Instant.now().minus(10, ChronoUnit.MINUTES);
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamento(AppointmentStatus.SCHEDULED, passado)));
+
+        handler.complete(appointmentId);
+
+        verify(appointmentRepository).updateStatus(eq(tenant), eq(appointmentId), eq(AppointmentStatus.COMPLETED), any());
+        verify(schedulingMetrics).appointmentCompleted();
+    }
+
+    @Test
+    @DisplayName("complete: antes de startsAt nao transiciona nem grava (BR-3)")
+    void completeAbsorveAntesDoHorario() {
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamento(AppointmentStatus.SCHEDULED, startsAt)));
+
+        handler.complete(appointmentId);
+
+        verify(appointmentRepository, never()).updateStatus(any(), any(), any(), any());
+        verify(schedulingMetrics, never()).appointmentCompleted();
+    }
+
+    @Test
+    @DisplayName("complete: agendamento CANCELLED nao transiciona nem grava (BR-1)")
+    void completeAbsorveSeCancelado() {
+        var passado = Instant.now().minus(10, ChronoUnit.MINUTES);
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamento(AppointmentStatus.CANCELLED, passado)));
+
+        handler.complete(appointmentId);
+
+        verify(appointmentRepository, never()).updateStatus(any(), any(), any(), any());
+        verify(schedulingMetrics, never()).appointmentCompleted();
+    }
+
+    @Test
+    @DisplayName("complete: id de outro tenant lanca AppointmentNotFoundException")
+    void completeTenantErradoLancaNaoEncontrado() {
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> handler.complete(appointmentId)).isInstanceOf(AppointmentNotFoundException.class);
+
+        verify(schedulingMetrics, never()).appointmentCompleted();
     }
 
     // --- RescheduleAppointmentUseCase ------------------------------------

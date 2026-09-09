@@ -8,9 +8,16 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Serviços')}"></head>
 <body>
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-<main class="container" style="max-width: 30rem">
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/layout :: adminSidebar('servicos')}"></aside>
+
+  <main class="app-main">
+
+  <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
 
   <h1 class="h4 mb-1">Serviços</h1>
   <p class="text-body-secondary mb-4">
@@ -51,7 +58,8 @@
     Nenhum serviço cadastrado ainda. Cadastre o primeiro acima.
   </div>
 
-</main>
+  </main>
+</div>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
 </body>

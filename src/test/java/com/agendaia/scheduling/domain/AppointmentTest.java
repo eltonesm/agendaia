@@ -304,4 +304,51 @@ class AppointmentTest {
 
         assertThat(cancelado.cancelByOwner()).isSameAs(cancelado);
     }
+
+    @Test
+    @DisplayName("cancelByOwner() nao reabre um COMPLETED — status terminal, sem volta (BR-2, sistema-de-design-admin)")
+    void cancelByOwnerNaoReabreCompleted() {
+        var concluido = reconstituirCom(AppointmentStatus.COMPLETED);
+
+        assertThat(concluido.cancelByOwner()).isSameAs(concluido);
+    }
+
+    @Test
+    @DisplayName("complete() muda SCHEDULED ou CONFIRMED para COMPLETED quando agora já alcançou startsAt (BR-1/BR-3)")
+    void completeMudaParaCompleted() {
+        var scheduled = agendamentoValido();
+        var confirmed = reconstituirCom(AppointmentStatus.CONFIRMED);
+        var depoisDoInicio = STARTS_AT.plusSeconds(60);
+
+        assertThat(scheduled.complete(depoisDoInicio).status()).isEqualTo(AppointmentStatus.COMPLETED);
+        assertThat(confirmed.complete(depoisDoInicio).status()).isEqualTo(AppointmentStatus.COMPLETED);
+    }
+
+    @Test
+    @DisplayName("complete() é no-op antes de startsAt — não dá para concluir o que ainda não começou (BR-3)")
+    void completeENoOpAntesDoInicio() {
+        var scheduled = agendamentoValido();
+        var antesDoInicio = STARTS_AT.minusSeconds(60);
+
+        assertThat(scheduled.complete(antesDoInicio)).isSameAs(scheduled);
+    }
+
+    @Test
+    @DisplayName("complete() é no-op para CANCELLED e NO_SHOW (BR-1)")
+    void completeENoOpParaCancelledENoShow() {
+        var cancelado = reconstituirCom(AppointmentStatus.CANCELLED);
+        var faltou = reconstituirCom(AppointmentStatus.NO_SHOW);
+        var depoisDoInicio = STARTS_AT.plusSeconds(60);
+
+        assertThat(cancelado.complete(depoisDoInicio)).isSameAs(cancelado);
+        assertThat(faltou.complete(depoisDoInicio)).isSameAs(faltou);
+    }
+
+    @Test
+    @DisplayName("complete() é no-op quando já COMPLETED — idempotência")
+    void completeEIdempotente() {
+        var concluido = reconstituirCom(AppointmentStatus.COMPLETED);
+
+        assertThat(concluido.complete(STARTS_AT.plusSeconds(60))).isSameAs(concluido);
+    }
 }

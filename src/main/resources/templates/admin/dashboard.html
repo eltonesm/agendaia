@@ -1,50 +1,92 @@
 <!doctype html>
 <!--/*
-  Painel, deliberadamente mínimo nesta feature.
-
-  Ele existe para provar que a sessão funciona e para entregar ao dono o link
-  que ele acabou de criar. As telas de verdade chegam nas features seguintes —
-  e o painel diz explicitamente qual é o próximo passo, para ele não ficar
-  olhando uma tela vazia sem saber o que fazer.
+  Painel. Nasceu mínimo (só link + próximo passo); ganhou sidebar e 4 KPIs
+  reais na sistema-de-design-admin (TODO-110) — scheduling/Appointment já
+  existe desde a TODO-008, então os números deixam de ser decorativos.
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Painel')}"></head>
 <body>
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-<main class="container" style="max-width: 40rem">
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
 
-  <h1 class="h4 mb-1" th:text="${painel.businessName}">Estabelecimento</h1>
-  <p class="text-body-secondary">Sua conta está pronta.</p>
+<div class="app-shell">
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <h2 class="h6 card-title">Seu link de agendamento</h2>
-      <p class="card-text small text-body-secondary mb-2">
-        Compartilhe com seus clientes para que eles agendem sozinhos.
-      </p>
-      <code class="d-block p-2 bg-body-tertiary rounded"
-            th:text="${painel.publicUrl}">agendaia.com/b/seu-link</code>
+  <aside th:replace="~{fragments/layout :: adminSidebar('dashboard')}"></aside>
+
+  <main class="app-main">
+
+    <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
+
+    <h1 class="h4 mb-1" th:text="${painel.businessName}">Estabelecimento</h1>
+    <p class="text-body-secondary">Sua conta está pronta.</p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Agendamentos de hoje</div>
+            <div class="stat-value" th:text="${agendamentosHoje}">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Próximo cliente</div>
+            <div class="stat-value" th:text="${proximoCliente != null ? proximoCliente.customerName() : '—'}">—</div>
+            <div class="small text-body-secondary" th:if="${proximoCliente != null}"
+                 th:text="${#temporals.format(proximoCliente.startsAt(), 'HH:mm')}">10:00</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Atendidos hoje</div>
+            <div class="stat-value text-success" th:text="${atendidosHoje}">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Receita estimada</div>
+            <div class="stat-value" th:text="${receitaEstimada.format()}">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="alert alert-secondary" role="status">
-    <strong>Próximo passo:</strong>
-    <a th:href="@{/admin/profissionais}">cadastrar seus profissionais</a>,
-    <a th:href="@{/admin/servicos}">seus serviços</a>,
-    <a th:href="@{/admin/ofertas}">suas ofertas</a>,
-    <a th:href="@{/admin/horario-funcionamento}">seu horário de funcionamento</a>
-    e <a th:href="@{/admin/jornadas}">a jornada de cada profissional</a>. Até
-    lá, o link acima ainda não mostra horários.
-  </div>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="h6 card-title">Seu link de agendamento</h2>
+        <p class="card-text small text-body-secondary mb-2">
+          Compartilhe com seus clientes para que eles agendem sozinhos.
+        </p>
+        <code class="d-block p-2 bg-body-tertiary rounded"
+              th:text="${painel.publicUrl}">agendaia.com/b/seu-link</code>
+      </div>
+    </div>
 
-  <div class="mt-2">
-    <a th:href="@{/admin/agenda}" class="link-secondary small">Ver agenda</a>
-    ·
-    <a th:href="@{/admin/bloqueios}" class="link-secondary small">Gerenciar folgas e feriados</a>
-  </div>
+    <div class="alert alert-secondary" role="status">
+      <strong>Próximo passo:</strong>
+      <a th:href="@{/admin/profissionais}">cadastrar seus profissionais</a>,
+      <a th:href="@{/admin/servicos}">seus serviços</a>,
+      <a th:href="@{/admin/ofertas}">suas ofertas</a>,
+      <a th:href="@{/admin/horario-funcionamento}">seu horário de funcionamento</a>
+      e <a th:href="@{/admin/jornadas}">a jornada de cada profissional</a>. Até
+      lá, o link acima ainda não mostra horários.
+    </div>
 
-</main>
+    <div class="mt-2">
+      <a th:href="@{/admin/agenda}" class="link-secondary small">Ver agenda</a>
+      ·
+      <a th:href="@{/admin/bloqueios}" class="link-secondary small">Gerenciar folgas e feriados</a>
+    </div>
+
+  </main>
+</div>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
 </body>

@@ -4,6 +4,13 @@
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
+<!--/* Quem cai aqui sem sessão (link quebrado, ainda não logado) também
+       merece o alternador de tema — a navbar acima só aparece autenticado. */-->
+<div class="container d-flex justify-content-end pt-3"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security" sec:authorize="!isAuthenticated()">
+  <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+</div>
+
 <main class="container" style="max-width: 32rem">
   <h1 class="h4">Página não encontrada</h1>
   <p class="text-body-secondary">

@@ -4,73 +4,229 @@
   está aqui não é dono de nenhum estabelecimento, então não reaproveita a
   navbar do admin (que mostra businessName e link para /admin/dashboard,
   coisas que não fazem sentido para o operador).
+
+  Redesenho (2026-09-08) a partir de um protótipo visual trazido pelo dono
+  (sidebar, cards de indicadores, busca/filtro) -- mesmo espírito da
+  exceção já registrada no amendment ao ADR 0012 de 2026-09-01. Continua
+  Bootstrap 5.3.3 puro (sem framework novo, sem build): só CSS de escopo
+  desta página, igual à técnica usada em fragments/layout.html para o tema
+  indigo do admin.
+
+  Retrofit (sistema-de-design-admin, TODO-110): as classes .operador-*
+  viraram .app-* genéricas, movidas para fragments/layout.html e
+  compartilhadas com a sidebar de /admin/** — só .prazo-form (específica
+  desta tela) continua local. Badge de status trocado de text-bg-* (sólido)
+  para bg-*-subtle + text-*-emphasis (soft), mesmo padrão do resto do
+  sistema.
+
+  Busca e filtro de status rodam inteiramente no cliente, sobre as linhas
+  já renderizadas pelo Thymeleaf -- não é endpoint novo, não é fetch, só
+  esconder/mostrar linha (mesmo raciocínio do alternar-tema em
+  fragments/layout.html). O único dado sem correspondência real no
+  domínio (plano/preço, "cancelar empresa") do protótipo original ficou de
+  fora -- AccessStatus é sempre calculado a partir de accessValidUntil
+  (BR-2), nunca um campo que se alterna manualmente.
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Operador')}"></head>
+<style>
+  .prazo-form { min-width: 13rem; }
+</style>
 <body>
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-4">
-  <div class="container">
-    <span class="navbar-brand fw-semibold">AgendaIA · Operador</span>
-    <form th:action="@{/operador/logout}" method="post" class="m-0">
-      <button type="submit" class="btn btn-sm btn-outline-secondary">Sair</button>
-    </form>
-  </div>
-</nav>
+<div class="app-shell">
 
-<main class="container" style="max-width: 60rem">
+  <aside class="app-sidebar d-none d-md-flex">
+    <div class="app-brand">
+      AgendaIA
+      <small>Painel do fundador</small>
+    </div>
+    <ul class="nav nav-pills flex-column app-nav">
+      <li class="nav-item">
+        <a class="nav-link active" href="#">Empresas</a>
+      </li>
+    </ul>
+    <div class="mt-auto d-flex gap-2">
+      <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+      <form th:action="@{/operador/logout}" method="post" class="flex-grow-1">
+        <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sair</button>
+      </form>
+    </div>
+  </aside>
 
-  <h1 class="h4 mb-3">Estabelecimentos</h1>
+  <main class="app-main">
 
-  <div class="alert alert-danger" th:if="${erroTenantId}">
-    Data inválida para o estabelecimento selecionado — precisa ser uma data futura.
-  </div>
+    <!--/* Topo enxuto para telas pequenas, onde a sidebar acima some. */-->
+    <div class="d-flex d-md-none justify-content-between align-items-center mb-4">
+      <span class="app-brand">AgendaIA · Operador</span>
+      <div class="d-flex gap-2">
+        <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+        <form th:action="@{/operador/logout}" method="post" class="m-0">
+          <button type="submit" class="btn btn-sm btn-outline-secondary">Sair</button>
+        </form>
+      </div>
+    </div>
 
-  <div class="alert alert-secondary" th:if="${#lists.isEmpty(estabelecimentos)}">
-    Nenhum estabelecimento cadastrado ainda.
-  </div>
+    <div class="mb-4">
+      <h1 class="h4 mb-1">Estabelecimentos</h1>
+      <p class="text-body-secondary mb-0">Controle manual de pagamento e status de cada conta na plataforma.</p>
+    </div>
 
-  <div class="table-responsive" th:unless="${#lists.isEmpty(estabelecimentos)}">
-    <table class="table align-middle">
-      <thead>
-      <tr>
-        <th>Estabelecimento</th>
-        <th>Modelo</th>
-        <th>Cadastro</th>
-        <th>Status</th>
-        <th>Válido até</th>
-        <th>Marcar prazo</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="e : ${estabelecimentos}">
-        <td>
-          <div th:text="${e.name()}">Nome</div>
-          <div class="small text-body-secondary" th:text="${e.slug()}">slug</div>
-        </td>
-        <td>Padrão</td>
-        <td th:text="${#temporals.format(e.createdAt(), 'dd/MM/yyyy')}">01/01/2026</td>
-        <td>
-          <span class="badge text-bg-info" th:if="${e.status().name() == 'TRIAL'}">Em teste</span>
-          <span class="badge text-bg-success" th:if="${e.status().name() == 'PAID'}">Pago</span>
-          <span class="badge text-bg-warning" th:if="${e.status().name() == 'GRACE_PERIOD'}">Em carência</span>
-          <span class="badge text-bg-danger" th:if="${e.status().name() == 'BLOCKED'}">Bloqueado</span>
-        </td>
-        <td th:text="${#temporals.format(e.accessValidUntil(), 'dd/MM/yyyy')}">01/01/2026</td>
-        <td>
-          <form th:action="@{'/operador/estabelecimentos/' + ${e.tenantId()} + '/prazo'}"
-                method="post" class="d-flex gap-2">
-            <input type="date" name="accessValidUntil" class="form-control form-control-sm" required>
-            <button type="submit" class="btn btn-sm btn-primary text-nowrap">Marcar pago</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="alert alert-danger" th:if="${erroTenantId}">
+      Data inválida para o estabelecimento selecionado — precisa ser uma data futura.
+    </div>
 
-</main>
+    <div class="row g-3 mb-4" th:unless="${#lists.isEmpty(estabelecimentos)}">
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Total de empresas</div>
+            <div class="stat-value" th:text="${totalEmpresas}">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Pagas</div>
+            <div class="stat-value text-success" th:text="${totalPagas}">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Em carência</div>
+            <div class="stat-value text-warning" th:text="${totalCarencia}">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="text-body-secondary small fw-semibold mb-2">Bloqueadas</div>
+            <div class="stat-value text-danger" th:text="${totalBloqueadas}">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary" th:if="${#lists.isEmpty(estabelecimentos)}">
+      Nenhum estabelecimento cadastrado ainda.
+    </div>
+
+    <div th:unless="${#lists.isEmpty(estabelecimentos)}">
+
+      <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+        <input type="search" id="buscaEmpresa" class="form-control" style="max-width: 20rem"
+               placeholder="Buscar empresa...">
+        <div class="btn-group" role="group" id="filtroStatus" aria-label="Filtrar por status">
+          <button type="button" class="btn btn-sm btn-outline-secondary active" data-filtro="TODAS">Todas</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filtro="TRIAL">Em teste</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filtro="PAID">Pagas</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filtro="GRACE_PERIOD">Em carência</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filtro="BLOCKED">Bloqueadas</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+          <tr>
+            <th>Estabelecimento</th>
+            <th>Cadastro</th>
+            <th>Status</th>
+            <th>Válido até</th>
+            <th>Marcar prazo</th>
+          </tr>
+          </thead>
+          <tbody id="corpoTabela">
+          <tr th:each="e : ${estabelecimentos}"
+              th:attr="data-nome=${#strings.toLowerCase(e.name())},data-status=${e.status().name()}"
+              th:classappend="${erroTenantId != null and erroTenantId == e.tenantId()} ? 'table-danger'">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="co-avatar" th:text="${#strings.toUpperCase(#strings.substring(e.name(),0,1))}">A</div>
+                <div>
+                  <div class="fw-semibold" th:text="${e.name()}">Nome</div>
+                  <div class="small text-body-secondary" th:text="${e.slug()}">slug</div>
+                </div>
+              </div>
+            </td>
+            <td th:text="${#temporals.format(e.createdAt(), 'dd/MM/yyyy')}">01/01/2026</td>
+            <td>
+              <span class="badge rounded-pill bg-info-subtle text-info-emphasis" th:if="${e.status().name() == 'TRIAL'}">Em teste</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis" th:if="${e.status().name() == 'PAID'}">Pago</span>
+              <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis" th:if="${e.status().name() == 'GRACE_PERIOD'}">Em carência</span>
+              <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis" th:if="${e.status().name() == 'BLOCKED'}">Bloqueado</span>
+            </td>
+            <td>
+              <span th:text="${#temporals.format(e.accessValidUntil(), 'dd/MM/yyyy')}"
+                    th:classappend="${e.status().name() == 'GRACE_PERIOD' or e.status().name() == 'BLOCKED'} ? 'text-danger fw-semibold'">01/01/2026</span>
+            </td>
+            <td>
+              <form th:action="@{'/operador/estabelecimentos/' + ${e.tenantId()} + '/prazo'}"
+                    method="post" class="d-flex gap-2 prazo-form">
+                <input type="date" name="accessValidUntil" class="form-control form-control-sm" required>
+                <button type="submit" class="btn btn-sm btn-primary text-nowrap">Marcar pago</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <div class="text-center text-body-secondary py-5" id="semResultado" hidden>
+          Nenhuma empresa encontrada com esse filtro.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!--/*
+  Filtro/busca no cliente: puramente cosmético, sobre as linhas que o
+  Thymeleaf já renderizou. Nenhuma requisição nova, nenhum dado que o
+  operador já não tivesse na tela.
+*/-->
+<script th:inline="none">
+  (function () {
+    var linhas = document.querySelectorAll('#corpoTabela tr');
+    var busca = document.getElementById('buscaEmpresa');
+    var grupoFiltro = document.getElementById('filtroStatus');
+    var semResultado = document.getElementById('semResultado');
+    if (!busca || !grupoFiltro) return;
+
+    var filtroAtual = 'TODAS';
+
+    function aplicar() {
+      var termo = busca.value.trim().toLowerCase();
+      var visiveis = 0;
+
+      linhas.forEach(function (linha) {
+        var combinaBusca = linha.dataset.nome.indexOf(termo) !== -1;
+        var combinaFiltro = filtroAtual === 'TODAS' || linha.dataset.status === filtroAtual;
+        var mostra = combinaBusca && combinaFiltro;
+        linha.hidden = !mostra;
+        if (mostra) visiveis++;
+      });
+
+      semResultado.hidden = visiveis > 0;
+    }
+
+    busca.addEventListener('input', aplicar);
+
+    grupoFiltro.addEventListener('click', function (evento) {
+      var botao = evento.target.closest('[data-filtro]');
+      if (!botao) return;
+      grupoFiltro.querySelectorAll('[data-filtro]').forEach(function (b) { b.classList.remove('active'); });
+      botao.classList.add('active');
+      filtroAtual = botao.dataset.filtro;
+      aplicar();
+    });
+  })();
+</script>
+
 </body>
 </html>

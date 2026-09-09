@@ -11,11 +11,7 @@
 <head th:replace="~{fragments/layout :: head(${businessName})}"></head>
 <body>
 
-<header class="bg-body-tertiary border-bottom py-3 mb-4">
-  <div class="container">
-    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
-  </div>
-</header>
+<header th:replace="~{fragments/layout :: publicHeader(${businessName})}"></header>
 
 <main class="container" style="max-width: 32rem">
 
