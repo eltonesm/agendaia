@@ -20,6 +20,7 @@ import com.agendaia.scheduling.application.port.in.RescheduleAppointmentCommand;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.AppointmentNotFoundException;
 import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
 import com.agendaia.shared.Money;
@@ -88,7 +89,24 @@ class ProfessionalAgendaHandlerTest {
                 inicio.plus(30, ChronoUnit.MINUTES),
                 "Corte de Cabelo",
                 30,
-                new Money(3000));
+                new Money(3000),
+                PaymentStatus.PENDING);
+    }
+
+    private Appointment agendamentoComPagamento(PaymentStatus paymentStatus) {
+        return Appointment.reconstitute(
+                appointmentId,
+                tenant,
+                professionalId,
+                serviceOfferingId,
+                customerId,
+                AppointmentStatus.COMPLETED,
+                startsAt,
+                startsAt.plus(30, ChronoUnit.MINUTES),
+                "Corte de Cabelo",
+                30,
+                new Money(3000),
+                paymentStatus);
     }
 
     private ServiceOfferingRef oferta() {
@@ -295,6 +313,40 @@ class ProfessionalAgendaHandlerTest {
         assertThatThrownBy(() -> handler.complete(appointmentId)).isInstanceOf(AppointmentNotFoundException.class);
 
         verify(schedulingMetrics, never()).appointmentCompleted();
+    }
+
+    // --- UpdatePaymentStatusUseCase ---------------------------------------
+
+    @Test
+    @DisplayName("updatePaymentStatus: grava quando ha mudanca real de status de pagamento (BR-2)")
+    void updatePaymentStatusGravaQuandoMuda() {
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamentoComPagamento(PaymentStatus.PENDING)));
+
+        handler.updatePaymentStatus(appointmentId, PaymentStatus.ON_CREDIT);
+
+        verify(appointmentRepository)
+                .updatePaymentStatus(eq(tenant), eq(appointmentId), eq(PaymentStatus.ON_CREDIT), any());
+    }
+
+    @Test
+    @DisplayName("updatePaymentStatus: nao grava quando o status pedido ja e o atual (idempotencia)")
+    void updatePaymentStatusNaoGravaSeIgual() {
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId))
+                .thenReturn(Optional.of(agendamentoComPagamento(PaymentStatus.PAID)));
+
+        handler.updatePaymentStatus(appointmentId, PaymentStatus.PAID);
+
+        verify(appointmentRepository, never()).updatePaymentStatus(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("updatePaymentStatus: id de outro tenant lanca AppointmentNotFoundException")
+    void updatePaymentStatusTenantErradoLancaNaoEncontrado() {
+        when(appointmentRepository.findByTenantIdAndId(tenant, appointmentId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> handler.updatePaymentStatus(appointmentId, PaymentStatus.PAID))
+                .isInstanceOf(AppointmentNotFoundException.class);
     }
 
     // --- RescheduleAppointmentUseCase ------------------------------------

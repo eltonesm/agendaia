@@ -26,6 +26,7 @@ import com.agendaia.organization.domain.WorkSchedule;
 import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.shared.Money;
 import com.agendaia.shared.UuidV7;
 import java.math.BigDecimal;
@@ -401,5 +402,33 @@ class AgendaProfissionalIT {
         var cancelado = appointmentRepository.findByTenantIdAndId(cenario.barbearia().tenantId(), idCancelado);
         assertThat(cancelado).isPresent();
         assertThat(cancelado.get().status()).isEqualTo(AppointmentStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName(
+            "E2E-10: marcar um agendamento como fiado na agenda reflete no total em aberto do cliente (gestao-de-clientes, E2E-5)")
+    void e2e10MarcarFiadoReflowNoTotalEmAberto() throws Exception {
+        var cenario = semearCenario();
+        var sessao = sessaoAutenticada(cenario);
+        var horario = LocalTime.of(9, 0);
+        criarManualmente(cenario, sessao, ONTEM, horario, "Cliente Fiado", "11988880011")
+                .andExpect(status().is3xxRedirection());
+        var id = idPorHorario(cenario, ONTEM, horario);
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/concluir", id).with(csrf()).session(sessao))
+                .andExpect(status().is3xxRedirection());
+
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", id)
+                        .with(csrf())
+                        .session(sessao)
+                        .param("status", "ON_CREDIT"))
+                .andExpect(status().is3xxRedirection());
+
+        var agendamento = appointmentRepository.findByTenantIdAndId(cenario.barbearia().tenantId(), id);
+        assertThat(agendamento).isPresent();
+        assertThat(agendamento.get().paymentStatus()).isEqualTo(PaymentStatus.ON_CREDIT);
+
+        mockMvc.perform(get("/admin/clientes/{id}", agendamento.get().customerId()).session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("R$ 30,00")));
     }
 }

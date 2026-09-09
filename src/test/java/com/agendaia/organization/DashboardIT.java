@@ -21,6 +21,7 @@ import com.agendaia.platform.tenant.TenantContext;
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.shared.Money;
 import com.agendaia.shared.UuidV7;
 import java.time.Duration;
@@ -106,7 +107,8 @@ class DashboardIT {
                 startsAt.plus(30, ChronoUnit.MINUTES),
                 "Corte de Cabelo",
                 30,
-                new Money(precoCentavos));
+                new Money(precoCentavos),
+                PaymentStatus.PENDING);
         appointmentRepository.save(agendamento);
     }
 
