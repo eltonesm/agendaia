@@ -260,6 +260,17 @@ class AgendaControllerTest {
     }
 
     @Test
+    @DisplayName("POST pagamento com status fora do enum devolve 400, nao 500 (GlobalExceptionHandler)")
+    void pagamentoComStatusInvalidoDevolve400() throws Exception {
+        mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId)
+                        .with(csrf())
+                        .param("status", "XPTO"))
+                .andExpect(status().isBadRequest());
+
+        verify(updatePaymentStatus, never()).updatePaymentStatus(any(), any());
+    }
+
+    @Test
     @DisplayName("POST pagamento sem token CSRF e recusado")
     void pagamentoSemCsrfERecusado() throws Exception {
         mockMvc.perform(post("/admin/agenda/agendamentos/{id}/pagamento", appointmentId).param("status", "PAID"))

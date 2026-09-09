@@ -70,6 +70,18 @@ passa por `/sdd.start`.
 
 ## 🔧 Technical Debt
 
+### DEBT-020: Parametro de pagina fora do intervalo (negativo) vira 500 generico
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: code review da gestao-de-clientes (TASK-020)
+- **Context**: `CustomerAdminController.listar` aceita `page` como `int` sem validar limite inferior — `?page=-1` faz `PageRequest.of(-1, ...)` lancar `IllegalArgumentException`, que cai no handler generico (`GlobalExceptionHandler.erroInesperado`, ERROR + 500), nao um 400 tratado. Mesma familia do achado real desta feature (`MethodArgumentTypeMismatchException` para `PaymentStatus` invalido, ja corrigido) — mas so acontece com URL manualmente adulterada, nunca pela navegacao normal (os links de paginacao do template nunca geram valor negativo). Nao e exclusivo desta tela: qualquer `@RequestParam int` do projeto tem o mesmo gap.
+- **Affected Files**: `scheduling/adapter/in/web/CustomerAdminController.java`, potencialmente `platform/web/GlobalExceptionHandler.java` (handler generico para `IllegalArgumentException` de parametro, se o padrao se repetir em outra tela)
+- **Complexity**: Low
+- **Risk if Ignored**: Log ERROR com stack trace por uso incorreto de URL, nao por defeito real — ruido de observabilidade, sem risco de seguranca ou de dado
+
+---
+
 ### DEBT-018: Consulta da agenda do dono sem indice cobrindo todos os status
 - **Priority**: Low
 - **Status**: pending

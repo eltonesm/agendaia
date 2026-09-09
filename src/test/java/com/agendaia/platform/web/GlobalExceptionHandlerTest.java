@@ -10,7 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.core.MethodParameter;
 import org.springframework.web.ErrorResponseException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -71,6 +73,24 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatus()).isEqualTo(404);
         assertThat(mav.getViewName()).isEqualTo("error/404");
         assertThat(mav.getModel()).doesNotContainKey("requestId");
+    }
+
+    @Test
+    @DisplayName("parametro que nao converte para o tipo esperado (ex.: enum invalido) e uso incorreto, nao defeito (gestao-de-clientes)")
+    void parametroInvalidoNaoViraDefeito() throws NoSuchMethodException {
+        var metodo = getClass().getDeclaredMethod("metodoComParametro", int.class);
+        var parametro = new MethodParameter(metodo, 0);
+        var excecao = new MethodArgumentTypeMismatchException(
+                "XPTO", int.class, "status", parametro, new NumberFormatException("XPTO"));
+
+        var mav = handler.parametroInvalido(excecao, request);
+
+        assertThat(mav.getViewName()).isEqualTo("error/500");
+    }
+
+    @SuppressWarnings("unused")
+    private void metodoComParametro(int x) {
+        // usado só para construir um MethodParameter válido no teste acima
     }
 
     @Test
