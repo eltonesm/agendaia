@@ -9,6 +9,7 @@ import com.agendaia.scheduling.application.port.in.AgendaEntry;
 import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.BookedAppointment;
 import com.agendaia.scheduling.application.port.in.CancelAppointmentByOwnerUseCase;
+import com.agendaia.scheduling.application.port.in.CompleteAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentUseCase;
@@ -45,7 +46,8 @@ public class ProfessionalAgendaHandler
         implements ViewAgendaUseCase,
                 CreateAppointmentManuallyUseCase,
                 CancelAppointmentByOwnerUseCase,
-                RescheduleAppointmentUseCase {
+                RescheduleAppointmentUseCase,
+                CompleteAppointmentUseCase {
 
     private final AppointmentRepository appointmentRepository;
     private final ServiceOfferingDirectory serviceOfferingDirectory;
@@ -97,7 +99,14 @@ public class ProfessionalAgendaHandler
     private static AgendaEntry paraAgendaEntry(
             Appointment agendamento, Map<UUID, CustomerRef> clientesPorId, Instant agora) {
         var cliente = clientesPorId.get(agendamento.customerId());
-        var naoCancelado = agendamento.status() != AppointmentStatus.CANCELLED;
+        // Corrigido na TODO-110 (DD-4): a variável antiga só excluía
+        // CANCELLED — um agendamento COMPLETED (ou NO_SHOW) mostraria botão
+        // de cancelar/reagendar, o que não faz sentido para um status
+        // terminal. Com 5 valores possíveis, "aberto" equivale a
+        // SCHEDULED/CONFIRMED.
+        var estaAberto = agendamento.status() != AppointmentStatus.CANCELLED
+                && agendamento.status() != AppointmentStatus.NO_SHOW
+                && agendamento.status() != AppointmentStatus.COMPLETED;
         var aindaNoFuturo = agora.isBefore(agendamento.startsAt());
 
         return new AgendaEntry(
@@ -108,9 +117,10 @@ public class ProfessionalAgendaHandler
                 agendamento.startsAt(),
                 agendamento.endsAt(),
                 agendamento.status(),
-                naoCancelado && aindaNoFuturo && agendamento.status() == AppointmentStatus.SCHEDULED,
-                naoCancelado,
-                naoCancelado);
+                estaAberto && aindaNoFuturo && agendamento.status() == AppointmentStatus.SCHEDULED,
+                estaAberto,
+                estaAberto,
+                estaAberto && !aindaNoFuturo);
     }
 
     /** BR-4: sem teto de agendamentos futuros por telefone — só se aplica à reserva pública (TODO-006). */
@@ -151,6 +161,23 @@ public class ProfessionalAgendaHandler
         if (depois.status() != antes.status()) {
             appointmentRepository.updateStatus(tenantId, antes.id(), depois.status(), Instant.now());
             schedulingMetrics.appointmentCancelled();
+        }
+    }
+
+    /** BR-1/BR-3: só de SCHEDULED/CONFIRMED, só depois que startsAt já chegou. */
+    @Override
+    @Transactional
+    public void complete(UUID appointmentId) {
+        var tenantId = TenantContext.require();
+        var antes = appointmentRepository
+                .findByTenantIdAndId(tenantId, appointmentId)
+                .orElseThrow(AppointmentNotFoundException::new);
+
+        var agora = Instant.now();
+        var depois = antes.complete(agora);
+        if (depois.status() != antes.status()) {
+            appointmentRepository.updateStatus(tenantId, antes.id(), depois.status(), agora);
+            schedulingMetrics.appointmentCompleted();
         }
     }
 

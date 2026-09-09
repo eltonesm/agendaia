@@ -2,7 +2,10 @@ package com.agendaia.billing.adapter.in.web;
 
 import com.agendaia.billing.adapter.in.web.request.ExtendAccessRequest;
 import com.agendaia.billing.application.BillingAccountService;
+import com.agendaia.billing.application.EstablishmentView;
+import com.agendaia.billing.domain.AccessStatus;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +35,7 @@ public class OperatorPanelController {
 
     @GetMapping("/operador/painel")
     public String painel(Model model) {
-        model.addAttribute("estabelecimentos", billingAccountService.listForOperator());
+        carregarPainel(model);
         return VIEW;
     }
 
@@ -46,7 +49,7 @@ public class OperatorPanelController {
         // Erro de formato devolve a MESMA tela com 200, não 400 — e com a
         // lista recarregada, indicando qual estabelecimento falhou.
         if (binding.hasErrors()) {
-            model.addAttribute("estabelecimentos", billingAccountService.listForOperator());
+            carregarPainel(model);
             model.addAttribute("erroTenantId", tenantId);
             return VIEW;
         }
@@ -56,5 +59,23 @@ public class OperatorPanelController {
         // Post-Redirect-Get: evita reenvio do formulário ao atualizar a
         // página, e o operador já vê o status novo na lista.
         return PRG;
+    }
+
+    /**
+     * Contadores por status são só uma leitura da mesma lista já buscada —
+     * nenhuma consulta a mais ao banco (importante: {@link #painel} roda a
+     * cada carregamento da tela).
+     */
+    private void carregarPainel(Model model) {
+        var estabelecimentos = billingAccountService.listForOperator();
+        model.addAttribute("estabelecimentos", estabelecimentos);
+        model.addAttribute("totalEmpresas", estabelecimentos.size());
+        model.addAttribute("totalPagas", contarPorStatus(estabelecimentos, AccessStatus.PAID));
+        model.addAttribute("totalCarencia", contarPorStatus(estabelecimentos, AccessStatus.GRACE_PERIOD));
+        model.addAttribute("totalBloqueadas", contarPorStatus(estabelecimentos, AccessStatus.BLOCKED));
+    }
+
+    private static long contarPorStatus(List<EstablishmentView> estabelecimentos, AccessStatus status) {
+        return estabelecimentos.stream().filter(e -> e.status() == status).count();
     }
 }

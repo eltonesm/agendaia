@@ -29,6 +29,7 @@ class SchedulingMetrics {
     private final Counter created;
     private final Counter cancelled;
     private final Counter slotConflict;
+    private final Counter completed;
 
     SchedulingMetrics(MeterRegistry registry) {
         // "agendaia.appointments.created" foi tentado primeiro e descartado:
@@ -40,6 +41,7 @@ class SchedulingMetrics {
         created = Counter.builder("agendaia.appointments.booked").register(registry);
         cancelled = Counter.builder("agendaia.appointments.cancelled").register(registry);
         slotConflict = Counter.builder("agendaia.appointments.slot_conflict").register(registry);
+        completed = Counter.builder("agendaia.appointments.completed").register(registry);
     }
 
     void appointmentCreated() {
@@ -52,5 +54,9 @@ class SchedulingMetrics {
 
     void slotConflict() {
         slotConflict.increment();
+    }
+
+    void appointmentCompleted() {
+        completed.increment();
     }
 }

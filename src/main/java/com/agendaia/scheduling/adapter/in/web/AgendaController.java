@@ -8,6 +8,7 @@ import com.agendaia.scheduling.application.port.in.AppointmentDetails;
 import com.agendaia.scheduling.application.port.in.AppointmentDetailsUseCase;
 import com.agendaia.scheduling.application.port.in.BookAppointmentCommand;
 import com.agendaia.scheduling.application.port.in.CancelAppointmentByOwnerUseCase;
+import com.agendaia.scheduling.application.port.in.CompleteAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.ConfirmAppointmentUseCase;
 import com.agendaia.scheduling.application.port.in.CreateAppointmentManuallyUseCase;
 import com.agendaia.scheduling.application.port.in.RescheduleAppointmentCommand;
@@ -56,6 +57,7 @@ public class AgendaController {
     private final ConfirmAppointmentUseCase confirmAppointment;
     private final CancelAppointmentByOwnerUseCase cancelAppointmentByOwner;
     private final RescheduleAppointmentUseCase rescheduleAppointment;
+    private final CompleteAppointmentUseCase completeAppointment;
     private final AppointmentDetailsUseCase appointmentDetails;
     private final ProfessionalDirectory professionalDirectory;
     private final ServiceOfferingDirectory serviceOfferingDirectory;
@@ -66,6 +68,7 @@ public class AgendaController {
             ConfirmAppointmentUseCase confirmAppointment,
             CancelAppointmentByOwnerUseCase cancelAppointmentByOwner,
             RescheduleAppointmentUseCase rescheduleAppointment,
+            CompleteAppointmentUseCase completeAppointment,
             AppointmentDetailsUseCase appointmentDetails,
             ProfessionalDirectory professionalDirectory,
             ServiceOfferingDirectory serviceOfferingDirectory) {
@@ -74,6 +77,7 @@ public class AgendaController {
         this.confirmAppointment = confirmAppointment;
         this.cancelAppointmentByOwner = cancelAppointmentByOwner;
         this.rescheduleAppointment = rescheduleAppointment;
+        this.completeAppointment = completeAppointment;
         this.appointmentDetails = appointmentDetails;
         this.professionalDirectory = professionalDirectory;
         this.serviceOfferingDirectory = serviceOfferingDirectory;
@@ -153,6 +157,15 @@ public class AgendaController {
             @RequestParam(required = false) UUID professionalId,
             @RequestParam(required = false) LocalDate date) {
         executarOuFalhar(() -> cancelAppointmentByOwner.cancel(id));
+        return redirecionarParaAgenda(professionalId, date);
+    }
+
+    @PostMapping("/agendamentos/{id}/concluir")
+    public String concluir(
+            @PathVariable UUID id,
+            @RequestParam(required = false) UUID professionalId,
+            @RequestParam(required = false) LocalDate date) {
+        executarOuFalhar(() -> completeAppointment.complete(id));
         return redirecionarParaAgenda(professionalId, date);
     }
 

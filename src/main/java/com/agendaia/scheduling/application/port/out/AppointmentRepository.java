@@ -64,4 +64,11 @@ public interface AppointmentRepository {
      * {@code startsAt}.
      */
     List<Appointment> findByTenantIdAndProfessionalIdAndDate(TenantId tenantId, UUID professionalId, LocalDate date);
+
+    /**
+     * Todos os agendamentos do tenant na data, de qualquer profissional e
+     * qualquer status — para os KPIs do painel (sistema-de-design-admin,
+     * TODO-110, DD-6/DD-7).
+     */
+    List<Appointment> findByTenantIdAndDate(TenantId tenantId, LocalDate date);
 }

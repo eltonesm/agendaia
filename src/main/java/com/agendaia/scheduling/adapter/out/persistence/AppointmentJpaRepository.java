@@ -75,4 +75,21 @@ interface AppointmentJpaRepository extends JpaRepository<AppointmentJpaEntity, U
             @Param("professionalId") UUID professionalId,
             @Param("dayStart") Instant dayStart,
             @Param("dayEnd") Instant dayEnd);
+
+    /**
+     * Todos os agendamentos do tenant no dia, de qualquer profissional e
+     * qualquer status — para os KPIs do painel (sistema-de-design-admin,
+     * TODO-110, DD-6/DD-7). Mesma janela de {@link #findByProfessionalAndDay},
+     * sem o filtro de profissional.
+     */
+    @Query("""
+            select a from AppointmentJpaEntity a
+            where a.tenantId = :tenantId
+              and a.startsAt < :dayEnd and a.endsAt > :dayStart
+            order by a.startsAt asc
+            """)
+    List<AppointmentJpaEntity> findByTenantAndDay(
+            @Param("tenantId") UUID tenantId,
+            @Param("dayStart") Instant dayStart,
+            @Param("dayEnd") Instant dayEnd);
 }

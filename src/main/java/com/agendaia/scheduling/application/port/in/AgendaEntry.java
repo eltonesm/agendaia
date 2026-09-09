@@ -6,10 +6,11 @@ import java.util.UUID;
 
 /**
  * Uma linha da agenda do dono, com {@code canConfirm}/{@code canCancel}/
- * {@code canReschedule} já calculados pelo handler, nunca pelo controller
- * nem pelo template (PATTERNS.md) — mesmo raciocínio de
- * {@link AppointmentDetails} (confirmacao-e-cancelamento, TODO-007), agora
- * para a visão do dono (agenda-profissional, TODO-008).
+ * {@code canReschedule}/{@code canComplete} já calculados pelo handler,
+ * nunca pelo controller nem pelo template (PATTERNS.md) — mesmo raciocínio
+ * de {@link AppointmentDetails} (confirmacao-e-cancelamento, TODO-007),
+ * agora para a visão do dono (agenda-profissional, TODO-008;
+ * {@code canComplete}, sistema-de-design-admin, TODO-110).
  */
 public record AgendaEntry(
         UUID id,
@@ -21,4 +22,5 @@ public record AgendaEntry(
         AppointmentStatus status,
         boolean canConfirm,
         boolean canCancel,
-        boolean canReschedule) {}
+        boolean canReschedule,
+        boolean canComplete) {}
