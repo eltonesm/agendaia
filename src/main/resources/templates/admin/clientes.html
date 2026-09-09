@@ -1,0 +1,65 @@
+<!doctype html>
+<!--/*
+  Lista de clientes do estabelecimento (gestao-de-clientes, IDEA-018/019):
+  contador de visitas, sinalização de "cliente novo" (BR-1) e link de
+  WhatsApp por cliente (US-3). Paginada (BR-6) — pagina vem já pronta de
+  ListCustomerActivityUseCase, nenhum cálculo de agregação no template.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Clientes')}"></head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/layout :: adminSidebar('clientes')}"></aside>
+
+  <main class="app-main">
+
+  <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
+
+  <h1 class="h4 mb-1">Clientes</h1>
+  <p class="text-body-secondary mb-4">Histórico de visitas e contato direto por WhatsApp.</p>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(pagina.items())}">
+    Nenhum cliente cadastrado ainda.
+  </div>
+
+  <ul class="list-group mb-3" th:if="${not #lists.isEmpty(pagina.items())}">
+    <li class="list-group-item" th:each="cliente : ${pagina.items()}">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <a th:href="@{/admin/clientes/{id}(id=${cliente.customerId()})}" th:text="${cliente.name()}">Nome</a>
+          <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis ms-1" th:if="${cliente.isNew()}">Novo</span>
+          <div class="text-body-secondary small">
+            <span th:text="${cliente.phone()}">telefone</span>
+            · <span th:text="${cliente.visitCount()}">0</span> visita(s)
+          </div>
+        </div>
+        <a class="btn btn-sm btn-outline-success"
+           th:href="@{'https://wa.me/' + ${cliente.phone()}}" target="_blank" rel="noopener">
+          WhatsApp
+        </a>
+      </div>
+    </li>
+  </ul>
+
+  <nav aria-label="Paginação de clientes" th:if="${pagina.totalElements() > pagina.size()}">
+    <ul class="pagination">
+      <li class="page-item" th:classappend="${pagina.page() == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{/admin/clientes(page=${pagina.page() - 1})}">Anterior</a>
+      </li>
+      <li class="page-item"
+          th:classappend="${(pagina.page() + 1) * pagina.size() >= pagina.totalElements()} ? 'disabled'">
+        <a class="page-link" th:href="@{/admin/clientes(page=${pagina.page() + 1})}">Próxima</a>
+      </li>
+    </ul>
+  </nav>
+
+  </main>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

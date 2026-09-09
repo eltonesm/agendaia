@@ -1,0 +1,83 @@
+<!doctype html>
+<!--/*
+  Detalhe do cliente (gestao-de-clientes, US-2/US-3): histórico completo de
+  atendimentos concluídos e os três totais (visitas, gasto, em aberto).
+  Totais e histórico já vêm calculados por CustomerActivityHandler
+  (PATTERNS.md) — o template só exibe.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Cliente')}"></head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/layout :: adminSidebar('clientes')}"></aside>
+
+  <main class="app-main">
+
+  <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
+
+  <div class="d-flex justify-content-between align-items-start mb-1">
+    <div>
+      <h1 class="h4 mb-0" th:text="${cliente.name()}">Nome</h1>
+      <span class="text-body-secondary" th:text="${cliente.phone()}">telefone</span>
+    </div>
+    <a class="btn btn-sm btn-outline-success"
+       th:href="@{'https://wa.me/' + ${cliente.phone()}}" target="_blank" rel="noopener">
+      WhatsApp
+    </a>
+  </div>
+
+  <div class="row g-3 my-3">
+    <div class="col-4">
+      <div class="card"><div class="card-body">
+        <div class="text-body-secondary small">Visitas</div>
+        <div class="h5 mb-0" th:text="${cliente.visitCount()}">0</div>
+      </div></div>
+    </div>
+    <div class="col-4">
+      <div class="card"><div class="card-body">
+        <div class="text-body-secondary small">Total gasto</div>
+        <div class="h5 mb-0" th:text="${cliente.totalSpent().format()}">R$ 0,00</div>
+      </div></div>
+    </div>
+    <div class="col-4">
+      <div class="card"><div class="card-body">
+        <div class="text-body-secondary small">Em aberto (fiado)</div>
+        <div class="h5 mb-0" th:text="${cliente.totalOwed().format()}">R$ 0,00</div>
+      </div></div>
+    </div>
+  </div>
+
+  <h2 class="h6">Histórico</h2>
+
+  <div class="alert alert-secondary" role="status" th:if="${#lists.isEmpty(cliente.visits())}">
+    Nenhum atendimento concluído ainda.
+  </div>
+
+  <ul class="list-group" th:if="${not #lists.isEmpty(cliente.visits())}">
+    <li class="list-group-item d-flex justify-content-between align-items-center" th:each="visita : ${cliente.visits()}">
+      <div>
+        <strong th:text="${#temporals.format(visita.startsAt(), 'dd/MM/yyyy HH:mm')}">01/01/2026 08:00</strong>
+        — <span th:text="${visita.serviceName()}">Serviço</span>
+      </div>
+      <div>
+        <span th:text="${visita.price().format()}">R$ 0,00</span>
+        <span class="badge rounded-pill bg-success-subtle text-success-emphasis ms-1"
+              th:if="${visita.paymentStatus().name() == 'PAID'}">Pago</span>
+        <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis ms-1"
+              th:if="${visita.paymentStatus().name() == 'PENDING'}">Pendente</span>
+        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis ms-1"
+              th:if="${visita.paymentStatus().name() == 'ON_CREDIT'}">Fiado</span>
+      </div>
+    </li>
+  </ul>
+
+  </main>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
