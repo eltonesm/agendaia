@@ -93,6 +93,10 @@ que muda de sentido ao cruzar a fronteira?
 | Agenda do dono | `ViewAgendaUseCase` | Caso de uso | Lista os agendamentos de um profissional num dia, para o painel administrativo. |
 | Criação manual | `CreateAppointmentManuallyUseCase` | Caso de uso | Dono cria um agendamento diretamente pelo painel, sem o teto de agendamentos futuros por telefone. |
 | Cancelamento pelo dono | `CancelAppointmentByOwnerUseCase` | Caso de uso | Cancela em nome do cliente, sem restrição de horário — diferente de `CancelAppointmentUseCase`. |
+| Status de pagamento | `PaymentStatus` | Value object (enum) | Se um agendamento foi pago. **Independente** de `AppointmentStatus` — pergunta diferente ("foi pago?" vs. "o atendimento aconteceu?"). Sem transição proibida: qualquer valor pode virar qualquer outro. |
+| Pago | `PAID` | Valor de `PaymentStatus` | O cliente pagou. |
+| Pendente | `PENDING` | Valor de `PaymentStatus` | Ainda não pagou — padrão de todo agendamento novo. |
+| Fiado | `ON_CREDIT` | Valor de `PaymentStatus` | O dono decidiu conscientemente confiar no cliente e receber depois — diferente de `PENDING`, que é só "ainda não, mas vai já". |
 
 ## Contexto Customer
 

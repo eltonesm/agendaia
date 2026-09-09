@@ -35,4 +35,13 @@ public interface CustomerDirectory {
      * outro tenant, simplesmente não aparecem no resultado.
      */
     List<CustomerRef> findByIds(Collection<UUID> ids);
+
+    /**
+     * Clientes do tenant, paginados, ordenados por nome (gestao-de-clientes,
+     * US-1). Exclui cliente anonimizado ({@code anonymizedAt != null}) — o
+     * campo já existe na entidade, ainda sem nenhuma feature que o
+     * preencha, mas o filtro já entra agora para não esquecer quando
+     * existir.
+     */
+    PagedCustomers listForTenant(int page, int size);
 }

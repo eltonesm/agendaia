@@ -1,9 +1,12 @@
 package com.agendaia.scheduling.adapter.out.persistence;
 
 import com.agendaia.scheduling.application.port.out.AppointmentRepository;
+import com.agendaia.scheduling.application.port.out.CustomerActivity;
 import com.agendaia.scheduling.domain.Appointment;
 import com.agendaia.scheduling.domain.AppointmentStatus;
+import com.agendaia.scheduling.domain.PaymentStatus;
 import com.agendaia.scheduling.domain.exception.SlotUnavailableException;
+import com.agendaia.shared.Money;
 import com.agendaia.shared.TenantId;
 import com.agendaia.shared.TimeRange;
 import java.time.Instant;
@@ -11,9 +14,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
@@ -100,6 +107,33 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
         return appointmentJpaRepository.findByTenantAndDay(tenantId.value(), dayStart, dayEnd).stream()
                 .map(AppointmentMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void updatePaymentStatus(TenantId tenantId, UUID id, PaymentStatus paymentStatus, Instant agora) {
+        appointmentJpaRepository.updatePaymentStatus(tenantId.value(), id, paymentStatus, agora);
+    }
+
+    @Override
+    public List<Appointment> findCompletedByTenantIdAndCustomerId(TenantId tenantId, UUID customerId) {
+        return appointmentJpaRepository
+                .findByTenantIdAndCustomerIdAndStatusOrderByStartsAtDesc(
+                        tenantId.value(), customerId, AppointmentStatus.COMPLETED)
+                .stream()
+                .map(AppointmentMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Map<UUID, CustomerActivity> findActivityByCustomerIds(TenantId tenantId, Collection<UUID> customerIds) {
+        if (customerIds.isEmpty()) {
+            return Map.of();
+        }
+        return appointmentJpaRepository.findActivityByCustomerIds(tenantId.value(), customerIds).stream()
+                .collect(Collectors.toMap(
+                        CustomerActivityProjection::getCustomerId,
+                        (Function<CustomerActivityProjection, CustomerActivity>) p -> new CustomerActivity(
+                                p.getVisitCount(), new Money(p.getTotalCents()), new Money(p.getOwedCents()))));
     }
 
     private static LocalTime clipStart(Instant startsAt, Instant dayStart, ZoneId zone) {

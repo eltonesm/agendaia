@@ -31,6 +31,7 @@ final class AppointmentMapper {
                 appointment.serviceName(),
                 appointment.durationMinutes(),
                 appointment.price().cents(),
+                appointment.paymentStatus(),
                 agora,
                 agora);
     }
@@ -47,6 +48,7 @@ final class AppointmentMapper {
                 entity.endsAt(),
                 entity.serviceName(),
                 entity.durationMinutes(),
-                new Money(entity.priceCents()));
+                new Money(entity.priceCents()),
+                entity.paymentStatus());
     }
 }
