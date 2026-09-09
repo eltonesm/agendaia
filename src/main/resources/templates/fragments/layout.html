@@ -47,6 +47,14 @@
     aprovado pelo dono. Sidebar de navegação e cards de KPI do protótipo
     ficam para quando `scheduling` existir (IDEA-009) — sem dado real por
     trás, esses componentes ficariam bonitos e vazios.
+
+    Ampliado em 2026-09-08 (ver PATTERNS.md, "Sistema de design é token do
+    Bootstrap"): paleta completa (fundo, texto, borda, sucesso/atenção/erro)
+    traduzida dos protótipos Gemini/Tailwind, claro e escuro, como variável do
+    Bootstrap — não como classe nova. `--bs-card-bg` precisa de seletor
+    `.card` explícito porque o próprio Bootstrap já redeclara essa variável
+    dentro de `.card` como `var(--bs-body-bg)`; um valor só em `:root` seria
+    ignorado (ganha quem declara direto no elemento, não quem só herda).
   */-->
   <style>
     :root {
@@ -59,6 +67,38 @@
       --bs-link-color-rgb: 79, 70, 229;
       --bs-link-hover-color: #4338ca;
       --bs-link-hover-color-rgb: 67, 56, 202;
+
+      --bs-body-bg: #f8fafc;
+      --bs-body-bg-rgb: 248, 250, 252;
+      --bs-body-color: #0f172a;
+      --bs-body-color-rgb: 15, 23, 42;
+      --bs-secondary-color: #64748b;
+      --bs-border-color: #e2e8f0;
+      --bs-border-color-translucent: #e2e8f0;
+
+      --bs-success-bg-subtle: #ecfdf5;
+      --bs-success-text-emphasis: #047857;
+      --bs-warning-bg-subtle: #fffbeb;
+      --bs-warning-text-emphasis: #d97706;
+      --bs-danger-bg-subtle: #fff1f2;
+      --bs-danger-text-emphasis: #e11d48;
+    }
+
+    [data-bs-theme="dark"] {
+      --bs-body-bg: #0f172a;
+      --bs-body-bg-rgb: 15, 23, 42;
+      --bs-body-color: #f1f5f9;
+      --bs-body-color-rgb: 241, 245, 249;
+      --bs-secondary-color: #94a3b8;
+      --bs-border-color: #334155;
+      --bs-border-color-translucent: #334155;
+
+      --bs-success-bg-subtle: rgba(5, 150, 105, .15);
+      --bs-success-text-emphasis: #34d399;
+      --bs-warning-bg-subtle: rgba(217, 119, 6, .15);
+      --bs-warning-text-emphasis: #fbbf24;
+      --bs-danger-bg-subtle: rgba(225, 29, 72, .15);
+      --bs-danger-text-emphasis: #fb7185;
     }
 
     .btn-primary {
@@ -75,16 +115,124 @@
     .list-group {
       box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
     }
+
+    /* --bs-card-bg nasce dentro de .card no Bootstrap (var(--bs-body-bg)) —
+       só um seletor .card explícito consegue um tom diferente do fundo da
+       página (branco puro no claro, slate-800 no escuro). */
+    .card {
+      --bs-card-bg: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .card {
+      --bs-card-bg: #1e293b;
+    }
+
+    /* Sidebar (2026-09-08, sistema-de-design-admin): generalizada a partir
+       do que só existia (com prefixo .operador-) em operador/painel.html —
+       agora compartilhada com adminSidebar, abaixo. */
+    .app-shell { display: flex; align-items: flex-start; min-height: 100vh; }
+    .app-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      border-right: 1px solid var(--bs-border-color);
+    }
+    .app-brand { font-weight: 700; letter-spacing: -0.02em; }
+    .app-brand small { display: block; font-weight: 600; color: var(--bs-secondary-color); font-size: 0.7rem; }
+    .app-nav .nav-link { font-weight: 600; font-size: 0.9rem; border-radius: var(--bs-border-radius); }
+    .app-nav .nav-link.active { background: var(--bs-primary-bg-subtle); color: var(--bs-primary); }
+    .app-main { flex: 1; min-width: 0; padding: 1.75rem 2rem 3rem; }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+    .co-avatar {
+      width: 2.4rem; height: 2.4rem; border-radius: 0.65rem;
+      background: var(--bs-primary-bg-subtle); color: var(--bs-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; flex-shrink: 0;
+    }
+    @media (max-width: 900px) {
+      .app-sidebar { display: none; }
+    }
   </style>
 </head>
 
 <body>
 
 <!--/*
+  Botão de alternar tema, sozinho num fragmento à parte (2026-09-08): toda
+  página usa fragments/layout :: head, então o script de detecção de tema já
+  roda em todo lugar (ver head acima) — só faltava o botão em si nas telas
+  que não passam pela navbar do admin (login, cadastro, operador, páginas
+  públicas de /b/{slug}). O script que liga o clique já está em ::scripts,
+  com guarda para quando o botão não existir — colar este fragmento em
+  qualquer página basta para o botão funcionar, sem tocar em mais nada.
+*/-->
+<button type="button" th:fragment="temaToggle" id="alternar-tema" class="btn btn-sm btn-outline-secondary"
+        aria-label="Alternar tema claro/escuro">🌙</button>
+
+<!--/*
   Barra do painel, aviso de carência e botão de WhatsApp — os três num
   fragmento só, de propósito (back-office-operador, TODO-009): assim
   nenhuma das oito telas do admin precisa de mudança individual, e nenhuma
   fica sem o botão de contato (BR-5) por esquecimento.
+
+  carenciaAte e operadorWhatsapp vêm de billing.adapter.in.web.BillingBannerAdvice
+  (@ControllerAdvice global) — este fragmento não sabe, e não precisa saber,
+  que billing existe.
+*/-->
+<!--/*
+  Extraídos do th:block navbar em 2026-09-08 (sistema-de-design-admin): o
+  shell novo de sidebar (adminSidebar, abaixo) precisa dos dois sem a barra
+  horizontal — navbar continua igual visualmente para quem ainda a usa
+  (error/404, error/500), só passou a incluir estes dois por th:replace em
+  vez de repetir o HTML.
+*/-->
+<div th:fragment="carenciaBanner" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     class="alert alert-warning rounded-0 mb-0 text-center py-2" th:if="${carenciaAte}"
+     sec:authorize="isAuthenticated()">
+  Seu período gratuito acabou. Você tem até
+  <strong th:text="${#temporals.format(carenciaAte, 'dd/MM/yyyy')}">01/01/2026</strong>
+  para regularizar o pagamento, ou o acesso será suspenso automaticamente.
+</div>
+
+<!--/*
+  US-6/BR-5: sempre visível, em qualquer status — inclusive na tela de
+  conta suspensa. Vazio (config não preenchida) esconde o botão em vez de
+  gerar um link quebrado.
+*/-->
+<a th:fragment="whatsappButton" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+   th:if="${operadorWhatsapp != null and !operadorWhatsapp.isEmpty()}"
+   th:href="${'https://wa.me/' + operadorWhatsapp}"
+   sec:authorize="isAuthenticated()"
+   target="_blank" rel="noopener"
+   class="btn btn-success rounded-circle position-fixed d-flex align-items-center justify-content-center"
+   style="bottom: 1.5rem; right: 1.5rem; width: 3.5rem; height: 3.5rem; z-index: 1030; font-size: 1.5rem;"
+   aria-label="Falar no WhatsApp com o suporte">💬</a>
+
+<!--/*
+  Achado em build da sistema-de-design-admin (TODO-110, `OperadorBackofficeIT.
+  e2e2CarenciaMostraAvisoSemBloquear` vermelho): trocar navbar por
+  adminSidebar nas 10 telas de /admin/** levou embora, sem querer,
+  carenciaBanner e whatsappButton — eles só chegavam de graça por estarem
+  dentro do th:block navbar. adminBanners é o mesmo "um fragmento só, de
+  propósito" de baixo, agora para o shell de sidebar: uma inclusão por
+  tela, nunca esquecida de novo.
+*/-->
+<th:block th:fragment="adminBanners">
+  <div th:replace="~{::carenciaBanner}"></div>
+  <a th:replace="~{::whatsappButton}"></a>
+</th:block>
+
+<!--/*
+  Barra do painel, aviso de carência e botão de WhatsApp — os três num
+  fragmento só, de propósito (back-office-operador, TODO-009): assim
+  nenhuma das telas do admin precisa de mudança individual, e nenhuma fica
+  sem o botão de contato (BR-5) por esquecimento.
 
   carenciaAte e operadorWhatsapp vêm de billing.adapter.in.web.BillingBannerAdvice
   (@ControllerAdvice global) — este fragmento não sabe, e não precisa saber,
@@ -103,8 +251,7 @@
         é o LayoutAdvice.
       */-->
       <span class="text-body-secondary small" th:text="${businessName}">Estabelecimento</span>
-      <button type="button" id="alternar-tema" class="btn btn-sm btn-outline-secondary"
-              aria-label="Alternar tema claro/escuro">🌙</button>
+      <button type="button" th:replace="~{::temaToggle}"></button>
       <!--/* Logout é POST por causa do CSRF: link GET seria vulnerável a
              logout forçado por terceiro. */-->
       <form th:action="@{/logout}" method="post" class="m-0">
@@ -114,36 +261,89 @@
   </div>
 </nav>
 
-<!--/* US-3/BR-4: só aparece durante a carência — nulo em qualquer outro status. */-->
-<div class="alert alert-warning rounded-0 mb-0 text-center py-2" th:if="${carenciaAte}"
-     sec:authorize="isAuthenticated()">
-  Seu período gratuito acabou. Você tem até
-  <strong th:text="${#temporals.format(carenciaAte, 'dd/MM/yyyy')}">01/01/2026</strong>
-  para regularizar o pagamento, ou o acesso será suspenso automaticamente.
-</div>
-
+<div th:replace="~{::carenciaBanner}"></div>
 <div class="mb-4"></div>
+<a th:replace="~{::whatsappButton}"></a>
+</th:block>
 
 <!--/*
-  US-6/BR-5: sempre visível, em qualquer status — inclusive na tela de
-  conta suspensa. Vazio (config não preenchida) esconde o botão em vez de
-  gerar um link quebrado.
+  Sidebar das telas de /admin/** (sistema-de-design-admin, TODO-110,
+  substitui a navbar acima nessas 8 telas) — mesmo padrão visual de
+  operador/painel.html, generalizado. activeItem é uma das chaves usadas
+  nos th:classappend abaixo; nenhuma tela passa uma chave que não exista
+  aqui, então nenhum item fica "quase" destacado por erro de digitação —
+  o pior caso é nenhum item destacado.
 */-->
-<a th:if="${operadorWhatsapp != null and !operadorWhatsapp.isEmpty()}"
-   th:href="${'https://wa.me/' + operadorWhatsapp}"
-   sec:authorize="isAuthenticated()"
-   target="_blank" rel="noopener"
-   class="btn btn-success rounded-circle position-fixed d-flex align-items-center justify-content-center"
-   style="bottom: 1.5rem; right: 1.5rem; width: 3.5rem; height: 3.5rem; z-index: 1030; font-size: 1.5rem;"
-   aria-label="Falar no WhatsApp com o suporte">💬</a>
-</th:block>
+<aside th:fragment="adminSidebar(activeItem)" class="app-sidebar d-none d-md-flex">
+  <div class="app-brand">
+    AgendaIA
+    <small th:text="${businessName}">Estabelecimento</small>
+  </div>
+  <ul class="nav nav-pills flex-column app-nav">
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'dashboard'} ? 'active'" th:href="@{/admin/dashboard}">Painel</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'agenda'} ? 'active'" th:href="@{/admin/agenda}">Agenda</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'bloqueios'} ? 'active'" th:href="@{/admin/bloqueios}">Bloqueios</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'horario-funcionamento'} ? 'active'" th:href="@{/admin/horario-funcionamento}">Horário de Funcionamento</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'jornadas'} ? 'active'" th:href="@{/admin/jornadas}">Jornadas</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'servicos'} ? 'active'" th:href="@{/admin/servicos}">Serviços</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'ofertas'} ? 'active'" th:href="@{/admin/ofertas}">Ofertas</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:classappend="${activeItem == 'profissionais'} ? 'active'" th:href="@{/admin/profissionais}">Profissionais</a>
+    </li>
+  </ul>
+  <div class="mt-auto d-flex gap-2">
+    <button type="button" th:replace="~{::temaToggle}"></button>
+    <form th:action="@{/logout}" method="post" class="flex-grow-1">
+      <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sair</button>
+    </form>
+  </div>
+</aside>
+
+<!--/* Topo enxuto para telas pequenas, onde adminSidebar acima some — mesmo
+       padrão de operador/painel.html. */-->
+<div th:fragment="adminTopoMobile" class="d-flex d-md-none justify-content-between align-items-center mb-4">
+  <span class="app-brand" th:text="${businessName}">Estabelecimento</span>
+  <div class="d-flex gap-2">
+    <button type="button" th:replace="~{::temaToggle}"></button>
+    <form th:action="@{/logout}" method="post" class="m-0">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Sair</button>
+    </form>
+  </div>
+</div>
+
+<!--/*
+  Cabeçalho das quatro páginas públicas de agendamento (/b/{slug}/**) — nome
+  do estabelecimento mais o alternador de tema. Extraído porque catalogo.html,
+  profissionais.html, horarios.html e agendamento.html tinham exatamente o
+  mesmo bloco duplicado quatro vezes.
+*/-->
+<header th:fragment="publicHeader(businessName)" class="bg-body-tertiary border-bottom py-3 mb-4">
+  <div class="container d-flex justify-content-between align-items-center">
+    <span class="h5 mb-0" th:text="${businessName}">Estabelecimento</span>
+    <button type="button" th:replace="~{::temaToggle}"></button>
+  </div>
+</header>
 
 <footer th:fragment="scripts">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
           integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
           crossorigin="anonymous"></script>
-  <!--/* Botão só existe em página autenticada (navbar tem sec:authorize) —
-         sem elemento, sem listener, sem erro. */-->
+  <!--/* Guarda para o caso raro de alguma página ainda não colar o
+         fragmento temaToggle — sem elemento, sem listener, sem erro. */-->
   <script>
     (function () {
       var botao = document.getElementById('alternar-tema');

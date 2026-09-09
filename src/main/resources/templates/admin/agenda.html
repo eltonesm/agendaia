@@ -3,15 +3,24 @@
   Agenda do dono: lista os agendamentos de um profissional num dia
   (agenda-profissional, TODO-008, US-1).
 
-  canConfirm/canCancel/canReschedule já vêm calculados de ProfessionalAgendaHandler
-  (PATTERNS.md) — o template só decide se mostra o botão, nunca a regra.
+  canConfirm/canCancel/canReschedule/canComplete já vêm calculados de
+  ProfessionalAgendaHandler (PATTERNS.md) — o template só decide se mostra
+  o botão, nunca a regra. canComplete e o badge/ação de concluir são da
+  sistema-de-design-admin (TODO-110, US-4).
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Agenda')}"></head>
 <body>
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-<main class="container" style="max-width: 40rem">
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/layout :: adminSidebar('agenda')}"></aside>
+
+  <main class="app-main">
+
+  <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
 
   <div class="d-flex justify-content-between align-items-center mb-1">
     <h1 class="h4 mb-0">Agenda</h1>
@@ -48,12 +57,16 @@
         <div>
           <strong th:text="${#temporals.format(agendamento.startsAt(), 'HH:mm')}">08:00</strong>
           — <span th:text="${agendamento.serviceName()}">Serviço</span>
-          <span class="badge text-bg-secondary"
+          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"
                 th:if="${agendamento.status().name() == 'SCHEDULED'}">Agendado</span>
-          <span class="badge text-bg-success"
+          <span class="badge rounded-pill bg-success-subtle text-success-emphasis"
                 th:if="${agendamento.status().name() == 'CONFIRMED'}">Confirmado</span>
-          <span class="badge text-bg-danger"
+          <span class="badge rounded-pill bg-success-subtle text-success-emphasis"
+                th:if="${agendamento.status().name() == 'COMPLETED'}">Concluído</span>
+          <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
                 th:if="${agendamento.status().name() == 'CANCELLED'}">Cancelado</span>
+          <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
+                th:if="${agendamento.status().name() == 'NO_SHOW'}">Não compareceu</span>
           <div class="text-body-secondary small">
             <span th:text="${agendamento.customerName()}">Cliente</span>
             · <span th:text="${agendamento.customerPhone()}">telefone</span>
@@ -68,6 +81,10 @@
              th:href="@{/admin/agenda/agendamentos/{id}/reagendar(id=${agendamento.id()})}">
             Reagendar
           </a>
+          <form th:if="${agendamento.canComplete()}" method="post"
+                th:action="@{/admin/agenda/agendamentos/{id}/concluir(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
+            <button type="submit" class="btn btn-sm btn-success w-100">Concluir</button>
+          </form>
           <form th:if="${agendamento.canCancel()}" method="post"
                 th:action="@{/admin/agenda/agendamentos/{id}/cancelar(id=${agendamento.id()},professionalId=${professionalId},date=${date})}">
             <button type="submit" class="btn btn-sm btn-outline-danger w-100">Cancelar</button>
@@ -82,7 +99,8 @@
     Nenhum agendamento nesse dia.
   </div>
 
-</main>
+  </main>
+</div>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
 </body>

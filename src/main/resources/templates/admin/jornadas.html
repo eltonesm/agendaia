@@ -9,9 +9,16 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Jornadas')}"></head>
 <body>
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-<main class="container" style="max-width: 34rem">
+<th:block th:replace="~{fragments/layout :: adminBanners}"></th:block>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/layout :: adminSidebar('jornadas')}"></aside>
+
+  <main class="app-main">
+
+  <div th:replace="~{fragments/layout :: adminTopoMobile}"></div>
 
   <h1 class="h4 mb-1">Jornadas</h1>
   <p class="text-body-secondary mb-4">
@@ -82,7 +89,8 @@
     Nenhuma jornada cadastrada ainda.
   </div>
 
-</main>
+  </main>
+</div>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
