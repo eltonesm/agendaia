@@ -1,0 +1,28 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "findings_found_and_fixed_during_review": [
+    {
+      "severity": "minor",
+      "file": "src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java",
+      "description": "A nova rota POST /admin/agenda/agendamentos/{id}/pagamento usa @RequestParam PaymentStatus status (bind direto de enum) — e o unico lugar do projeto que faz isso. Um valor fora do enum (ex.: status=XPTO) gera MethodArgumentTypeMismatchException, que NAO implementa ErrorResponse no Spring Framework e cairia no handler generico de GlobalExceptionHandler como 'defeito' (log ERROR com stack trace, 500) em vez de uso incorreto de formulario (WARN, 400) — contradiz a propria filosofia documentada no Javadoc da classe.",
+      "fix": "Adicionado @ExceptionHandler(MethodArgumentTypeMismatchException.class) dedicado em GlobalExceptionHandler, retornando 400 com log WARN (mesmo espirito de regraDeNegocioViolada). Testes novos: GlobalExceptionHandlerTest.parametroInvalidoNaoViraDefeito, AgendaControllerTest.pagamentoComStatusInvalidoDevolve400."
+    }
+  ],
+  "review_notes": [
+    "CustomerActivityHandler confirmado morando em scheduling (nao customer/organization) - so importa customer.api (CustomerDirectory, CustomerRef), nunca customer.application nem customer.domain (grep confirmado).",
+    "Nenhum N+1: list() faz exatamente 2 consultas (customerDirectory.listForTenant + appointmentRepository.findActivityByCustomerIds em lote); detail() faz exatamente 2 (find + findCompletedByTenantIdAndCustomerId), totais somados em memoria.",
+    "tenantId sempre resolvido via TenantContext.require() (CustomerActivityHandler, ProfessionalAgendaHandler.updatePaymentStatus) ou revalidado contra a sessao via CustomerDirectory.find/AppointmentRepository.findByTenantIdAndId - nunca aceito de parametro/formulario.",
+    "3 metodos markPaymentAsPaid/Pending/OnCredit seguem a convencao de nome de negocio do PATTERNS.md ('Sem setter, em lugar nenhum') - nenhum setter generico.",
+    "Templates novos (admin/clientes.html, admin/cliente-detalhe.html) seguem o sistema de design ja documentado: badges soft (bg-*-subtle/text-*-emphasis, rounded-pill), mesma estrutura de sidebar/adminBanners/adminTopoMobile das 10 telas da TODO-110.",
+    "Sem regressao: os 5 arquivos de teste existentes editados (AppointmentTest, ProfessionalAgendaHandlerTest, DailyScheduleSummaryHandlerTest, ManageAppointmentHandlerTest, DashboardIT, AgendaControllerTest) so tiveram o novo parametro paymentStatus/PaymentStatus.PENDING adicionado as fixtures de reconstitute()/AgendaEntry - nenhuma asserção pre-existente alterada.",
+    "DEBT-020 registrado no backlog para um gap relacionado, fora do escopo desta feature: qualquer @RequestParam int (ex.: page em CustomerAdminController) aceita valor negativo e cai no handler generico como defeito - mesma familia do achado corrigido, mas so acionavel com URL manualmente adulterada, nunca pela navegacao normal."
+  ],
+  "files_reviewed": 40,
+  "timestamp": "2026-09-09T23:18:00Z"
+}

@@ -8,7 +8,7 @@
                      },
     "stats":  {
                   "total":  22,
-                  "done":  19,
+                  "done":  22,
                   "by_layer":  {
                                    "1":  19,
                                    "2":  0,
@@ -530,7 +530,7 @@
                       "id":  "TASK-020",
                       "title":  "Layer 3: Code Review",
                       "description":  "Revisão de código completa da feature via skill sdd-code-reviewer — verifica aderência a PATTERNS.md (sem setter, imutabilidade, uma classe/várias portas, fronteira entre contextos), e ausência de regressão nas telas/rotas já existentes (agenda, dashboard).",
-                      "status":  "pending",
+                      "status":  "completed",
                       "layer":  3,
                       "depends_on":  [
                                          "TASK-016",
@@ -555,7 +555,7 @@
                       "id":  "TASK-021",
                       "title":  "Layer 3: Performance Review",
                       "description":  "Revisão de performance via skill sdd-performance-expert — confirma que a paginação da lista de clientes é real (SQL, não em memória), que a agregação por lote não vira N+1, e que o detalhe do cliente não carrega dado desnecessário.",
-                      "status":  "pending",
+                      "status":  "completed",
                       "layer":  3,
                       "depends_on":  [
                                          "TASK-020"
@@ -577,7 +577,7 @@
                       "id":  "TASK-022",
                       "title":  "Layer 3: Security Review",
                       "description":  "Revisão de segurança via skill sdd-code-reviewer (modo auditoria) — confirma isolamento de tenant nas rotas e consultas novas, CSRF nas rotas POST novas, e que nenhum dado pessoal novo é exposto além do já existente.",
-                      "status":  "pending",
+                      "status":  "completed",
                       "layer":  3,
                       "depends_on":  [
                                          "TASK-020"

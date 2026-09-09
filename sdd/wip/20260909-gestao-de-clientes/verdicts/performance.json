@@ -1,0 +1,33 @@
+{
+  "skill": "sdd-performance-expert",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "warnings": 0,
+    "recommendations": 1
+  },
+  "checks": [
+    {
+      "item": "CustomerActivityHandler.list()",
+      "result": "OK — exatamente 2 consultas por pagina: customerDirectory.listForTenant(page, size) e appointmentRepository.findActivityByCustomerIds(tenantId, idsDeClientes), esta ultima em lote com os ids da pagina inteira. Nenhuma chamada de atividade por cliente dentro do stream/map — a combinacao lista+atividade acontece via Map.getOrDefault em memoria (paraCustomerListEntry), nao por nova consulta."
+    },
+    {
+      "item": "AppointmentJpaRepository.findActivityByCustomerIds — indice",
+      "result": "OK — uma unica query JPQL com GROUP BY customer_id, filtro WHERE tenant_id = :tenantId AND customer_id IN :customerIds AND status = COMPLETED. O indice appointment_customer_idx (tenant_id, customer_id, status), da migration V8, cobre integralmente os tres predicados do WHERE; a agregacao (COUNT/SUM) roda sobre o conjunto ja filtrado por linha de customer_id, nao sobre a tabela inteira. Nenhum indice novo necessario."
+    },
+    {
+      "item": "CustomerActivityHandler.detail()",
+      "result": "OK — uma unica consulta (findCompletedByTenantIdAndCustomerId), os tres totais (visitCount, totalSpent, totalOwed) somados em memoria via stream sobre a lista ja carregada, mesmo padrao ja aprovado de DailyScheduleSummaryHandler (TODO-110). Nenhuma consulta adicional por visita do historico."
+    },
+    {
+      "item": "CustomerRepository.findByTenantIdAndAnonymizedAtIsNullOrderByNameAsc — indice",
+      "result": "RECOMENDACAO (nao bloqueante) — o filtro por tenant_id usa o indice implicito de UNIQUE(tenant_id, phone) da migration V7 (tenant_id e a coluna lider); a ordenacao por name nao e coberta por esse indice e exige sort separado sobre o conjunto ja filtrado por tenant. Aceitavel no volume do piloto (mesma familia de DEBT-018/019/020 ja registradas) — nao registrado como debt novo porque a propria spec tecnica (secao Existing Data & Migrations) ja antecipa e aceita esse comportamento explicitamente."
+    },
+    {
+      "item": "Paginacao real em toda consulta que pode crescer",
+      "result": "OK — nenhuma tela desta feature carrega todos os agendamentos nem todos os clientes do tenant de uma vez. admin/clientes usa PageRequest real (Spring Data) via customer.api; admin/clientes/{id} carrega so o historico de UM cliente (numero de visitas por cliente, tipicamente pequeno, mesmo raciocinio de DailyScheduleSummaryHandler para 'um dia')."
+    }
+  ],
+  "patterns_checked": ["n+1", "unbounded_collections", "missing_indexes", "batch_vs_loop_query"],
+  "timestamp": "2026-09-09T23:20:00Z"
+}
