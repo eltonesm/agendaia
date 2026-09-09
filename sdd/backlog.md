@@ -57,6 +57,15 @@ passa por `/sdd.start`.
 
 ---
 
+### TODO-111: E-mail transacional (SMTP)
+- **Priority**: High
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09) — infraestrutura que desbloqueia TODO-109, IDEA-001 e IDEA-007 de uma vez só
+- **Context**: Hoje não existe nenhum envio de e-mail no projeto. `TODO-109` (recuperação de senha, já Priority High) depende disso; o resumo diário ao dono (`IDEA-007`) e a confirmação/lembrete por e-mail (`IDEA-001`) também. Recomendação de canal: SMTP via um provedor com tier gratuito real (ex.: Brevo, ex-Sendinblue — 300 e-mails/dia grátis, sem cartão, sem prazo de expiração), integrado pelo `JavaMailSender` nativo do Spring Boot — não exige biblioteca nova nem infraestrutura própria de envio. O volume de um único estabelecimento piloto fica muito abaixo do limite gratuito de qualquer provedor sério.
+- **Affected Files**: `platform` (novo remetente de e-mail), `application.yaml` (credenciais SMTP via variável de ambiente)
+- **Complexity**: Low
+
 ---
 
 ## 🔧 Technical Debt
@@ -273,7 +282,7 @@ passa por `/sdd.start`.
 - **Origin**: escopo deliberadamente excluído do MVP
 - **Context**: Cortado por não ter consumidor no MVP. `AppointmentBooked` já é registrado no agregado, então o contexto nasce com evento pronto. **Atualizado em 2026-09-03**: inclui também o pedido do dono de um alerta 10-20 min antes do atendimento, para cliente e profissional, para reduzir esquecimento. Tem custo real e duas dependências duras: (1) WhatsApp Business API (Cloud API/BSP) ou SMS cobram por mensagem e exigem número comercial verificado + aprovação de template para mensagem proativa (não é resposta a uma conversa iniciada pelo cliente) — e-mail seria mais barato mas chega tarde demais para um aviso de minutos antes; (2) não existe `Appointment` para lembrar antes de `scheduling` existir (TODO-005/006/008), nem job agendado para disparar o alerta na hora certa.
 - **Potential Impact**: Redução de falta
-- **Notes**: Gatilho — quando o piloto mostrar falta por esquecimento, e só depois que TODO-005/006/008 existirem (não há o que lembrar antes disso)
+- **Notes**: Gatilho — quando o piloto mostrar falta por esquecimento, e só depois que TODO-005/006/008 existirem (não há o que lembrar antes disso). Atualizado em 2026-09-09: `scheduling`/`Appointment` já existe (TODO-008) — a dependência que falta agora é só a de e-mail transacional (**TODO-111**). Recomendação de sequência: começar pelo canal mais barato (e-mail, via TODO-111) para confirmação e resumo diário (IDEA-007); o lembrete de minutos antes por WhatsApp/SMS fica para quando o custo por mensagem + a aprovação de template comercial (Meta Business, número dedicado) se justificarem — não é algo que dá para ligar da noite pro dia como o e-mail.
 
 ---
 
@@ -326,9 +335,9 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
-- **Context**: Começa como campo no agendamento, não como módulo. É assim que se descobre se o financeiro merece existir.
-- **Potential Impact**: Retenção
-- **Notes**: Gatilho — se o barbeiro pedir "marcar como pago"
+- **Context**: Começa como campo no agendamento, não como módulo. É assim que se descobre se o financeiro merece existir. Atualizado em 2026-09-09: os três valores (`PAGO`/`PENDENTE`/`FIADO`) formam um enum de **pagamento**, deliberadamente separado de `AppointmentStatus` — são perguntas diferentes ("o atendimento aconteceu?" vs. "foi pago?"); um `COMPLETED` pode estar em qualquer um dos três. `PENDENTE` é "vai pagar já" (ex.: aguardando Pix cair); `FIADO` é o dono decidindo conscientemente confiar e receber depois — risco e follow-up diferentes, por isso não viram o mesmo valor. Sem campo de vencimento/motivo por enquanto — só o status, crescendo depois se o uso real pedir.
+- **Potential Impact**: Retenção, controle de caixa do dono
+- **Notes**: Gatilho — se o barbeiro pedir "marcar como pago". Combina com **IDEA-018** (perfil do cliente): dá pra mostrar "total em aberto" (soma de `FIADO`) no histórico do cliente. Combina também com **IDEA-020** (relatório financeiro): `FIADO` provavelmente não deveria contar como receita recebida até virar `PAGO`.
 
 ---
 
@@ -350,29 +359,32 @@ passa por `/sdd.start`.
 - **Origin**: escopo excluído do MVP
 - **Context**: Logo, imagem, slogan, cores. A "camada de tema" do ADR 0012 é o mecanismo técnico (sobrescreve `--bs-*`); esta ideia é o que entra nela quando `/b/{slug}` existir (TODO-006/007). Considerar aqui também: o estabelecimento escolher um tema claro/escuro padrão para os visitantes da própria página (hoje só existe alternância claro/escuro por navegador no admin — TODO-003). Atualizado em 2026-09-08: o guia de design (`sdd/PATTERNS.md`, seção Frontend) traduzido dos protótipos Gemini do dono usa `${empresa.slogan}`, `${empresa.logoUrl}` e `${empresa.instagram}` — nenhum dos três existe em `Business` hoje (só `name`, `slug`, `timezone`, `whatsapp`). Esta ideia também cobre `endereco` (também ausente), que aparece no header do fluxo público de agendamento.
 - **Potential Impact**: Percepção de valor
-- **Notes**: Gatilho — depois da validação
+- **Notes**: Gatilho — depois da validação. Atualizado em 2026-09-09: cobre também a foto de perfil do `Professional` (pedido novo, mesma mecânica de upload/armazenamento do logo). Decisão de armazenamento recomendada para quando esta ideia for puxada: arquivo em volume Docker nomeado (mesmo padrão de `postgres-data` em `compose.yaml`), servido por um path estático dedicado (ex.: `/uploads/**`) — `Business.logoUrl`/`Professional.photoUrl` guardam só o caminho relativo. Evita bytea no Postgres (infla o banco, exige endpoint de streaming) e não exige contratar object storage externo antes de precisar (S3-compatível — Cloudflare R2/Backblaze B2, ambos com tier gratuito — fica para quando o app for multi-tenant de verdade e precisar escalar horizontalmente, sem disco local compartilhado entre instâncias).
 
 ---
 
 ### IDEA-009: Dashboard e relatórios
 - **Priority**: Low
-- **Status**: pending
+- **Status**: partially-resolved
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
 - **Context**: Agendamentos do dia, faturamento, cancelamentos, falta, ociosidade. Referência visual: protótipo React (Gemini, fora do projeto) trazido pelo dono em 2026-09-01 — cards de métrica com ícone colorido (agendamentos de hoje, próximo cliente, atendidos hoje, receita estimada), lista da agenda do dia com badge de status, card de "atendimento atual" em destaque. Não implementável ainda: todo esse conteúdo depende de `Appointment` (`scheduling`, não existe no código).
 - **Potential Impact**: Retenção
-- **Notes**: Gatilho — depois da validação. Parte do dado vem de DEBT-008. Atualizado em 2026-09-08: o bloqueio original não vale mais — `scheduling`/`Appointment` existe desde a TODO-008. Protótipo de referência atualizado (mesmo dono, novo guia Tailwind traduzido para Bootstrap em `sdd/PATTERNS.md`), com os mesmos quatro KPIs e a mesma lista de agenda do dia — mas usa status que não existem em `AppointmentStatus` (`em_andamento`, `concluido`; o real é `SCHEDULED/CONFIRMED/CANCELLED/NO_SHOW`), a reconciliar quando esta idea for puxada.
+- **Notes**: Atualizado em 2026-09-09: os 4 cards de KPI (agendamentos de hoje, próximo cliente, atendidos hoje, receita estimada) foram entregues pela **TODO-110** (`scheduling.api.DailyScheduleDirectory`) — o `AppointmentStatus.COMPLETED` que faltava para "atendidos hoje" nasceu ali também. O que falta desta ideia (faturamento por período, serviço mais vendido, cancelamento/falta/ociosidade agregados) virou o item novo **IDEA-020** (relatório financeiro), que estende a mesma porta `scheduling.api` em vez de recomeçar do zero.
 
 ---
 
 ### IDEA-015: Navegação em sidebar no admin
 - **Priority**: Low
-- **Status**: pending
+- **Status**: resolved
 - **Created**: 2026-09-01
+- **Resolved**: 2026-09-09
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260908-sistema-de-design-admin/`
 - **Origin**: protótipo de referência (React/Gemini, trazido pelo dono)
 - **Context**: Sidebar fixa no desktop (logo + nome do estabelecimento, itens de menu com ícone) em vez da navbar simples atual. A navbar comportou as 3 telas de organization e agora também horário de funcionamento, jornadas e bloqueios (TODO-004) sem apertar; sidebar compensa quando houver mais itens (agenda, configurações).
 - **Potential Impact**: Usabilidade em telas com mais opções de menu
-- **Notes**: Gatilho — quando o número de telas de admin crescer o suficiente para a navbar atual ficar apertada (provável a partir de TODO-005/006). Parcialmente implementado em 2026-09-08: `operador/painel.html` já usa sidebar (fora do `/admin/**`, é o painel do operador da plataforma) — falta estender o mesmo padrão para as telas de `/admin/**`, hoje ainda na navbar de `fragments/layout.html`.
+- **Notes**: Entregue pela **TODO-110** — as 10 telas de `/admin/**` migraram de `fragments/layout :: navbar` para `adminSidebar`/`adminTopoMobile`. `admin/conta-suspensa.html` ficou de fora, de propósito (tela de beco sem saída).
 
 ---
 
@@ -439,6 +451,61 @@ passa por `/sdd.start`.
 - **Context**: Nota e/ou comentário do cliente sobre o atendimento, para o dono da plataforma evoluir o produto com dado real. Não há o que avaliar antes de existir `Appointment` (`scheduling`, TODO-005/006/008 ainda não existem) — sem atendimento, não há experiência para avaliar. Diferente da avaliação do dono do estabelecimento sobre a própria plataforma AgendaIA, que já está coberta pelo canal de WhatsApp da TODO-009, sem depender disso.
 - **Potential Impact**: Dado de produto, retenção
 - **Notes**: Gatilho — depois que TODO-005/006/008 existirem
+
+---
+
+### IDEA-018: Lista de clientes com histórico e contador de visitas
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09)
+- **Context**: Tela `/admin/clientes` (não existe hoje) com contador de visitas por cliente (independente do serviço) e sinalização de "cliente novo" (sem histórico — risco maior de no-show, merece atenção redobrada). Ao abrir o cliente: histórico completo (data, serviço, valor pago em cada visita) e totais (total de visitas, valor total gasto), para decisão de desconto/fidelização. `Customer` e `Appointment` já se relacionam por `customerId` — é leitura agregada nova, não mudança de domínio.
+- **Potential Impact**: Retenção, decisão de desconto/fidelização, mitigação de no-show de cliente novo
+- **Notes**: Maior valor por esforço do relatório de 2026-09-09 — não exige campo novo, só agregação sobre dado que já existe (`Appointment.customerId`/`price`/`startsAt`).
+
+---
+
+### IDEA-019: WhatsApp do dono para o cliente, no admin
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09)
+- **Context**: Hoje só existe o caminho inverso — cliente contata o estabelecimento (`Business.whatsapp`, link na tela pública de confirmação). Falta um link `wa.me/{telefone do cliente}` na agenda ou na lista de clientes, para o dono contatar o cliente direto (confirmar presença, avisar atraso). `Customer.phone` já existe — é só renderizar o link, sem campo novo.
+- **Potential Impact**: Comunicação direta sem trocar de tela/app
+- **Notes**: Trivial o suficiente para entrar junto da IDEA-018 (mesma tela de cliente/agenda).
+
+---
+
+### IDEA-020: Relatório financeiro (faturamento, serviço mais vendido, ociosidade)
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09); parte do escopo original da IDEA-009 que a TODO-110 não cobriu
+- **Context**: Faturamento por dia/semana/mês, serviço mais vendido, taxa de cancelamento/falta, ociosidade da agenda. A TODO-110 já entregou os KPIs do dia atual (`scheduling.api.DailyScheduleDirectory`) — este item estende o mesmo mecanismo para um período arbitrário, em vez de recomeçar do zero. Ociosidade depende de `DEBT-008` (não instrumentada ainda).
+- **Potential Impact**: Decisão de negócio do dono
+- **Notes**: Gatilho — depois da validação. Considerar paginar por período (dia/semana/mês) na mesma porta `api`, evitando reconsultar tudo a cada tela.
+
+---
+
+### IDEA-021: Comissão por profissional
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09)
+- **Context**: Quanto cada profissional gerou de receita, para dividir comissão. Só faz sentido com profissional contratado de verdade dividindo receita com o estabelecimento — o piloto atual é o próprio dono operando. `Appointment` já guarda `professionalId` e `price`; a agregação por profissional é factível quando houver caso de uso real por trás.
+- **Potential Impact**: Diferencial comercial para salões com equipe (não o piloto atual)
+- **Notes**: Gatilho — segundo cliente do SaaS com profissionais contratados, ou quando o piloto atual contratar alguém.
+
+---
+
+### IDEA-022: Pagamento online do cliente (Pix/cartão) e sinal de reserva
+- **Priority**: Medium
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: análise do relatório de features do dono (2026-09-09)
+- **Context**: Cobrança de sinal/taxa de reserva antecipada de cliente novo, para reduzir no-show; pagamento do serviço em si (Pix/cartão) na própria página pública. Diferente do Pix já existente em `application.yaml` (`AGENDAIA_OPERADOR_PIX_CHAVE`), que é a cobrança manual da assinatura SaaS do estabelecimento (billing), não do cliente final. Exige gateway de pagamento (ex.: Mercado Pago, Pix + cartão numa API só, o mais usado no Brasil para isso), tratamento de webhook/estorno, e decisão do que acontece com o agendamento se o sinal não for pago a tempo.
+- **Potential Impact**: Redução de no-show real (não só lembrete), possível diferencial comercial
+- **Notes**: Maior escopo do relatório inteiro — projeto próprio, não uma tarefa pequena. Gatilho — depois da validação, quando houver volume que justifique lidar com estorno/conciliação.
 
 ---
 
@@ -742,6 +809,8 @@ passa por `/sdd.start`.
 ---
 
 ## Last Updated
+
+2026-09-09 — análise do relatório de features do dono: IDEA-009 e IDEA-015 marcadas como entregues pela TODO-110 (deixavam de refletir a realidade); registrados TODO-111 (e-mail transacional) e IDEA-018 a IDEA-022 (lista de clientes, WhatsApp por cliente, relatório financeiro, comissão, pagamento online); IDEA-001 e IDEA-008 atualizadas com recomendação de canal de notificação e de armazenamento de imagem, respectivamente. Item "duplicar agenda do dia anterior" do relatório deliberadamente não registrado — caso de uso incerto, precisa de conversa com o dono antes.
 
 2026-09-09 — TODO-110 (sistema-de-design-admin) resolvida e arquivada; DEBT-019 registrado.
 
