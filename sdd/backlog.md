@@ -57,6 +57,8 @@ passa por `/sdd.start`.
 
 ---
 
+---
+
 ## 🔧 Technical Debt
 
 ### DEBT-018: Consulta da agenda do dono sem indice cobrindo todos os status
@@ -68,6 +70,18 @@ passa por `/sdd.start`.
 - **Affected Files**: `scheduling/adapter/out/persistence/AppointmentJpaRepository.java`, nova migration
 - **Complexity**: Low
 - **Risk if Ignored**: Tela da agenda fica lenta conforme o historico de agendamentos cresce — sem impacto de correcao, so de tempo de resposta
+
+---
+
+### DEBT-019: KPIs do painel sem indice cobrindo consulta so por tenant
+- **Priority**: Low
+- **Status**: pending
+- **Created**: 2026-09-09
+- **Origin**: revisao de performance da TODO-110 (sistema-de-design-admin)
+- **Context**: `AppointmentRepository.findByTenantIdAndDate` (usada por `DailyScheduleSummaryHandler`, os 4 KPIs do painel) filtra so por `tenant_id` e pela janela do dia, sem `professional_id` — o unico indice hoje sobre agendamento com `tenant_id` na frente e o GiST parcial de `appointment_no_overlap` (`tenant_id, professional_id, ...`, so linhas `SCHEDULED`/`CONFIRMED`) e o btree `appointment_customer_idx` (`tenant_id, customer_id, status`), nenhum dos dois serve bem uma consulta so por tenant e intervalo de tempo, de qualquer status. Mesmo raciocinio da DEBT-018: aceitavel no volume do piloto, tende a sequential scan conforme o historico cresce.
+- **Affected Files**: `scheduling/adapter/out/persistence/AppointmentJpaRepository.java`, nova migration
+- **Complexity**: Low
+- **Risk if Ignored**: Painel do dono fica lento conforme o historico de agendamentos cresce — sem impacto de correcao, so de tempo de resposta. Mesma solucao de raiz da DEBT-018 pode cobrir as duas de uma vez (indice `(tenant_id, starts_at)` cobriria este caso; `(tenant_id, professional_id, starts_at)` cobre os dois).
 
 ---
 
@@ -334,7 +348,7 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-08-29
 - **Origin**: escopo excluído do MVP
-- **Context**: Logo, imagem, slogan, cores. A "camada de tema" do ADR 0012 é o mecanismo técnico (sobrescreve `--bs-*`); esta ideia é o que entra nela quando `/b/{slug}` existir (TODO-006/007). Considerar aqui também: o estabelecimento escolher um tema claro/escuro padrão para os visitantes da própria página (hoje só existe alternância claro/escuro por navegador no admin — TODO-003).
+- **Context**: Logo, imagem, slogan, cores. A "camada de tema" do ADR 0012 é o mecanismo técnico (sobrescreve `--bs-*`); esta ideia é o que entra nela quando `/b/{slug}` existir (TODO-006/007). Considerar aqui também: o estabelecimento escolher um tema claro/escuro padrão para os visitantes da própria página (hoje só existe alternância claro/escuro por navegador no admin — TODO-003). Atualizado em 2026-09-08: o guia de design (`sdd/PATTERNS.md`, seção Frontend) traduzido dos protótipos Gemini do dono usa `${empresa.slogan}`, `${empresa.logoUrl}` e `${empresa.instagram}` — nenhum dos três existe em `Business` hoje (só `name`, `slug`, `timezone`, `whatsapp`). Esta ideia também cobre `endereco` (também ausente), que aparece no header do fluxo público de agendamento.
 - **Potential Impact**: Percepção de valor
 - **Notes**: Gatilho — depois da validação
 
@@ -347,7 +361,7 @@ passa por `/sdd.start`.
 - **Origin**: escopo excluído do MVP
 - **Context**: Agendamentos do dia, faturamento, cancelamentos, falta, ociosidade. Referência visual: protótipo React (Gemini, fora do projeto) trazido pelo dono em 2026-09-01 — cards de métrica com ícone colorido (agendamentos de hoje, próximo cliente, atendidos hoje, receita estimada), lista da agenda do dia com badge de status, card de "atendimento atual" em destaque. Não implementável ainda: todo esse conteúdo depende de `Appointment` (`scheduling`, não existe no código).
 - **Potential Impact**: Retenção
-- **Notes**: Gatilho — depois da validação. Parte do dado vem de DEBT-008
+- **Notes**: Gatilho — depois da validação. Parte do dado vem de DEBT-008. Atualizado em 2026-09-08: o bloqueio original não vale mais — `scheduling`/`Appointment` existe desde a TODO-008. Protótipo de referência atualizado (mesmo dono, novo guia Tailwind traduzido para Bootstrap em `sdd/PATTERNS.md`), com os mesmos quatro KPIs e a mesma lista de agenda do dia — mas usa status que não existem em `AppointmentStatus` (`em_andamento`, `concluido`; o real é `SCHEDULED/CONFIRMED/CANCELLED/NO_SHOW`), a reconciliar quando esta idea for puxada.
 
 ---
 
@@ -358,7 +372,7 @@ passa por `/sdd.start`.
 - **Origin**: protótipo de referência (React/Gemini, trazido pelo dono)
 - **Context**: Sidebar fixa no desktop (logo + nome do estabelecimento, itens de menu com ícone) em vez da navbar simples atual. A navbar comportou as 3 telas de organization e agora também horário de funcionamento, jornadas e bloqueios (TODO-004) sem apertar; sidebar compensa quando houver mais itens (agenda, configurações).
 - **Potential Impact**: Usabilidade em telas com mais opções de menu
-- **Notes**: Gatilho — quando o número de telas de admin crescer o suficiente para a navbar atual ficar apertada (provável a partir de TODO-005/006)
+- **Notes**: Gatilho — quando o número de telas de admin crescer o suficiente para a navbar atual ficar apertada (provável a partir de TODO-005/006). Parcialmente implementado em 2026-09-08: `operador/painel.html` já usa sidebar (fora do `/admin/**`, é o painel do operador da plataforma) — falta estender o mesmo padrão para as telas de `/admin/**`, hoje ainda na navbar de `fragments/layout.html`.
 
 ---
 
@@ -429,6 +443,22 @@ passa por `/sdd.start`.
 ---
 
 ## ✅ Resolved Items
+
+### TODO-110: Aplicar o sistema de design nas telas administrativas existentes
+- **Priority**: Medium
+- **Status**: resolved
+- **Created**: 2026-09-08
+- **Started**: 2026-09-08
+- **Resolved**: 2026-09-09
+- **Resolution**: Completed
+- **Resolved in**: `sdd/features/20260908-sistema-de-design-admin/`
+- **Origin**: guia de design traduzido de protótipos Gemini/Tailwind trazidos pelo dono (2026-09-08) — sistema já documentado em `sdd/PATTERNS.md`, seção Frontend
+- **Context**: As 10 telas de `/admin/**` trocaram a navbar simples por sidebar de navegação (IDEA-015); todo badge de status passou para o padrão soft/subtle (`bg-*-subtle` + `text-*-emphasis`), inclusive em `operador/painel.html`; o dashboard ganhou 4 KPIs com dado real (agendamentos de hoje, próximo cliente, atendidos hoje, receita estimada), viável porque `scheduling`/`Appointment` existe desde a TODO-008 (desbloqueia a IDEA-009). 21 tasks, 581 testes no projeto inteiro, 91% de cobertura de instrução.
+- **Mudança de escopo pedida pelo dono**: durante a entrevista funcional, a pergunta sobre como representar "atendidos hoje" gerou um pedido explícito (não estava nas opções oferecidas) — criar `AppointmentStatus.COMPLETED`, marcado manualmente por um clique (✓ verde ao lado do ✗ vermelho de cancelar), mesmo padrão do protótipo Gemini. Virou US-4 da spec funcional.
+- **Nasceu aqui**: `AppointmentStatus.COMPLETED`, `Appointment.complete(Instant)`, `CompleteAppointmentUseCase`, `scheduling.api` (1ª porta `api` deste contexto — `DailyScheduleDirectory`), `DailyScheduleSummaryHandler`, `DashboardKpiAdvice` (`@ControllerAdvice`, composição entre contextos sem import direto).
+- **Gotcha real**: duas tentativas para os KPIs do dashboard — a primeira fazia `organization` depender de `scheduling.api` direto, fechando um ciclo no Spring Modulith (`scheduling` já depende de `organization.api`); a segunda usa `@ControllerAdvice` (padrão de `BillingBannerAdvice`), que por sua vez quebrou 94 classes de `@WebMvcTest` (escaneadas globalmente) até trocar a dependência do construtor por `ObjectProvider`. Um achado de code review: `cancelByOwner()` não excluía `COMPLETED` do guard de absorção, permitindo reabrir um agendamento concluído — corrigido antes do fechamento da Layer 3.
+
+---
 
 ### TODO-108: Observabilidade — log estruturado e métricas
 - **Priority**: Medium
@@ -712,6 +742,8 @@ passa por `/sdd.start`.
 ---
 
 ## Last Updated
+
+2026-09-09 — TODO-110 (sistema-de-design-admin) resolvida e arquivada; DEBT-019 registrado.
 
 2026-09-07 — TODO-108 (observabilidade) resolvida e arquivada.
 

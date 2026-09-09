@@ -294,6 +294,37 @@ com.agendaia.<contexto>
   Sem a correção, uma sessão de dono autenticada em `/admin/**` abriria
   `/operador/**` e veria dado de todos os tenants.
 
+### Contexto composto na view de outro sem import: `@ControllerAdvice`
+
+- Quando um contexto precisa injetar dado no model de uma view que pertence
+  a **outro** contexto (ex.: `scheduling` mostrando KPIs no dashboard de
+  `organization`), a solução não é importar `scheduling.application` de
+  dentro de `organization` — isso fecha um ciclo se o sentido inverso já
+  existir (`scheduling` já depende de `organization.api`).
+- Em vez disso, o contexto que **tem o dado** declara um
+  `@ControllerAdvice` próprio com `@ModelAttribute`, checa a URI da
+  requisição (`request.getRequestURI()`) e só então adiciona os atributos
+  ao `Model` — sem o controller da outra tela saber que isso está
+  acontecendo. Precedente: `billing.adapter.in.web.BillingBannerAdvice`.
+- Why: mantém a regra "contextos só se falam pelo `api` um do outro"
+  (`CLAUDE.md`) mesmo quando o dado precisa aparecer numa tela que não é
+  fisicamente dona dele — sem inverter a dependência e sem duplicar
+  consulta no controller errado.
+
+**`ObjectProvider<T>` em `@ControllerAdvice` global**:
+- Um `@ControllerAdvice` é escaneado por **todo** `@WebMvcTest`, não só
+  pelo teste do controller a que ele "pertence" conceitualmente. Se o
+  construtor dele tiver uma dependência obrigatória de um bean que não
+  existe naquela fatia de contexto, **todos** os `@WebMvcTest` da suíte
+  quebram com `UnsatisfiedDependencyException` — não só os relacionados.
+- Injete a dependência como `ObjectProvider<T>` e resolva com
+  `.getIfAvailable()` (retorna `null` em vez de lançar) dentro do método
+  anotado com `@ModelAttribute`.
+- Why: descoberto na TODO-110 quando `DashboardKpiAdvice` (novo) quebrou
+  94 classes de `@WebMvcTest` que não tinham nenhuma relação com dashboard
+  ou KPI — o dependency scan do Spring Boot para slice test é global, e a
+  correção não exigiu tocar em nenhum dos 94 arquivos de teste.
+
 ## Database Patterns
 
 **Toda tabela de negócio tem `tenant_id`**:
@@ -381,6 +412,76 @@ templates/
   por tela.
 - Evite na página pública os componentes que denunciam Bootstrap: navbar e card
   padrão.
+
+**Sistema de design é token do Bootstrap, não classe solta** (2026-09-08,
+origem: protótipos Gemini/Tailwind trazidos pelo dono — tradução 1:1 para
+variável do Bootstrap, decisão de manter o framework da ADR 0012 em vez de
+adotar Tailwind):
+
+| Papel | Variável Bootstrap | Claro | Escuro |
+|---|---|---|---|
+| Fundo da página | `--bs-body-bg` | `#F8FAFC` | `#0F172A` |
+| Fundo de card/painel | `--bs-card-bg` (direto em `.card`, não em `:root` — o Bootstrap já redeclara essa variável dentro de `.card` como `var(--bs-body-bg)`, então só um seletor `.card { --bs-card-bg: ... }` explícito vence) | `#FFFFFF` | `#1E293B` |
+| Texto principal | `--bs-body-color` | `#0F172A` | `#F1F5F9` |
+| Texto secundário | `--bs-secondary-color` | `#64748B` | `#94A3B8` |
+| Borda | `--bs-border-color` | `#E2E8F0` | `#334155` |
+| Marca (primária) | `--bs-primary` | `#4F46E5` | `#4F46E5` |
+| Sucesso / Pago / Ativo | `--bs-success-bg-subtle` / `--bs-success-text-emphasis` | `#ECFDF5` / `#047857` | tom análogo, fundo com baixa opacidade |
+| Atenção / Pendente | `--bs-warning-bg-subtle` / `--bs-warning-text-emphasis` | `#FFFBEB` / `#D97706` | idem |
+| Erro / Cancelado | `--bs-danger-bg-subtle` / `--bs-danger-text-emphasis` | `#FFF1F2` / `#E11D48` | idem |
+
+- Toda cor sai dessas variáveis, sobrescritas uma vez em `fragments/layout.html`.
+  Nunca hex direto em `style=` nem numa classe ad-hoc por tela.
+- Why: `.bg-success-subtle`, `.text-success-emphasis`, `.card` e o botão
+  primário já leem essas variáveis sozinhos — sobrescrever uma vez no `head`
+  compartilhado propaga para toda tela sem repetir cor em lugar nenhum.
+
+**Dark mode é atributo global, não classe por elemento**:
+- `data-bs-theme="dark"` na tag `<html>`, alternado pelo fragmento `temaToggle`
+  (`fragments/layout.html`), persistido em `localStorage` por navegador.
+- Ao contrário de utility-first (que exige o par `dark:` em cada elemento de
+  cada tela), aqui cada componente do Bootstrap resolve a variante escura
+  sozinho a partir da tabela acima — não existe "esquecer o dark de um
+  elemento".
+- `localStorage` aqui é o comportamento correto, não uma exceção: o guia de
+  referência só proíbe isso dentro de protótipo/artifact do Claude.ai: no
+  projeto real ele mesmo recomenda persistir a preferência, e por navegador é
+  o que existe hoje, sem conta de cliente na página pública (ver IDEA-008).
+
+**Componentes padrão traduzidos do protótipo**:
+
+| Componente | Classes Bootstrap |
+|---|---|
+| Card | `card rounded-4 shadow-sm`, conteúdo em `card-body` |
+| Badge de status | `badge rounded-pill bg-{success\|warning\|danger\|info}-subtle text-{success\|warning\|danger\|info}-emphasis` |
+| Botão primário | `btn btn-primary rounded-3` |
+| Botão secundário | `btn btn-outline-secondary` |
+| Input | `form-control rounded-3` (o *focus ring* já segue `--bs-primary`) |
+| Sidebar | largura fixa (~16rem), `border-end`, item ativo com `bg-primary-subtle text-primary` — ver `templates/operador/painel.html` |
+
+- Why: mesma forma visual do protótipo (cantos de 1rem, sombra leve, pílula de
+  status) sem adotar Tailwind — o Bootstrap 5.3 já tem par `-subtle`/
+  `-emphasis` por cor semântica, que é exatamente o "badge com fundo suave e
+  texto forte" do guia.
+
+**Card de métrica (KPI) só entra com dado real atrás**:
+- Grid de cards no topo de uma tela administrativa (agendamentos de hoje,
+  receita estimada etc.) é bonito e vazio sem consulta real por trás.
+- Why: card de métrica com `0` fixo no HTML é pior que não ter o card — parece
+  bug, não ausência de dado. Ver IDEA-009: o bloqueio original ("depende de
+  `Appointment`") não existe mais desde a TODO-008, mas o card só entra quando
+  a feature for puxada de propósito, com o handler que calcula o número.
+
+**Nome de model attribute segue o glossário, nunca o protótipo de referência**:
+- Protótipo de terceiro (Gemini) usa nome em português: `${empresa.nome}`,
+  `${servicos}`, `.preco`. Traduzido para o projeto, o nome do atributo e do
+  campo é o nome de domínio já existente, em inglês: `${business}` /
+  `business.name()`, `${services}` / `service.price()`.
+- Nunca crie um objeto novo batizado em português só porque o protótipo usa
+  esse nome.
+- Why: é a regra de idioma já normativa acima ("Idioma") — duas convenções de
+  nome convivendo no mesmo código é pior que uma só, mesmo que a de fora seja
+  mais legível isoladamente.
 
 **A página pública é desenhada para o polegar**:
 - Mobile-first. Alvo de toque com no mínimo 44px.
@@ -618,3 +719,8 @@ duas `SecurityFilterChain` que compartilham `SecurityContextRepository`
 precisam de `hasRole`/`hasAuthority` explícito nos dois lados —
 `authenticated()` sozinho deixa uma sessão vazar da cadeia de um papel
 para a do outro.
+2026-09-09 — promovidos os aprendizados da TODO-110 (sistema-de-design-admin):
+composição entre contextos via `@ControllerAdvice` (evita ciclo de módulo
+sem inverter dependência) e `ObjectProvider<T>` em advice global (evita
+quebrar toda a suíte de `@WebMvcTest` quando o bean só existe fora daquela
+fatia de teste).
