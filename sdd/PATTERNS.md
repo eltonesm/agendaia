@@ -511,19 +511,20 @@ token único abaixo é a mesma):
 repetição do mesmo padrão):
 
 ```html
-<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-  <!-- ...path/circle/line do ícone... -->
+<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+  <path d="..."></path>
 </svg>
 ```
 
-- `stroke="currentColor"` (ou `fill="currentColor"` para ícone sólido) —
-  herda a cor do elemento que contém o SVG sozinho, em claro e escuro, sem
-  variante por tema e sem repetir hex.
-- `viewBox` pequeno e coordenadas simples (10-40 unidades) — são ícones
-  desenhados à mão para o caso de uso exato, não exportados de uma
-  biblioteca. Ver `fragments/layout :: logo` (ícone da marca) e
-  `.js-alternar-senha` (olho/olho cortado) como exemplos de referência.
+- `fill="currentColor"` (ou `stroke="currentColor"` para ícone contornado)
+  — herda a cor do elemento que contém o SVG sozinho, em claro e escuro,
+  sem variante por tema e sem repetir hex.
+- O `path` vem de um ícone concreto — desenhado à mão (caso do logo) ou o
+  `path` exato de um protótipo/referência trazido pelo dono (caso do olho,
+  ajustado em 2026-09-10 para o traçado literal que ele especificou) —
+  nunca gerado por adivinhação livre quando existe uma referência real.
+  Ver `fragments/layout :: logo` (ícone da marca) e `.js-alternar-senha`
+  (olho/olho cortado) como exemplos.
 - **Nunca emoji** (`👁️`, `🙈`, `🌙`, etc.) em elemento de interface daqui
   em diante — decisão do dono ao ver o resultado do campo de senha
   ("fica com cara mais profissional"). `temaToggle` (🌙/☀️) é anterior a
@@ -550,7 +551,7 @@ para SVG em 2026-09-10 — "fica com cara mais profissional"):
 <div class="input-group">
   <input type="password" id="password" name="password" class="form-control" ...>
   <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
-          aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg></button>
+          aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5.5 0-9.6 3.4-11.4 6.6a1 1 0 0 0 0 .8C2.4 15.6 6.5 19 12 19s9.6-3.4 11.4-6.6a1 1 0 0 0 0-.8C21.6 8.4 17.5 5 12 5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></button>
 </div>
 ```
 
@@ -867,3 +868,7 @@ tela.
 "Ícone é SVG inline, nunca emoji nem biblioteca de ícones nova" —
 segunda repetição do padrão já usado na logo, promovida a regra do
 projeto para toda tela futura.
+2026-09-10 — traçado do ícone de olho ajustado (mesmo dia) para o path
+exato do protótipo do dono (ícone preenchido com `fill="currentColor"`,
+não mais contornado) — trazido junto com o protótipo da tela de
+cadastro.
