@@ -506,6 +506,42 @@ token único abaixo é a mesma):
   `-emphasis` por cor semântica, que é exatamente o "badge com fundo suave e
   texto forte" do guia.
 
+**Ícone é SVG inline, nunca emoji nem biblioteca de ícones nova**
+(2026-09-10, generalizado a partir do logo e do campo de senha — segunda
+repetição do mesmo padrão):
+
+```html
+<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- ...path/circle/line do ícone... -->
+</svg>
+```
+
+- `stroke="currentColor"` (ou `fill="currentColor"` para ícone sólido) —
+  herda a cor do elemento que contém o SVG sozinho, em claro e escuro, sem
+  variante por tema e sem repetir hex.
+- `viewBox` pequeno e coordenadas simples (10-40 unidades) — são ícones
+  desenhados à mão para o caso de uso exato, não exportados de uma
+  biblioteca. Ver `fragments/layout :: logo` (ícone da marca) e
+  `.js-alternar-senha` (olho/olho cortado) como exemplos de referência.
+- **Nunca emoji** (`👁️`, `🙈`, `🌙`, etc.) em elemento de interface daqui
+  em diante — decisão do dono ao ver o resultado do campo de senha
+  ("fica com cara mais profissional"). `temaToggle` (🌙/☀️) é anterior a
+  esta regra e fica como está até a próxima vez que for tocado; não é
+  motivo para refatoração isolada agora (ADR 0002, rigor proporcional).
+- **Nunca biblioteca de ícones nova** (Bootstrap Icons, Font Awesome,
+  Lucide, etc.) — cada ícone usado no projeto até agora (marca, olho) é
+  simples o suficiente para desenhar à mão em poucas linhas de SVG, sem
+  pagar o custo de uma dependência (CDN novo, ou pacote novo no `pom.xml`)
+  para meia dúzia de ícones.
+- Why: emoji renderiza de forma inconsistente entre sistema
+  operacional/navegador (fonte de emoji do Windows ≠ macOS ≠ Android) e
+  não aceita cor customizada — SVG com `currentColor` é determinístico em
+  qualquer ambiente e já é o padrão do projeto desde a logo (DD-3,
+  pagina-institucional). Se um ícone futuro for complexo demais para
+  desenhar à mão (ex.: um conjunto grande e consistente de ícones para o
+  admin), essa exceção entra como decisão nova, não por default.
+
 **Campo de senha mostra/oculta** (2026-09-09, pedido do dono: usuário
 querer conferir se digitou certo antes de enviar; ícone trocado de emoji
 para SVG em 2026-09-10 — "fica com cara mais profissional"):
@@ -527,17 +563,13 @@ para SVG em 2026-09-10 — "fica com cara mais profissional"):
 - Se o campo tiver validação de erro (`is-invalid`/`invalid-feedback`), o
   `input-group` precisa também da classe `has-validation` (regra do próprio
   Bootstrap) — ver `auth/cadastro.html` para o exemplo com erro de campo.
-- Ícone é SVG inline com `stroke="currentColor"` (herda a cor do botão
-  sozinho, claro e escuro, sem variante por tema) — o script troca entre
-  olho aberto (senha oculta, convida a revelar) e olho cortado (senha
-  visível, convida a ocultar) via `botao.innerHTML`, não mais
-  `textContent`. Mesmo princípio do logo (`fragments/layout :: logo`):
-  SVG inline, sem biblioteca de ícones nova.
+- Ícone segue a regra geral "Ícone é SVG inline" (acima): o script troca
+  entre olho aberto (senha oculta, convida a revelar) e olho cortado
+  (senha visível, convida a ocultar) via `botao.innerHTML`, não mais
+  `textContent`.
 - Why: mesmo padrão já usado por `temaToggle` (IIFE guardado por
-  `querySelector`), agora com SVG em vez de emoji — emoji renderiza
-  diferente por sistema operacional/navegador e lê como menos
-  profissional; SVG com `currentColor` é consistente em qualquer
-  ambiente e já é o padrão do projeto desde a logo.
+  `querySelector`) para o listener — só o ícone em si mudou de emoji
+  para SVG, pela regra geral acima.
 
 **Card de métrica (KPI) só entra com dado real atrás**:
 - Grid de cards no topo de uma tela administrativa (agendamentos de hoje,
@@ -831,4 +863,7 @@ arquivo de template vira teste lendo o classpath, não renderizando a
 tela.
 2026-09-10 — ícone do "campo de senha mostra/oculta" trocado de emoji
 (👁️/🙈) para SVG inline com `stroke="currentColor"`, a pedido do dono
-("fica com cara mais profissional").
+("fica com cara mais profissional"). Generalizado numa regra nova,
+"Ícone é SVG inline, nunca emoji nem biblioteca de ícones nova" —
+segunda repetição do padrão já usado na logo, promovida a regra do
+projeto para toda tela futura.
