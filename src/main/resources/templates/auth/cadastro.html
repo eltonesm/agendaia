@@ -13,11 +13,28 @@
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Criar conta')}"></head>
+<style>
+  /* Título navy no claro (igual ao protótipo, que fixa isso como cor de
+     texto padrão do body inteiro) — não vira token de sistema (DD-4 da
+     pagina-institucional restringe o rebrand a --bs-primary), então fica
+     local a este título, com --bs-body-color assumindo no escuro. */
+  .cadastro-titulo { color: #1e1b4b; }
+  [data-bs-theme="dark"] .cadastro-titulo { color: var(--bs-body-color); }
+</style>
 <body>
 
+<!--/*
+  A posição do botão de tema precisa estar no elemento QUE ENVOLVE
+  th:replace, não nele mesmo: th:replace troca a tag inteira (inclusive
+  os atributos que eu colocasse nela), então classes de posicionamento
+  no próprio host de th:replace são descartadas — o botão nasce só com
+  as classes do fragmento (btn btn-sm btn-outline-secondary), sem
+  position-absolute nenhum.
+*/-->
 <div class="d-flex align-items-center justify-content-center position-relative" style="min-height: 100vh;">
-  <button type="button" th:replace="~{fragments/layout :: temaToggle}"
-          class="position-absolute top-0 end-0 mt-4 me-4"></button>
+  <div class="position-absolute top-0 end-0 mt-4 me-4">
+    <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+  </div>
 
   <main class="w-100 px-3 py-5" style="max-width: 26rem;">
 
@@ -25,8 +42,8 @@
       <span th:replace="~{fragments/layout :: logo(30)}"></span>
     </div>
 
-    <h1 class="h3 mb-1 text-center">Crie a conta do seu estabelecimento</h1>
-    <p class="text-body-secondary mb-4 text-center">Leva menos de um minuto. 30 dias grátis, sem cartão de crédito.</p>
+    <h1 class="cadastro-titulo mb-1" style="font-size: 1.5rem; font-weight: 800;">Crie a conta do seu estabelecimento</h1>
+    <p class="text-body-secondary small mb-4">Leva menos de um minuto. 30 dias grátis, sem cartão de crédito.</p>
 
     <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
 

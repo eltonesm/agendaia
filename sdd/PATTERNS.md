@@ -440,6 +440,26 @@ templates/
 - Why: layout sem tela é especulação — a mesma ficção do runbook escrito antes
   do procedimento.
 
+**`th:replace` no mesmo elemento onde você quer adicionar classe não funciona**
+(2026-09-10, achado real no redesenho-cadastro):
+- `th:replace="~{fragmento}"` troca a tag INTEIRA (host) pelo conteúdo do
+  fragmento — inclusive `class`/`style` que você tenha posto nessa mesma
+  tag. Só as classes definidas dentro do `th:fragment` sobrevivem.
+- Para posicionar um elemento vindo de fragmento (ex.: `temaToggle` com
+  `position-absolute`), a classe de posição vai num `<div>` que ENVOLVE o
+  `th:replace`, nunca no próprio host de `th:replace`:
+  ```html
+  <div class="position-absolute top-0 end-0 mt-4 me-4">
+    <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+  </div>
+  ```
+- Why: o botão de tema "sumiu" do canto e apareceu solto no fluxo normal
+  da página — as classes de posição escritas direto no `<button
+  th:replace=...>` nunca chegaram ao HTML final. `th:insert` preservaria a
+  tag host, mas mudaria a estrutura esperada pelo fragmento (`temaToggle`
+  já É o `<button>`, não algo para envolver por outro `<button>`) — o
+  `<div>` wrapper é a forma correta aqui.
+
 **Bootstrap 5 por CDN, versão fixada** (ADR 0012):
 - Sempre com `integrity` e `crossorigin`. Nunca versão flutuante.
 - No admin, use Bootstrap como vem — é ferramenta de trabalho, não vitrine.
@@ -883,3 +903,8 @@ protótipo do dono): volta para coluna única centralizada, sem painel
 de marca lateral — `slug.js` revertido para a forma simples (só
 `#slug-previa`), `.painel-escuro` continua compartilhado mas hoje só é
 usado em `landing.html`.
+2026-09-10 — achado real no ajuste fino do cadastro: `th:replace` no
+mesmo elemento onde se tentava adicionar `position-absolute` descartava
+a classe (a tag host inteira é substituída pelo fragmento) — corrigido
+envolvendo o `th:replace` num `<div>` de posicionamento. Promovido a
+regra em "Fragmento nasce na segunda repetição".
