@@ -14,12 +14,19 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Criar conta')}"></head>
 <style>
-  /* Título navy no claro (igual ao protótipo, que fixa isso como cor de
-     texto padrão do body inteiro) — não vira token de sistema (DD-4 da
-     pagina-institucional restringe o rebrand a --bs-primary), então fica
-     local a este título, com --bs-body-color assumindo no escuro. */
-  .cadastro-titulo { color: #1e1b4b; }
-  [data-bs-theme="dark"] .cadastro-titulo { color: var(--bs-body-color); }
+  /* Navy no claro para título e rótulos (igual ao protótipo, que fixa
+     isso como cor de texto padrão do body inteiro) — não vira token de
+     sistema (DD-4 da pagina-institucional restringe o rebrand a
+     --bs-primary), então fica local a esta página, com --bs-body-color
+     assumindo no escuro. */
+  .cadastro-titulo,
+  .cadastro-form .form-label {
+    color: #1e1b4b;
+  }
+  [data-bs-theme="dark"] .cadastro-titulo,
+  [data-bs-theme="dark"] .cadastro-form .form-label {
+    color: var(--bs-body-color);
+  }
 </style>
 <body>
 
@@ -45,7 +52,7 @@
     <h1 class="cadastro-titulo mb-1" style="font-size: 1.5rem; font-weight: 800;">Crie a conta do seu estabelecimento</h1>
     <p class="text-body-secondary small mb-4">Leva menos de um minuto. 30 dias grátis, sem cartão de crédito.</p>
 
-    <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+    <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate class="cadastro-form">
 
       <!--/*
         Erro que não pertence a nenhum campo específico.
@@ -74,57 +81,60 @@
           <span class="input-group-text text-body-secondary">simboraagendar.com.br/b/</span>
           <input type="text" id="slug" th:field="*{slug}"
                  class="form-control" th:classappend="${#fields.hasErrors('slug')} ? 'is-invalid'"
-                 autocomplete="off" autocapitalize="off" spellcheck="false">
+                 placeholder="barbearia-do-joao" autocomplete="off" autocapitalize="off" spellcheck="false">
           <div class="invalid-feedback" th:if="${#fields.hasErrors('slug')}"
                th:errors="*{slug}">erro</div>
         </div>
         <div class="form-text">
-          É o endereço que você compartilha com seus clientes:
-          <strong>simboraagendar.com.br/b/<span id="slug-previa">seu-link</span></strong>
+          É o endereço que você vai compartilhar com seus clientes:
+          <strong style="color: #ff6b4a;">simboraagendar.com.br/b/<span id="slug-previa">seu-link</span></strong>
         </div>
       </div>
 
-      <div class="mb-3">
-        <label for="email" class="form-label">Seu e-mail</label>
-        <input type="email" id="email" th:field="*{email}"
-               class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-               autocomplete="email">
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
-             th:errors="*{email}">erro</div>
-      </div>
+      <div class="border-top pt-4 mt-1">
 
-      <div class="mb-3">
-        <label for="whatsapp" class="form-label">WhatsApp do estabelecimento <span class="text-body-secondary">(opcional)</span></label>
-        <input type="tel" id="whatsapp" th:field="*{whatsapp}"
-               class="form-control" th:classappend="${#fields.hasErrors('whatsapp')} ? 'is-invalid'"
-               placeholder="5511999999999" autocomplete="tel">
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('whatsapp')}"
-             th:errors="*{whatsapp}">erro</div>
-        <div class="form-text">Aparece para o cliente na tela do agendamento, para ele falar com você.</div>
-      </div>
-
-      <div class="mb-4">
-        <label for="password" class="form-label">Senha</label>
-        <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
-               digitada de volta ao navegador quando o formulário fosse
-               reexibido com erro. */-->
-        <div class="input-group" th:classappend="${#fields.hasErrors('password')} ? 'has-validation'">
-          <input type="password" id="password" name="password"
-                 class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-                 autocomplete="new-password">
-          <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
-                  aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5.5 0-9.6 3.4-11.4 6.6a1 1 0 0 0 0 .8C2.4 15.6 6.5 19 12 19s9.6-3.4 11.4-6.6a1 1 0 0 0 0-.8C21.6 8.4 17.5 5 12 5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></button>
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
-               th:errors="*{password}">erro</div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Seu e-mail</label>
+          <input type="email" id="email" th:field="*{email}"
+                 class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                 placeholder="voce@email.com" autocomplete="email">
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+               th:errors="*{email}">erro</div>
         </div>
-        <div class="form-text">Pelo menos 8 caracteres.</div>
+
+        <div class="mb-3">
+          <label for="whatsapp" class="form-label">WhatsApp do estabelecimento <span class="text-body-secondary">(opcional)</span></label>
+          <input type="tel" id="whatsapp" th:field="*{whatsapp}"
+                 class="form-control" th:classappend="${#fields.hasErrors('whatsapp')} ? 'is-invalid'"
+                 placeholder="55 11 99999-9999" autocomplete="tel">
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('whatsapp')}"
+               th:errors="*{whatsapp}">erro</div>
+          <div class="form-text">Aparece pro cliente na tela de agendamento, caso ele precise falar com você.</div>
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label">Senha</label>
+          <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
+                 digitada de volta ao navegador quando o formulário fosse
+                 reexibido com erro. */-->
+          <div class="input-group" th:classappend="${#fields.hasErrors('password')} ? 'has-validation'">
+            <input type="password" id="password" name="password"
+                   class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                   placeholder="Pelo menos 8 caracteres" autocomplete="new-password">
+            <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
+                    aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5.5 0-9.6 3.4-11.4 6.6a1 1 0 0 0 0 .8C2.4 15.6 6.5 19 12 19s9.6-3.4 11.4-6.6a1 1 0 0 0 0-.8C21.6 8.4 17.5 5 12 5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></button>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                 th:errors="*{password}">erro</div>
+          </div>
+        </div>
+
       </div>
 
       <button type="submit" class="btn btn-primary w-100">Criar minha conta grátis</button>
     </form>
 
     <p class="text-center mt-4 mb-0 text-body-secondary">
-      Já tem conta? <a th:href="@{/login}">Entrar</a>
+      Já tem conta? <a th:href="@{/login}" class="fw-semibold">Entrar</a>
     </p>
 
   </main>
