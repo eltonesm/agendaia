@@ -37,21 +37,38 @@
   .painel-escuro .text-secondary {
     color: #94a3b8 !important;
   }
+
+  /* Logo um pouco menor em telas bem estreitas — libera espaço no
+     cabeçalho para o botão de CTA não quebrar linha (achado do dono
+     testando em celular, 2026-09-10). */
+  @media (max-width: 360px) {
+    header svg { width: 24px !important; height: 24px !important; }
+    header .fw-bold { font-size: 1rem !important; }
+  }
 </style>
 <body>
 
 <header class="sticky-top border-bottom" style="background: color-mix(in srgb, var(--bs-body-bg) 90%, transparent); backdrop-filter: blur(8px);">
-  <div class="container d-flex align-items-center justify-content-between" style="height: 4rem;">
-    <span th:replace="~{fragments/layout :: logo(34)}"></span>
-    <nav class="d-none d-md-flex align-items-center gap-4 small fw-semibold">
+  <div class="container d-flex align-items-center justify-content-between flex-nowrap" style="height: 4rem; overflow: hidden;">
+    <span th:replace="~{fragments/layout :: logo(30)}"></span>
+    <!--/*
+      Nav e "Entrar" só a partir de lg (992px): em telas de celular e
+      tablet (até ~991px) esses itens somados à logo e ao CTA não cabiam
+      numa linha só e causavam overflow horizontal na página inteira
+      (achado real do dono testando em celular/tablet, 2026-09-10).
+    */-->
+    <nav class="d-none d-lg-flex align-items-center gap-4 small fw-semibold flex-shrink-0">
       <a href="#como-funciona" class="link-body-emphasis text-decoration-none">Como funciona</a>
       <a href="#para-quem" class="link-body-emphasis text-decoration-none">Para quem é</a>
       <a href="#precos" class="link-body-emphasis text-decoration-none">Preços</a>
     </nav>
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
       <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
-      <a th:href="@{/login}" class="link-secondary text-decoration-none small d-none d-sm-inline">Entrar</a>
-      <a th:href="@{/cadastro}" class="btn btn-primary rounded-3 btn-sm">Criar minha agenda</a>
+      <a th:href="@{/login}" class="link-secondary text-decoration-none small d-none d-lg-inline">Entrar</a>
+      <a th:href="@{/cadastro}" class="btn btn-primary rounded-3 btn-sm text-nowrap">
+        <span class="d-none d-sm-inline">Criar minha agenda</span>
+        <span class="d-sm-none">Criar conta</span>
+      </a>
     </div>
   </div>
 </header>
@@ -62,9 +79,6 @@
   <section class="container py-5 my-4">
     <div class="row g-5 align-items-center">
       <div class="col-lg-6">
-        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-semibold px-3 py-2 mb-3">
-          Feito para barbearia, salão e manicure
-        </span>
         <h1 class="display-5 fw-bold mb-3" style="letter-spacing: -0.02em;">Cada cliente marca o próprio horário. Você só confirma.</h1>
         <p class="fs-5 text-body-secondary mb-4" style="max-width: 32rem;">
           Sem enrolação, simbora marcar. Seu negócio ganha um link só seu, onde
@@ -132,7 +146,7 @@
       <div class="col-sm-6 col-lg-3">
         <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
           <h3 class="h6 fw-bold mb-1">Salão de beleza</h3>
-          <p class="small text-body-secondary mb-0">Vários serviços, uma agenda só, sem overbooking.</p>
+          <p class="small text-body-secondary mb-0">Vários serviços, uma agenda só, sem horário duplicado.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
@@ -180,11 +194,11 @@
     <div class="rounded-4 p-4 p-md-5" style="background: var(--bs-tertiary-bg);">
       <div class="row g-4 align-items-center">
         <div class="col-md-6">
-          <h3 class="h4 fw-bold mb-3">Comece sem custo, pague quando fizer sentido</h3>
+          <h3 class="h4 fw-bold mb-3">30 dias grátis pra testar com seus clientes de verdade</h3>
           <p class="text-body-secondary mb-0">
-            Ideal pra quem quer testar com os próprios clientes antes de decidir.
-            Depois dos 30 dias, <strong>R$49,90/mês</strong> — sem multa, cancele
-            quando quiser.
+            Sem cartão de crédito pra começar. Depois dos 30 dias, você escolhe
+            continuar ou não — sem multa, sem fidelidade. Se continuar,
+            <strong>R$49,90/mês</strong>.
           </p>
         </div>
         <div class="col-md-6">
