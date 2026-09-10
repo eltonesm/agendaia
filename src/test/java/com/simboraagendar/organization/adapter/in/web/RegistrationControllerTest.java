@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -84,6 +86,16 @@ class RegistrationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("auth/cadastro"))
                 .andExpect(model().attributeExists("form"));
+    }
+
+    @Test
+    @DisplayName("painel de marca (redesenho-cadastro) renderiza com os ids que slug.js espera")
+    void painelDeMarcaRenderizaComOsIdsDaPreviaAoVivo() throws Exception {
+        mockMvc.perform(get("/cadastro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"preview-nome\"")))
+                .andExpect(content().string(containsString("id=\"preview-link\"")))
+                .andExpect(content().string(containsString("id=\"slug-previa\"")));
     }
 
     @Test
