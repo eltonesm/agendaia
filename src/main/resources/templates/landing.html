@@ -45,6 +45,54 @@
     header svg { width: 24px !important; height: 24px !important; }
     header .fw-bold { font-size: 1rem !important; }
   }
+
+  /* Carrossel "Para quem é" (2026-09-10, pedido do dono após ver a
+     lista crescer de 4 para 11 segmentos — grade fixa não cabia mais).
+     Esmaecimento nas bordas usa var(--bs-body-bg) de propósito: assim
+     acompanha o tema claro/escuro sem duplicar a regra. */
+  .carrossel-esmaecido {
+    position: relative;
+  }
+  .carrossel-esmaecido::before,
+  .carrossel-esmaecido::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2.5rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .carrossel-esmaecido::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bs-body-bg), transparent);
+  }
+  .carrossel-esmaecido::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bs-body-bg), transparent);
+  }
+  .carrossel-scroll {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.25rem 1rem;
+    cursor: grab;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Edge legado */
+  }
+  .carrossel-scroll:active {
+    cursor: grabbing;
+  }
+  .carrossel-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge novo */
+  }
+  .carrossel-card {
+    flex: 0 0 15rem;
+  }
+  .carrossel-card-destaque {
+    background: #ff6b4a;
+    color: #ffffff;
+  }
 </style>
 <body>
 
@@ -134,31 +182,62 @@
 
   <!-- Para quem é -->
   <section id="para-quem" class="container py-5">
-    <span class="text-primary fw-bold small text-uppercase">Para quem é</span>
-    <h2 class="h3 fw-bold mt-2 mb-5" style="max-width: 32rem;">Se o seu trabalho depende de horário marcado, é pra você.</h2>
-    <div class="row g-4">
-      <div class="col-sm-6 col-lg-3">
-        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+      <div style="max-width: 32rem;">
+        <span class="text-primary fw-bold small text-uppercase">Para quem é</span>
+        <h2 class="h3 fw-bold mt-2 mb-0">Se o seu trabalho depende de horário marcado, é pra você.</h2>
+      </div>
+      <!--/* Só em telas maiores: em celular o gesto de arrastar já é óbvio
+             (é como qualquer lista do sistema); a dica existe pra quem usa
+             mouse/trackpad, onde não é tão evidente que rola. */-->
+      <span class="d-none d-md-inline small text-body-secondary">arraste para o lado →</span>
+    </div>
+
+    <div class="carrossel-esmaecido">
+      <div class="carrossel-scroll">
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
           <h3 class="h6 fw-bold mb-1">Barbearia</h3>
           <p class="small text-body-secondary mb-0">Corte, barba e combo — sem precisar ligar.</p>
         </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
           <h3 class="h6 fw-bold mb-1">Salão de beleza</h3>
           <p class="small text-body-secondary mb-0">Vários serviços, uma agenda só, sem horário duplicado.</p>
         </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
-          <h3 class="h6 fw-bold mb-1">Manicure e estética</h3>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Manicure e pedicure</h3>
           <p class="small text-body-secondary mb-0">Horário fixo, com lembrete automático.</p>
         </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
-          <h3 class="h6 fw-bold mb-1">Outros serviços</h3>
-          <p class="small text-body-secondary mb-0">Qualquer negócio com hora marcada cabe aqui.</p>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Estética facial</h3>
+          <p class="small text-body-secondary mb-0">Limpeza de pele, procedimentos com horário certo.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Depilação</h3>
+          <p class="small text-body-secondary mb-0">Agenda organizada, sem cliente esperando na porta.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Sobrancelha e cílios</h3>
+          <p class="small text-body-secondary mb-0">Design, henna e extensão com hora marcada.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Massoterapia</h3>
+          <p class="small text-body-secondary mb-0">Sessões marcadas sem trocar mensagem toda hora.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Tatuagem e piercing</h3>
+          <p class="small text-body-secondary mb-0">Sessões longas, agenda sem conflito de horário.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Personal trainer</h3>
+          <p class="small text-body-secondary mb-0">Aulas e treinos com horário reservado por aluno.</p>
+        </div>
+        <div class="carrossel-card card rounded-4 shadow-sm border-0 p-4">
+          <h3 class="h6 fw-bold mb-1">Pet shop (banho e tosa)</h3>
+          <p class="small text-body-secondary mb-0">Cliente marca o horário do peludo sem ligar.</p>
+        </div>
+        <div class="carrossel-card carrossel-card-destaque rounded-4 shadow-sm p-4">
+          <h3 class="h6 fw-bold mb-1">E mais</h3>
+          <p class="small mb-0">Qualquer negócio com hora marcada cabe aqui.</p>
         </div>
       </div>
     </div>
@@ -227,5 +306,42 @@
 </footer>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
+<!--/*
+  Arrastar o carrossel "Para quem é" com o mouse (touch e trackpad já
+  rolam horizontalmente sem JS nenhum — overflow-x: auto nativo).
+  Página-específico: não entra em fragments/layout porque só esta tela
+  tem carrossel hoje (mesmo critério de "fragmento nasce na segunda
+  repetição").
+*/-->
+<script>
+  (function () {
+    var carrossel = document.querySelector('.carrossel-scroll');
+    if (!carrossel) return;
+
+    var arrastando = false;
+    var inicioX = 0;
+    var scrollInicio = 0;
+
+    carrossel.addEventListener('pointerdown', function (evento) {
+      arrastando = true;
+      inicioX = evento.clientX;
+      scrollInicio = carrossel.scrollLeft;
+      carrossel.setPointerCapture(evento.pointerId);
+    });
+
+    carrossel.addEventListener('pointermove', function (evento) {
+      if (!arrastando) return;
+      carrossel.scrollLeft = scrollInicio - (evento.clientX - inicioX);
+    });
+
+    function pararDeArrastar() {
+      arrastando = false;
+    }
+
+    carrossel.addEventListener('pointerup', pararDeArrastar);
+    carrossel.addEventListener('pointercancel', pararDeArrastar);
+    carrossel.addEventListener('pointerleave', pararDeArrastar);
+  })();
+</script>
 </body>
 </html>
