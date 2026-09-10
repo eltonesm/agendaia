@@ -1,0 +1,12 @@
+{
+  "skill": "sdd-code-reviewer",
+  "verdict": "APPROVED",
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0
+  },
+  "files_reviewed": 6,
+  "notes": "Feature puramente de apresentação. RegistrationController/RegistrationRequest intocados (confirmado — nenhum diff em arquivo Java de produção). slug.js estendido com guardas if(elemento) para os dois novos ids, sem duplicar a função de derivação. .painel-escuro promovido para o fragmento compartilhado sem duplicação residual (removido de landing.html). Teste novo (painelDeMarcaRenderizaComOsIdsDaPreviaAoVivo) cobre a regressão dos ids que o JS depende.",
+  "timestamp": "2026-09-10T17:35:00Z"
+}
