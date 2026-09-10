@@ -1,0 +1,133 @@
+{
+  "feature": "redesenho-cadastro",
+  "local_config": { "mysql": null, "kvs": null, "bigqueue": null },
+  "stats": { "total": 8, "done": 8, "by_layer": { "1": 5, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Promover .painel-escuro para fragments/layout.html",
+      "description": "Mover a classe .painel-escuro (e a variante [data-bs-theme=\"dark\"]) do <style> local de landing.html para o <style> compartilhado em fragments/layout.html. Remover a declaração local de landing.html — ela passa a herdar do fragmento, sem mudança visual.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": [
+        "src/main/resources/templates/fragments/layout.html",
+        "src/main/resources/templates/landing.html"
+      ],
+      "acceptance_criteria": [
+        "AC-1: .painel-escuro definida uma única vez, em fragments/layout.html",
+        "AC-2: landing.html renderiza visualmente igual a antes (sem regressão)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Reescrever auth/cadastro.html em duas colunas",
+      "description": "Layout de duas colunas (painel de marca col-lg-6 d-none d-lg-flex + formulário col-lg-6), traduzido do protótipo Tailwind para Bootstrap 5. Painel de marca com logo, texto de reforço, menção ao trial de 30 dias, e mockup de link com dois elementos novos: #preview-nome e #preview-link. Mesmos 5 campos do formulário atual, mesmo th:object, mesmo botão de senha (.js-alternar-senha, ícone já corrigido). URL do mockup usa simboraagendar.com.br/b/{slug} (BR-3), nunca subdomínio.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": ["src/main/resources/templates/auth/cadastro.html"],
+      "acceptance_criteria": [
+        "AC-1: painel de marca some abaixo do breakpoint lg (DD-3)",
+        "AC-2: #preview-nome e #preview-link existem no HTML, com texto inicial padrão",
+        "AC-3: os 5 campos (nome, link, e-mail, whatsapp, senha) continuam com os mesmos id/name usados por RegistrationRequest e slug.js",
+        "AC-4: nenhuma mudança em th:object, th:field ou th:action"
+      ],
+      "references": ["US-1", "US-2", "US-3"],
+      "design_decisions": ["DD-3"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "Estender slug.js com a prévia do painel de marca",
+      "description": "Dentro dos listeners já existentes (nome.input, slug.input) e da função atualizarPrevia(), adicionar chamadas condicionais (if (elemento)) que atualizam #preview-nome (com nome.value) e #preview-link (com o mesmo valor de #slug-previa). Não duplicar a função de derivação/normalização — só exibir o valor já calculado.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-002"],
+      "files": ["src/main/resources/static/js/slug.js"],
+      "acceptance_criteria": [
+        "AC-1: digitar no campo de nome atualiza #preview-nome em tempo real (E2E-2)",
+        "AC-2: digitar no campo de nome atualiza #preview-link com o slug derivado",
+        "AC-3: editar o campo de link manualmente é respeitado na prévia — não volta a ser sobrescrito pela derivação automática (E2E-3, BR-1)",
+        "AC-4: se #preview-nome/#preview-link não existirem na página, nenhum erro é lançado (guardas if)"
+      ],
+      "references": ["US-2"],
+      "design_decisions": ["DD-2"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Testes: RegistrationControllerTest cobre a nova estrutura",
+      "description": "Estender formularioVazio() (ou acrescentar um caso novo) para confirmar que o corpo da resposta contém os ids estruturais novos (preview-nome, preview-link). Os 10 testes já existentes do controller continuam passando sem alteração, comprovando que nenhum contrato mudou.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-003"],
+      "files": ["src/test/java/com/simboraagendar/organization/adapter/in/web/RegistrationControllerTest.java"],
+      "acceptance_criteria": [
+        "AC-1: novo caso/asserção confirma presença de preview-nome e preview-link no HTML renderizado",
+        "AC-2: os 10 testes pré-existentes continuam verdes, sem edição",
+        "GATE: ./mvnw test -Dtest=RegistrationControllerTest passa"
+      ],
+      "references": ["E2E-1", "E2E-4"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "Atualizar sdd/PATTERNS.md",
+      "description": "Nota indicando que .painel-escuro deixou de ser específico da landing e virou componente compartilhado de fragments/layout.html, usado agora em duas telas (landing e cadastro). Atualizar o changelog \"Last Updated\".",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": ["sdd/PATTERNS.md"],
+      "acceptance_criteria": [
+        "AC-1: documentação reflete .painel-escuro como componente compartilhado, não mais só da landing",
+        "AC-2: changelog tem entrada datada desta mudança"
+      ],
+      "references": [],
+      "design_decisions": ["DD-1"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Code Review",
+      "description": "Revisão de qualidade de código das mudanças desta feature (cadastro.html, slug.js, layout.html, landing.html, teste, PATTERNS.md).",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-004", "TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS em verdicts/code_review.json"],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Performance Review",
+      "description": "Confirma que nenhuma requisição HTTP nova foi introduzida (prévia é 100% client-side) e que a extensão de slug.js não adiciona custo perceptível ao evento input já existente.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-004", "TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED em verdicts/performance.json"],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-008",
+      "title": "Security Review",
+      "description": "Confirma que nenhuma rota, permitAll(), CSRF ou validação mudou; que a prévia não envia dado nenhum ao servidor; que nenhum secret ou dependência nova foi introduzida.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-004", "TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED em verdicts/security.json"],
+      "references": [],
+      "design_decisions": ["DD-4"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": { "level_0": ["TASK-001"], "level_1": ["TASK-002", "TASK-005"], "level_2": ["TASK-003"], "level_3": ["TASK-004"] },
+      "3": { "level_0": ["TASK-006", "TASK-007", "TASK-008"] }
+    }
+  }
+}

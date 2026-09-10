@@ -1,109 +1,156 @@
 <!doctype html>
 <!--/*
-  Cadastro do estabelecimento.
+  Cadastro do estabelecimento (redesenho-cadastro, 2026-09-10).
 
   Três campos mais o link. Cada campo a mais é abandono — o dono do piloto
   provavelmente preenche isto à noite, no celular, depois de fechar a barbearia.
 
   Nenhuma regra de negócio aqui: o template só exibe o que o controller já
-  resolveu.
+  resolveu. RegistrationController/RegistrationRequest NÃO mudaram nesta
+  feature — só a apresentação (spec técnica, DD-4).
+
+  Layout em duas colunas traduzido do protótipo Tailwind do dono para
+  Bootstrap 5, mesma identidade visual da pagina-institucional
+  (.painel-escuro, fragments/layout :: logo). Painel de marca some abaixo
+  de lg (992px) — mesmo breakpoint que corrigiu o problema de
+  responsividade da landing (DD-3): usar md aqui arriscaria o mesmo bug.
+
+  #preview-nome e #preview-link são atualizados por static/js/slug.js
+  (estendido, não duplicado — DD-2): é a mesma derivação de slug que já
+  existia, só exibida também no painel de marca.
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('Criar conta')}"></head>
 <body>
 
-<div class="container d-flex justify-content-end pt-3">
-  <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
+<div class="row g-0" style="min-height: 100vh;">
+
+  <!-- Painel de marca (some abaixo de lg) -->
+  <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-between painel-escuro p-5">
+    <span th:replace="~{fragments/layout :: logo(32)}"></span>
+
+    <div style="max-width: 26rem;">
+      <h2 class="h3 fw-bold mb-3">Sua agenda pronta pra receber o primeiro cliente hoje.</h2>
+      <p class="text-body-secondary mb-4">Cadastre seu negócio e ganhe um link só seu, pra compartilhar no Instagram e WhatsApp.</p>
+
+      <div class="rounded-4 overflow-hidden" style="background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);">
+        <div class="d-flex align-items-center gap-2 px-3 py-2 small text-body-secondary" style="border-bottom: 1px solid rgba(255,255,255,.1);">
+          <span class="rounded-circle" style="width: .5rem; height: .5rem; background: rgba(255,255,255,.2);"></span>
+          <span class="rounded-circle" style="width: .5rem; height: .5rem; background: rgba(255,255,255,.2);"></span>
+          <span class="rounded-circle" style="width: .5rem; height: .5rem; background: rgba(255,255,255,.2);"></span>
+          <span class="ms-2 fw-semibold" style="color: #ff6b4a;" id="preview-link">simboraagendar.com.br/b/seu-link</span>
+        </div>
+        <div class="p-3 small text-body-secondary">
+          Esse é o link que a <strong class="text-white" id="preview-nome">sua empresa</strong> vai compartilhar com os clientes.
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 small text-body-secondary">
+      <span class="rounded-circle" style="width: .5rem; height: .5rem; background: #34d399;"></span>
+      30 dias grátis · sem cartão de crédito
+    </div>
+  </div>
+
+  <!-- Formulário -->
+  <div class="col-lg-6 d-flex align-items-center justify-content-center p-4 p-sm-5 position-relative">
+    <button type="button" th:replace="~{fragments/layout :: temaToggle}"
+            class="position-absolute top-0 end-0 mt-4 me-4"></button>
+
+    <div class="w-100" style="max-width: 26rem;">
+
+      <div class="d-lg-none mb-4">
+        <span th:replace="~{fragments/layout :: logo(28)}"></span>
+      </div>
+
+      <h1 class="h3 mb-1">Crie a conta do seu estabelecimento</h1>
+      <p class="text-body-secondary mb-4">Leva menos de um minuto. 30 dias grátis, sem cartão de crédito.</p>
+
+      <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+
+        <!--/*
+          Erro que não pertence a nenhum campo específico.
+
+          Precisa estar DENTRO do form: o objeto #fields só existe no contexto de um
+          th:object. Fora daqui, o Thymeleaf lança "Could not bind form errors using
+          expression global" e a página inteira vira 500 — inclusive na primeira
+          visita, sem erro nenhum para exibir.
+        */-->
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+          <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="businessName" class="form-label">Nome do estabelecimento</label>
+          <input type="text" id="businessName" th:field="*{businessName}"
+                 class="form-control" th:classappend="${#fields.hasErrors('businessName')} ? 'is-invalid'"
+                 placeholder="Barbearia do João" autocomplete="organization" autofocus>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('businessName')}"
+               th:errors="*{businessName}">erro</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="slug" class="form-label">Seu link</label>
+          <div class="input-group" th:classappend="${#fields.hasErrors('slug')} ? 'has-validation'">
+            <span class="input-group-text text-body-secondary">simboraagendar.com.br/b/</span>
+            <input type="text" id="slug" th:field="*{slug}"
+                   class="form-control" th:classappend="${#fields.hasErrors('slug')} ? 'is-invalid'"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('slug')}"
+                 th:errors="*{slug}">erro</div>
+          </div>
+          <div class="form-text">
+            É o endereço que você compartilha com seus clientes:
+            <strong>simboraagendar.com.br/b/<span id="slug-previa">seu-link</span></strong>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Seu e-mail</label>
+          <input type="email" id="email" th:field="*{email}"
+                 class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                 autocomplete="email">
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+               th:errors="*{email}">erro</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="whatsapp" class="form-label">WhatsApp do estabelecimento <span class="text-body-secondary">(opcional)</span></label>
+          <input type="tel" id="whatsapp" th:field="*{whatsapp}"
+                 class="form-control" th:classappend="${#fields.hasErrors('whatsapp')} ? 'is-invalid'"
+                 placeholder="5511999999999" autocomplete="tel">
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('whatsapp')}"
+               th:errors="*{whatsapp}">erro</div>
+          <div class="form-text">Aparece para o cliente na tela do agendamento, para ele falar com você.</div>
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label">Senha</label>
+          <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
+                 digitada de volta ao navegador quando o formulário fosse
+                 reexibido com erro. */-->
+          <div class="input-group" th:classappend="${#fields.hasErrors('password')} ? 'has-validation'">
+            <input type="password" id="password" name="password"
+                   class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                   autocomplete="new-password">
+            <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
+                    aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5.5 0-9.6 3.4-11.4 6.6a1 1 0 0 0 0 .8C2.4 15.6 6.5 19 12 19s9.6-3.4 11.4-6.6a1 1 0 0 0 0-.8C21.6 8.4 17.5 5 12 5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></button>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                 th:errors="*{password}">erro</div>
+          </div>
+          <div class="form-text">Pelo menos 8 caracteres.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Criar conta</button>
+      </form>
+
+      <p class="text-center mt-4 mb-0 text-body-secondary">
+        Já tem conta? <a th:href="@{/login}">Entrar</a>
+      </p>
+
+    </div>
+  </div>
 </div>
-
-<main class="container py-5" style="max-width: 30rem">
-
-  <h1 class="h3 mb-1">Crie a conta do seu estabelecimento</h1>
-  <p class="text-body-secondary mb-4">Leva menos de um minuto.</p>
-
-  <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
-
-    <!--/*
-      Erro que não pertence a nenhum campo específico.
-
-      Precisa estar DENTRO do form: o objeto #fields só existe no contexto de um
-      th:object. Fora daqui, o Thymeleaf lança "Could not bind form errors using
-      expression global" e a página inteira vira 500 — inclusive na primeira
-      visita, sem erro nenhum para exibir.
-    */-->
-    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
-      <div th:each="erro : ${#fields.globalErrors()}" th:text="${erro}">erro</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="businessName" class="form-label">Nome do estabelecimento</label>
-      <input type="text" id="businessName" th:field="*{businessName}"
-             class="form-control" th:classappend="${#fields.hasErrors('businessName')} ? 'is-invalid'"
-             placeholder="Barbearia do João" autocomplete="organization" autofocus>
-      <div class="invalid-feedback" th:if="${#fields.hasErrors('businessName')}"
-           th:errors="*{businessName}">erro</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="slug" class="form-label">Seu link</label>
-      <div class="input-group" th:classappend="${#fields.hasErrors('slug')} ? 'has-validation'">
-        <span class="input-group-text text-body-secondary">simboraagendar.com/b/</span>
-        <input type="text" id="slug" th:field="*{slug}"
-               class="form-control" th:classappend="${#fields.hasErrors('slug')} ? 'is-invalid'"
-               autocomplete="off" autocapitalize="off" spellcheck="false">
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('slug')}"
-             th:errors="*{slug}">erro</div>
-      </div>
-      <div class="form-text">
-        É o endereço que você compartilha com seus clientes:
-        <strong>simboraagendar.com/b/<span id="slug-previa">seu-link</span></strong>
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label for="email" class="form-label">Seu e-mail</label>
-      <input type="email" id="email" th:field="*{email}"
-             class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-             autocomplete="email">
-      <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
-           th:errors="*{email}">erro</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="whatsapp" class="form-label">WhatsApp do estabelecimento <span class="text-body-secondary">(opcional)</span></label>
-      <input type="tel" id="whatsapp" th:field="*{whatsapp}"
-             class="form-control" th:classappend="${#fields.hasErrors('whatsapp')} ? 'is-invalid'"
-             placeholder="5511999999999" autocomplete="tel">
-      <div class="invalid-feedback" th:if="${#fields.hasErrors('whatsapp')}"
-           th:errors="*{whatsapp}">erro</div>
-      <div class="form-text">Aparece para o cliente na tela do agendamento, para ele falar com você.</div>
-    </div>
-
-    <div class="mb-4">
-      <label for="password" class="form-label">Senha</label>
-      <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
-             digitada de volta ao navegador quando o formulário fosse
-             reexibido com erro. */-->
-      <div class="input-group" th:classappend="${#fields.hasErrors('password')} ? 'has-validation'">
-        <input type="password" id="password" name="password"
-               class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-               autocomplete="new-password">
-        <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
-                aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5.5 0-9.6 3.4-11.4 6.6a1 1 0 0 0 0 .8C2.4 15.6 6.5 19 12 19s9.6-3.4 11.4-6.6a1 1 0 0 0 0-.8C21.6 8.4 17.5 5 12 5zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></button>
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
-             th:errors="*{password}">erro</div>
-      </div>
-      <div class="form-text">Pelo menos 8 caracteres.</div>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Criar conta</button>
-  </form>
-
-  <p class="text-center mt-4 mb-0 text-body-secondary">
-    Já tem conta? <a th:href="@{/login}">Entrar</a>
-  </p>
-
-</main>
 
 <div th:replace="~{fragments/layout :: scripts}"></div>
 <script th:src="@{/js/slug.js}" defer></script>

@@ -498,6 +498,7 @@ token único abaixo é a mesma):
 | Botão secundário | `btn btn-outline-secondary` |
 | Input | `form-control rounded-3` (o *focus ring* já segue `--bs-primary`) |
 | Sidebar | largura fixa (~16rem), `border-end`, item ativo com `bg-primary-subtle text-primary` — ver `templates/operador/painel.html` |
+| Painel sempre escuro | `.painel-escuro` (compartilhado, `fragments/layout.html`) — bloco que fica navy/quase-preto independente do tema claro/escuro da página; usado em `landing.html` e `auth/cadastro.html` |
 | Campo de senha | `input-group` com `.js-alternar-senha` — ver "Campo de senha mostra/oculta", abaixo |
 | Logo/marca | `fragments/layout :: logo(tamanho)` — SVG inline + wordmark, nunca duplicar o markup |
 
@@ -872,3 +873,8 @@ projeto para toda tela futura.
 exato do protótipo do dono (ícone preenchido com `fill="currentColor"`,
 não mais contornado) — trazido junto com o protótipo da tela de
 cadastro.
+2026-09-10 — feature `redesenho-cadastro`: `.painel-escuro` promovido de
+estilo local de `landing.html` para componente compartilhado em
+`fragments/layout.html` (segunda tela a usá-lo, `auth/cadastro.html`);
+`static/js/slug.js` estendido (não duplicado) para alimentar a prévia
+ao vivo do painel de marca do cadastro.

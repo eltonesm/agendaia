@@ -13,31 +13,16 @@
   - BR-1: o preço menciona R$49,90/mês pós-trial — decisão de negócio
     tomada nesta conversa, que não existia no protótipo original.
 
-  ".painel-escuro" é um estilo só desta página: os 3 blocos que no
-  protótipo ficam sempre escuros (bg-navy dark:bg-slate-950),
-  independente do tema claro/escuro do restante do site — por isso não
-  usa var(--bs-body-color) (que inverteria com o tema) nem vira token
-  novo em fragments/layout.html (DD-4 da spec técnica restringe o rebrand
-  a --bs-primary e derivadas; isto é decoração local, não marca de
-  sistema).
+  ".painel-escuro" (blocos sempre escuros, independente do tema
+  claro/escuro do resto da página) foi promovida para
+  fragments/layout.html em 2026-09-10 (redesenho-cadastro, DD-1) — é a
+  segunda tela a usá-la (a primeira foi esta). Não declarada aqui.
 
   Sem sessão, sem tenantId, sem consulta a banco — puramente apresentação.
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('SimboraAgendar — agendamento online')}"></head>
 <style>
-  .painel-escuro {
-    background: #1e1b4b;
-    color: #f8fafc;
-  }
-  [data-bs-theme="dark"] .painel-escuro {
-    background: #0b0a1f;
-  }
-  .painel-escuro .text-body-secondary,
-  .painel-escuro .text-secondary {
-    color: #94a3b8 !important;
-  }
-
   /* Logo um pouco menor em telas bem estreitas — libera espaço no
      cabeçalho para o botão de CTA não quebrar linha (achado do dono
      testando em celular, 2026-09-10). */
@@ -148,7 +133,7 @@
               <span class="rounded-circle" style="width: .6rem; height: .6rem; background: #cbd5e1;"></span>
               <span class="rounded-circle" style="width: .6rem; height: .6rem; background: #cbd5e1;"></span>
               <span class="small text-secondary ms-2">
-                simboraagendar.com/<strong style="color: #ff6b4a;">b/salao-da-maria</strong>
+                simboraagendar.com.br/<strong style="color: #ff6b4a;">b/salao-da-maria</strong>
               </span>
             </div>
             <div class="p-4" style="color: #0f172a;">
