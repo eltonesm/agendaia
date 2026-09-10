@@ -61,12 +61,12 @@
       --bs-border-radius: 0.75rem;
       --bs-border-radius-sm: 0.5rem;
       --bs-border-radius-lg: 1rem;
-      --bs-primary: #4f46e5;
-      --bs-primary-rgb: 79, 70, 229;
-      --bs-link-color: #4f46e5;
-      --bs-link-color-rgb: 79, 70, 229;
-      --bs-link-hover-color: #4338ca;
-      --bs-link-hover-color-rgb: 67, 56, 202;
+      --bs-primary: #ff6b4a;
+      --bs-primary-rgb: 255, 107, 74;
+      --bs-link-color: #ff6b4a;
+      --bs-link-color-rgb: 255, 107, 74;
+      --bs-link-hover-color: #e85a3a;
+      --bs-link-hover-color-rgb: 232, 90, 58;
 
       --bs-body-bg: #f8fafc;
       --bs-body-bg-rgb: 248, 250, 252;
@@ -102,14 +102,14 @@
     }
 
     .btn-primary {
-      --bs-btn-bg: #4f46e5;
-      --bs-btn-border-color: #4f46e5;
-      --bs-btn-hover-bg: #4338ca;
-      --bs-btn-hover-border-color: #4338ca;
-      --bs-btn-active-bg: #4338ca;
-      --bs-btn-active-border-color: #3730a3;
-      --bs-btn-disabled-bg: #4f46e5;
-      --bs-btn-disabled-border-color: #4f46e5;
+      --bs-btn-bg: #ff6b4a;
+      --bs-btn-border-color: #ff6b4a;
+      --bs-btn-hover-bg: #e85a3a;
+      --bs-btn-hover-border-color: #e85a3a;
+      --bs-btn-active-bg: #e85a3a;
+      --bs-btn-active-border-color: #cf4e30;
+      --bs-btn-disabled-bg: #ff6b4a;
+      --bs-btn-disabled-border-color: #ff6b4a;
     }
 
     .list-group {
@@ -174,6 +174,33 @@
 */-->
 <button type="button" th:fragment="temaToggle" id="alternar-tema" class="btn btn-sm btn-outline-secondary"
         aria-label="Alternar tema claro/escuro">🌙</button>
+
+<!--/*
+  Logo da marca (pagina-institucional, 2026-09-10): ícone + wordmark
+  "simboraagendar". SVG inline recriado a partir da descrição da imagem
+  compartilhada pelo dono — não é cópia do arquivo original (que não
+  chegou ao repositório, só foi visto na conversa). Se um arquivo
+  vetorial de verdade aparecer depois, a troca é só aqui, sem tocar
+  quem usa o fragmento.
+
+  "agendar" usa --bs-body-color (não um navy fixo) de propósito: garante
+  contraste em claro e escuro sem precisar de uma segunda cor de marca
+  documentada em PATTERNS.md (DD-4) — só "simbora" carrega a cor de
+  marca (--bs-primary), com o sublinhado do protótipo original.
+*/-->
+<span th:fragment="logo(tamanho)" class="d-inline-flex align-items-center gap-2 fw-bold" style="line-height: 1;">
+  <svg th:width="${tamanho}" th:height="${tamanho}" viewBox="0 0 40 40" fill="none"
+       xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SimboraAgendar">
+    <rect width="40" height="40" rx="10" fill="#ff6b4a"></rect>
+    <path d="M15 12 L23 20 L15 28" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"
+          stroke-linejoin="round" fill="none"></path>
+    <path d="M21 12 L29 20 L21 28" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"
+          stroke-linejoin="round" fill="none"></path>
+  </svg>
+  <span style="font-size: 1.15rem;">
+    <span style="color: var(--bs-primary); border-bottom: 2px solid var(--bs-primary); padding-bottom: 1px;">simbora</span><span style="color: var(--bs-body-color);">agendar</span>
+  </span>
+</span>
 
 <!--/*
   Barra do painel, aviso de carência e botão de WhatsApp — os três num
