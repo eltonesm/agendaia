@@ -1,0 +1,34 @@
+package com.simboraagendar.customer.application.port.out;
+
+import com.simboraagendar.customer.domain.Customer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+/**
+ * Porta de saída de {@link Customer}.
+ *
+ * <p>Toda consulta é por tenant — telefone só é chave natural {@code dentro
+ * do} tenant (BR-3 da spec funcional de pagina-publica-agendamento).
+ */
+public interface CustomerRepository extends JpaRepository<Customer, UUID> {
+
+    /** Get-or-create pelo par (tenant, telefone) — chave natural do agregado. */
+    Optional<Customer> findByTenantIdAndPhone(UUID tenantId, String phone);
+
+    /** Resolução por id, sempre revalidada por tenant (confirmacao-e-cancelamento, DD-8). */
+    Optional<Customer> findByTenantIdAndId(UUID tenantId, UUID id);
+
+    /** Consulta em lote para a agenda do dono (agenda-profissional, TODO-008). */
+    List<Customer> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
+
+    /**
+     * Clientes do tenant, paginados, ordenados por nome, excluindo
+     * anonimizado (gestao-de-clientes, US-1).
+     */
+    Page<Customer> findByTenantIdAndAnonymizedAtIsNullOrderByNameAsc(UUID tenantId, Pageable pageable);
+}

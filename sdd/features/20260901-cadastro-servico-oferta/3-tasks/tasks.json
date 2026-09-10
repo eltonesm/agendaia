@@ -34,8 +34,8 @@
       "complexity": "Low",
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/shared/Money.java",
-        "src/test/java/com/agendaia/shared/MoneyTest.java"
+        "src/main/java/com/simboraagendar/shared/Money.java",
+        "src/test/java/com/simboraagendar/shared/MoneyTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: Money.reais(BigDecimal) converte para centavos sem erro de arredondamento",
@@ -76,10 +76,10 @@
       "complexity": "Medium",
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/organization/api/ProfessionalDirectory.java",
-        "src/main/java/com/agendaia/organization/api/ProfessionalRef.java",
-        "src/main/java/com/agendaia/organization/application/ProfessionalDirectoryHandler.java",
-        "src/test/java/com/agendaia/organization/application/ProfessionalDirectoryHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/api/ProfessionalDirectory.java",
+        "src/main/java/com/simboraagendar/organization/api/ProfessionalRef.java",
+        "src/main/java/com/simboraagendar/organization/application/ProfessionalDirectoryHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/ProfessionalDirectoryHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: listActive() nao aceita nenhum argumento",
@@ -100,9 +100,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/catalog/domain/Service.java",
-        "src/main/java/com/agendaia/catalog/domain/ServiceRepository.java",
-        "src/test/java/com/agendaia/catalog/domain/ServiceTest.java"
+        "src/main/java/com/simboraagendar/catalog/domain/Service.java",
+        "src/main/java/com/simboraagendar/catalog/domain/ServiceRepository.java",
+        "src/test/java/com/simboraagendar/catalog/domain/ServiceTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por Service.register(tenantId, name, description), construtor privado",
@@ -122,9 +122,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-002", "TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/catalog/domain/ServiceOffering.java",
-        "src/main/java/com/agendaia/catalog/domain/ServiceOfferingRepository.java",
-        "src/test/java/com/agendaia/catalog/domain/ServiceOfferingTest.java"
+        "src/main/java/com/simboraagendar/catalog/domain/ServiceOffering.java",
+        "src/main/java/com/simboraagendar/catalog/domain/ServiceOfferingRepository.java",
+        "src/test/java/com/simboraagendar/catalog/domain/ServiceOfferingTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por ServiceOffering.register(tenantId, serviceId, professionalId, durationMinutes, price, bufferMinutes)",
@@ -145,15 +145,15 @@
       "complexity": "Medium",
       "depends_on": ["TASK-004"],
       "files": [
-        "src/main/java/com/agendaia/catalog/application/port/in/RegisterServiceUseCase.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/RegisteredService.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/ListServicesUseCase.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/ServiceView.java",
-        "src/main/java/com/agendaia/catalog/application/command/RegisterServiceCommand.java",
-        "src/main/java/com/agendaia/catalog/application/RegisterServiceHandler.java",
-        "src/main/java/com/agendaia/catalog/application/ListServicesHandler.java",
-        "src/test/java/com/agendaia/catalog/application/RegisterServiceHandlerTest.java",
-        "src/test/java/com/agendaia/catalog/application/ListServicesHandlerTest.java"
+        "src/main/java/com/simboraagendar/catalog/application/port/in/RegisterServiceUseCase.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/RegisteredService.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/ListServicesUseCase.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/ServiceView.java",
+        "src/main/java/com/simboraagendar/catalog/application/command/RegisterServiceCommand.java",
+        "src/main/java/com/simboraagendar/catalog/application/RegisterServiceHandler.java",
+        "src/main/java/com/simboraagendar/catalog/application/ListServicesHandler.java",
+        "src/test/java/com/simboraagendar/catalog/application/RegisterServiceHandlerTest.java",
+        "src/test/java/com/simboraagendar/catalog/application/ListServicesHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: nenhum dos dois casos de uso aceita tenant como parametro",
@@ -173,15 +173,15 @@
       "complexity": "High",
       "depends_on": ["TASK-005", "TASK-003", "TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/catalog/application/port/in/RegisterServiceOfferingUseCase.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/RegisteredServiceOffering.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/ListServiceOfferingsUseCase.java",
-        "src/main/java/com/agendaia/catalog/application/port/in/ServiceOfferingView.java",
-        "src/main/java/com/agendaia/catalog/application/command/RegisterServiceOfferingCommand.java",
-        "src/main/java/com/agendaia/catalog/application/RegisterServiceOfferingHandler.java",
-        "src/main/java/com/agendaia/catalog/application/ListServiceOfferingsHandler.java",
-        "src/test/java/com/agendaia/catalog/application/RegisterServiceOfferingHandlerTest.java",
-        "src/test/java/com/agendaia/catalog/application/ListServiceOfferingsHandlerTest.java"
+        "src/main/java/com/simboraagendar/catalog/application/port/in/RegisterServiceOfferingUseCase.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/RegisteredServiceOffering.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/ListServiceOfferingsUseCase.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/in/ServiceOfferingView.java",
+        "src/main/java/com/simboraagendar/catalog/application/command/RegisterServiceOfferingCommand.java",
+        "src/main/java/com/simboraagendar/catalog/application/RegisterServiceOfferingHandler.java",
+        "src/main/java/com/simboraagendar/catalog/application/ListServiceOfferingsHandler.java",
+        "src/test/java/com/simboraagendar/catalog/application/RegisterServiceOfferingHandlerTest.java",
+        "src/test/java/com/simboraagendar/catalog/application/ListServiceOfferingsHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: professionalId fora da lista de ProfessionalDirectory.listActive() recusa com erro de campo, mesma mensagem de 'nao encontrado' generica (nao revela que o id pertence a outro tenant)",
@@ -203,10 +203,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-006"],
       "files": [
-        "src/main/java/com/agendaia/catalog/adapter/in/web/ServiceController.java",
-        "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceRequest.java",
+        "src/main/java/com/simboraagendar/catalog/adapter/in/web/ServiceController.java",
+        "src/main/java/com/simboraagendar/catalog/adapter/in/web/request/RegisterServiceRequest.java",
         "src/main/resources/templates/admin/servicos.html",
-        "src/test/java/com/agendaia/catalog/adapter/in/web/ServiceControllerTest.java"
+        "src/test/java/com/simboraagendar/catalog/adapter/in/web/ServiceControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: GET mostra lista + formulario; POST valido redireciona (PRG)",
@@ -226,10 +226,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-007"],
       "files": [
-        "src/main/java/com/agendaia/catalog/adapter/in/web/ServiceOfferingController.java",
-        "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
+        "src/main/java/com/simboraagendar/catalog/adapter/in/web/ServiceOfferingController.java",
+        "src/main/java/com/simboraagendar/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
         "src/main/resources/templates/admin/ofertas.html",
-        "src/test/java/com/agendaia/catalog/adapter/in/web/ServiceOfferingControllerTest.java"
+        "src/test/java/com/simboraagendar/catalog/adapter/in/web/ServiceOfferingControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: sem servico cadastrado, a tela linka para /admin/servicos em vez de dropdown vazio",
@@ -265,7 +265,7 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-010"],
-      "files": ["src/test/java/com/agendaia/catalog/ServiceOfferingRegistrationIT.java"],
+      "files": ["src/test/java/com/simboraagendar/catalog/ServiceOfferingRegistrationIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 confirma servico e oferta cadastrados, nomes resolvidos na listagem",
         "AC-2: E2E-2 confirma que a segunda oferta do mesmo (servico, profissional) e recusada, nenhuma segunda linha gravada",
@@ -283,7 +283,7 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-011"],
-      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "files": ["src/test/java/com/simboraagendar/platform/CrossTenantIsolationIT.java"],
       "acceptance_criteria": [
         "AC-1: POST forjado com professionalId de outro tenant e recusado, erro de campo",
         "AC-2: nenhuma ServiceOffering gravada com professionalId de tenant diferente do tenant_id da propria linha",

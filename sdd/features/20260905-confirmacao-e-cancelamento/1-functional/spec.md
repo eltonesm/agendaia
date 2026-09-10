@@ -16,7 +16,7 @@ e some ao recarregar a página ou fechar a aba. O cliente não tem como
 conferir depois o que marcou, não tem como confirmar presença, não tem
 como cancelar se mudar de ideia, e não recebe nada para adicionar ao
 próprio calendário. Sem isso, ele volta a ligar ou mandar mensagem para o
-estabelecimento — exatamente o problema que o AgendaIA existe para
+estabelecimento — exatamente o problema que o SimboraAgendar existe para
 resolver.
 
 Esta feature entrega um link persistente e seguro, sem login, onde o
@@ -183,7 +183,7 @@ verdade está livre.
 
 ### US-7: Cadastro aceita o WhatsApp do estabelecimento
 
-**Como** dono se cadastrando no AgendaIA,
+**Como** dono se cadastrando no SimboraAgendar,
 **Eu quero** informar meu WhatsApp já no cadastro,
 **Para que** meus clientes tenham como me chamar pelo link da tela de
 agendamento.

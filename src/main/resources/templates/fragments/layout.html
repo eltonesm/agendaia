@@ -15,7 +15,7 @@
 <head th:fragment="head(titulo)">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="|${titulo} · AgendaIA|">AgendaIA</title>
+  <title th:text="|${titulo} · SimboraAgendar|">SimboraAgendar</title>
   <!--/*
     Aplica o tema ANTES do CSS pintar, para não piscar claro e depois escuro.
     localStorage é por navegador — cada visitante escolhe o próprio, sem
@@ -25,7 +25,7 @@
   */-->
   <script>
     (function () {
-      var salvo = localStorage.getItem('agendaia-theme');
+      var salvo = localStorage.getItem('simboraagendar-theme');
       var tema = salvo || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-bs-theme', tema);
     })();
@@ -242,7 +242,7 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom"
      sec:authorize="isAuthenticated()">
   <div class="container">
-    <a class="navbar-brand fw-semibold" th:href="@{/admin/dashboard}">AgendaIA</a>
+    <a class="navbar-brand fw-semibold" th:href="@{/admin/dashboard}">SimboraAgendar</a>
     <div class="d-flex align-items-center gap-3">
       <!--/*
         Lê do model, não do principal. Navegar por principal.businessName
@@ -276,7 +276,7 @@
 */-->
 <aside th:fragment="adminSidebar(activeItem)" class="app-sidebar d-none d-md-flex">
   <div class="app-brand">
-    AgendaIA
+    SimboraAgendar
     <small th:text="${businessName}">Estabelecimento</small>
   </div>
   <ul class="nav nav-pills flex-column app-nav">
@@ -361,7 +361,7 @@
         var atual = document.documentElement.getAttribute('data-bs-theme');
         var novo = atual === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-bs-theme', novo);
-        localStorage.setItem('agendaia-theme', novo);
+        localStorage.setItem('simboraagendar-theme', novo);
         atualizarIcone();
       });
 

@@ -463,7 +463,7 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-09-03
 - **Origin**: pedido do dono da plataforma em 2026-09-03
-- **Context**: Nota e/ou comentário do cliente sobre o atendimento, para o dono da plataforma evoluir o produto com dado real. Não há o que avaliar antes de existir `Appointment` (`scheduling`, TODO-005/006/008 ainda não existem) — sem atendimento, não há experiência para avaliar. Diferente da avaliação do dono do estabelecimento sobre a própria plataforma AgendaIA, que já está coberta pelo canal de WhatsApp da TODO-009, sem depender disso.
+- **Context**: Nota e/ou comentário do cliente sobre o atendimento, para o dono da plataforma evoluir o produto com dado real. Não há o que avaliar antes de existir `Appointment` (`scheduling`, TODO-005/006/008 ainda não existem) — sem atendimento, não há experiência para avaliar. Diferente da avaliação do dono do estabelecimento sobre a própria plataforma SimboraAgendar, que já está coberta pelo canal de WhatsApp da TODO-009, sem depender disso.
 - **Potential Impact**: Dado de produto, retenção
 - **Notes**: Gatilho — depois que TODO-005/006/008 existirem
 
@@ -524,7 +524,7 @@ passa por `/sdd.start`.
 - **Status**: pending
 - **Created**: 2026-09-09
 - **Origin**: análise do relatório de features do dono (2026-09-09)
-- **Context**: Cobrança de sinal/taxa de reserva antecipada de cliente novo, para reduzir no-show; pagamento do serviço em si (Pix/cartão) na própria página pública. Diferente do Pix já existente em `application.yaml` (`AGENDAIA_OPERADOR_PIX_CHAVE`), que é a cobrança manual da assinatura SaaS do estabelecimento (billing), não do cliente final. Exige gateway de pagamento (ex.: Mercado Pago, Pix + cartão numa API só, o mais usado no Brasil para isso), tratamento de webhook/estorno, e decisão do que acontece com o agendamento se o sinal não for pago a tempo.
+- **Context**: Cobrança de sinal/taxa de reserva antecipada de cliente novo, para reduzir no-show; pagamento do serviço em si (Pix/cartão) na própria página pública. Diferente do Pix já existente em `application.yaml` (`SIMBORAAGENDAR_OPERADOR_PIX_CHAVE`), que é a cobrança manual da assinatura SaaS do estabelecimento (billing), não do cliente final. Exige gateway de pagamento (ex.: Mercado Pago, Pix + cartão numa API só, o mais usado no Brasil para isso), tratamento de webhook/estorno, e decisão do que acontece com o agendamento se o sinal não for pago a tempo.
 - **Potential Impact**: Redução de no-show real (não só lembrete), possível diferencial comercial
 - **Notes**: Maior escopo do relatório inteiro — projeto próprio, não uma tarefa pequena. Gatilho — depois da validação, quando houver volume que justifique lidar com estorno/conciliação.
 
@@ -560,7 +560,7 @@ passa por `/sdd.start`.
 - **Context**: Feature transversal, sem tela nem agregado novo. Log estruturado (JSON, formato ECS nativo do Spring Boot) com `tenantId` e `requestId` no MDC em toda linha; `/actuator/health` continua público (sonda de container); `/actuator/prometheus` passou a funcionar de verdade (faltava a dependência do Micrometer) e ficou protegido por credencial HTTP Basic dedicada; três contadores de negócio (agendamentos reservados, cancelados, falhas por conflito de horário) instrumentados nos handlers já existentes. 16 tasks, 538 testes no projeto inteiro, 91% de cobertura de instrução.
 - **Decisões tomadas antes da spec**: `/health` continua público mesmo o backlog pedindo protegido (decisão já tomada em TODO-101/102 para a sonda de container); `/prometheus` com Basic Auth dedicado, não a sessão do dono; métricas sem tag de tenant (só um piloto hoje).
 - **Nasceu aqui**: `RequestIdFilter`, `SchedulingMetrics` (3 contadores Micrometer, pacote-privado), `MetricsSecurityConfig` (3ª `SecurityFilterChain`).
-- **Gotcha real**: o nome de métrica `agendaia.appointments.created` colidia com a convenção reservada do OpenMetrics para timestamp de criação de contador — o Prometheus descartava "created" e expunha só `agendaia_appointments_total`. Renomeado para `agendaia.appointments.booked`. Um segundo achado: o suporte de teste do Spring Boot desliga a exportação de métricas por padrão, exigindo `@AutoConfigureMetrics` para `/actuator/prometheus` existir no contexto de teste. Um terceiro: capturar log JSON via redirecionamento de `System.out` não funciona (o `ConsoleAppender` do Logback fixa a referência na inicialização) — trocado por um `ListAppender` verificando o MDC de cada evento diretamente.
+- **Gotcha real**: o nome de métrica `simboraagendar.appointments.created` colidia com a convenção reservada do OpenMetrics para timestamp de criação de contador — o Prometheus descartava "created" e expunha só `simboraagendar_appointments_total`. Renomeado para `simboraagendar.appointments.booked`. Um segundo achado: o suporte de teste do Spring Boot desliga a exportação de métricas por padrão, exigindo `@AutoConfigureMetrics` para `/actuator/prometheus` existir no contexto de teste. Um terceiro: capturar log JSON via redirecionamento de `System.out` não funciona (o `ConsoleAppender` do Logback fixa a referência na inicialização) — trocado por um `ListAppender` verificando o MDC de cada evento diretamente.
 
 ---
 

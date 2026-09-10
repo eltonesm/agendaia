@@ -89,7 +89,7 @@ ltp:
 ```yaml
 migration:
   detected: true
-  service_name: "agendaia (compose local; VPS na TODO-106)"
+  service_name: "simboraagendar (compose local; VPS na TODO-106)"
   service_type: postgresql
   branch_name: null
   branch_status: pending

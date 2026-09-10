@@ -575,7 +575,7 @@ profissionais **uma vez só**, mesmo padrão de `ListServiceOfferingsHandler`).
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/customer/
+src/main/java/com/simboraagendar/customer/
 ├── package-info.java                                    [EDITADO — allowedDependencies: shared, platform]
 ├── domain/Customer.java                                 [NOVO]
 ├── application/port/out/CustomerRepository.java         [NOVO]
@@ -583,11 +583,11 @@ src/main/java/com/agendaia/customer/
 └── api/
     └── CustomerDirectory.java                            [NOVO]
 
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── api/BusinessDirectory.java                            [EDITADO — findBySlug]
 └── application/BusinessDirectoryHandler.java             [EDITADO]
 
-src/main/java/com/agendaia/catalog/
+src/main/java/com/simboraagendar/catalog/
 ├── api/
 │   ├── ServiceDirectory.java                             [NOVO]
 │   ├── PublicServiceRef.java                             [NOVO]
@@ -597,7 +597,7 @@ src/main/java/com/agendaia/catalog/
     ├── ServiceDirectoryHandler.java                       [NOVO]
     └── ServiceOfferingDirectoryHandler.java                [EDITADO]
 
-src/main/java/com/agendaia/scheduling/
+src/main/java/com/simboraagendar/scheduling/
 ├── package-info.java                                     [EDITADO — allowedDependencies ganha customer :: api]
 ├── domain/
 │   ├── Appointment.java                                  [NOVO]
@@ -621,7 +621,7 @@ src/main/java/com/agendaia/scheduling/
         ├── BookingRateLimiter.java                          [NOVO]
         └── request/PublicBookingRequest.java                [NOVO]
 
-src/main/java/com/agendaia/platform/
+src/main/java/com/simboraagendar/platform/
 ├── tenant/TenantContextFilter.java                        [EDITADO — DD-3]
 ├── web/LayoutAdvice.java                                  [EDITADO — DD-4, checa sessão OU slug]
 └── security/SecurityConfig.java                            [EDITADO — permitAll /b/**]
@@ -636,7 +636,7 @@ src/main/resources/templates/public/
 ├── horarios.html                                          [NOVO]
 └── sucesso.html                                           [NOVO]
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── scheduling/domain/AppointmentTest.java                 [NOVO]
 ├── scheduling/application/BookAppointmentHandlerTest.java [NOVO]
 ├── catalog/application/ServiceOfferingDirectoryHandlerTest.java [EDITADO]

@@ -2,7 +2,7 @@
 
 **Backlog**: TODO-001 · **Concluída**: 2026-08-30 · **Contextos**: `organization`, `platform`
 
-A primeira feature de negócio do AgendaIA, e a que estabelece o tenant — sem ela
+A primeira feature de negócio do SimboraAgendar, e a que estabelece o tenant — sem ela
 nada mais tem onde morar. Um dono de barbearia cria a conta do estabelecimento,
 escolhe o link público que vai compartilhar com os clientes, e entra no painel
 **já autenticado**, sem passar pelo login.

@@ -12,7 +12,7 @@
 
 Hoje `Customer` e `Appointment` já se relacionam (`customerId`), mas não
 existe nenhuma tela que junte esse dado numa visão por cliente. O dono
-depende de memória (ou do caderno que o AgendaIA deveria substituir) para
+depende de memória (ou do caderno que o SimboraAgendar deveria substituir) para
 lembrar quem é cliente novo — e por isso merece atenção redobrada contra
 no-show —, quem já veio muitas vezes, e quem ficou devendo. Também não há
 como contatar um cliente direto pelo sistema: o único link de WhatsApp que

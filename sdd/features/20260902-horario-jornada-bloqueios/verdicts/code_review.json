@@ -8,7 +8,7 @@
   },
   "minor_findings": [
     {
-      "file": "src/main/java/com/agendaia/organization/application/ListTimeOffHandler.java",
+      "file": "src/main/java/com/simboraagendar/organization/application/ListTimeOffHandler.java",
       "issue": "filter(id -> id != null) em vez do idiomatico Objects::nonNull.",
       "status": "fixed",
       "fix": "Trocado para filter(Objects::nonNull)."

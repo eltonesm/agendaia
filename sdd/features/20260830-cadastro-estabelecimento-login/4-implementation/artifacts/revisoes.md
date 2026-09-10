@@ -169,8 +169,8 @@ procurando o que não estava na lista.
 ### Achado 3 — barra final na URL base duplicava a barra do link público
 
 `ViewDashboardHandler` concatenava `publicBaseUrl + "/b/" + slug`. Com
-`AGENDAIA_PUBLIC_BASE_URL=https://agendaia.com/` — que é o jeito natural de
-escrever a variável — o link sai `https://agendaia.com//b/barbearia-do-joao`.
+`SIMBORAAGENDAR_PUBLIC_BASE_URL=https://simboraagendar.com/` — que é o jeito natural de
+escrever a variável — o link sai `https://simboraagendar.com//b/barbearia-do-joao`.
 
 O link que o dono manda para os clientes **é o produto**. Não pode depender de
 alguém lembrar de não pôr a barra. Corrigido no construtor, com
@@ -191,7 +191,7 @@ Perseguir número faz escrever teste de getter; o que se quer é o que o
 `PATTERNS.md` já pede.
 
 O piso foi conferido subindo-o a 99% de propósito: o build falhou com
-`Rule violated for bundle agendaia: instructions covered ratio is 0.91, but
+`Rule violated for bundle simboraagendar: instructions covered ratio is 0.91, but
 expected minimum is 0.99`. Restaurado em seguida. Portão que nunca falhou é
 portão que ninguém sabe se funciona.
 

@@ -397,7 +397,7 @@ não muda (DD-5).
 Sem REST (CLAUDE.md). O único contrato novo é in-process:
 
 ```java
-package com.agendaia.scheduling.api;
+package com.simboraagendar.scheduling.api;
 
 public interface DailyScheduleDirectory {
     /** Tenant vem de TenantContext.require() — nunca argumento (ADR 0004). */

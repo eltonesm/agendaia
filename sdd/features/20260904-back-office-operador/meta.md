@@ -13,7 +13,7 @@
 > **Sobre o modo brownfield aqui**: o projeto já tem `organization.Business`
 > (o estabelecimento/tenant) e autenticação de dono via `platform.security`.
 > Esta feature introduz um **papel novo, sem precedente no código**: o
-> operador da plataforma (você, dono do AgendaIA) — que não é dono de
+> operador da plataforma (você, dono do SimboraAgendar) — que não é dono de
 > nenhum `Business`, vê todos eles, e precisa de uma sessão fora do modelo
 > de tenant existente.
 
@@ -72,7 +72,7 @@ spec_language: pt   # herdado de sdd/PROJECT.md -> language.specs
 ```yaml
 migration:
   detected: true
-  service_name: "agendaia (compose local; VPS na TODO-106)"
+  service_name: "simboraagendar (compose local; VPS na TODO-106)"
   service_type: postgresql
   branch_name: null
   branch_status: pending
@@ -99,7 +99,7 @@ auto_generated:
 
 **Contexto herdado do backlog**:
 
-> Hoje não existe nenhuma visão de quem opera o AgendaIA (você) sobre os
+> Hoje não existe nenhuma visão de quem opera o SimboraAgendar (você) sobre os
 > estabelecimentos cadastrados — quantos existem, qual o status de
 > pagamento, quem está em trial. Isso é uma "decisão nova" de propósito: o
 > glossário bane `Plano`, `Assinatura` e `Pagamento` do MVP justamente até

@@ -2,7 +2,7 @@
 
 > Ground truth about which parts of this kit actually pull weight, and which
 > don't — from running the **full** cycle (`start → spec → plan → build →
-> finish`) twice, end to end, on a real project (AgendaIA, Java/Spring Boot
+> finish`) twice, end to end, on a real project (SimboraAgendar, Java/Spring Boot
 > monolith, two features, 28 tasks, 254 tests). Not opinion — every verdict
 > below was tested against the live installation, not read off a doc.
 >
@@ -121,5 +121,5 @@ and it costs nothing to repeat.
 
 ---
 
-*Last updated: 2026-08-31, after archiving two features on AgendaIA
+*Last updated: 2026-08-31, after archiving two features on SimboraAgendar
 (`cadastro-estabelecimento-login`, `cadastro-profissional`).*

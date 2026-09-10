@@ -534,7 +534,7 @@ de listagem de horários (`findOccupiedRanges`, TODO-006, já cobria
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/scheduling/
+src/main/java/com/simboraagendar/scheduling/
 ├── domain/Appointment.java                               [EDITADO — confirm/cancel, DD-3]
 ├── application/
 │   ├── port/in/
@@ -554,7 +554,7 @@ src/main/java/com/agendaia/scheduling/
         ├── IcsWriter.java                                   [NOVO — DD-9]
         └── PublicBookingController.java                     [EDITADO — remove sucesso(), redirect sem flash]
 
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── api/
 │   ├── ProfessionalDirectory.java                          [EDITADO — find(UUID), DD-8]
 │   └── BusinessRef.java                                     [EDITADO — campo whatsapp, DD-7]
@@ -564,7 +564,7 @@ src/main/java/com/agendaia/organization/
 ├── application/RegisterBusinessHandler.java                   [EDITADO]
 └── adapter/in/web/request/RegistrationRequest.java            [EDITADO — campo whatsapp opcional]
 
-src/main/java/com/agendaia/customer/
+src/main/java/com/simboraagendar/customer/
 ├── api/
 │   ├── CustomerDirectory.java                                [EDITADO — find(UUID), DD-8]
 │   └── CustomerRef.java                                       [NOVO]
@@ -577,7 +577,7 @@ src/main/resources/templates/
 ├── public/agendamento.html                                    [NOVO — substitui sucesso.html]
 └── auth/cadastro.html                                          [EDITADO — campo whatsapp opcional]
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── scheduling/domain/AppointmentTest.java                      [EDITADO]
 ├── scheduling/application/ManageAppointmentHandlerTest.java    [NOVO]
 ├── scheduling/application/BookAppointmentHandlerTest.java      [EDITADO]

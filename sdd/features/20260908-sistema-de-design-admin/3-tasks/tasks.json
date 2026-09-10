@@ -24,8 +24,8 @@
 
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/domain/AppointmentStatus.java",
-                                    "src/main/java/com/agendaia/scheduling/domain/Appointment.java"
+                                    "src/main/java/com/simboraagendar/scheduling/domain/AppointmentStatus.java",
+                                    "src/main/java/com/simboraagendar/scheduling/domain/Appointment.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: AppointmentStatus tem 5 valores (SCHEDULED, CONFIRMED, CANCELLED, NO_SHOW, COMPLETED)",
@@ -45,18 +45,18 @@
                   {
                       "id":  "TASK-002",
                       "title":  "SchedulingMetrics.appointmentCompleted()",
-                      "description":  "Novo Counter agendaia.appointments.completed em SchedulingMetrics, com metodo appointmentCompleted() que o incrementa — mesmo padrao dos 3 contadores ja existentes (TODO-108).",
+                      "description":  "Novo Counter simboraagendar.appointments.completed em SchedulingMetrics, com metodo appointmentCompleted() que o incrementa — mesmo padrao dos 3 contadores ja existentes (TODO-108).",
                       "status":  "completed",
                       "layer":  1,
                       "depends_on":  [
 
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/application/SchedulingMetrics.java"
+                                    "src/main/java/com/simboraagendar/scheduling/application/SchedulingMetrics.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: contador existe desde a subida da aplicacao, comecando em zero",
-                                                  "AC-2: nome da metrica e agendaia.appointments.completed (sem sufixo .created, mesma licao da TODO-108)"
+                                                  "AC-2: nome da metrica e simboraagendar.appointments.completed (sem sufixo .created, mesma licao da TODO-108)"
                                               ],
                       "references":  [
                                          "US-4"
@@ -76,9 +76,9 @@
                                          "TASK-002"
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/application/port/in/CompleteAppointmentUseCase.java",
-                                    "src/main/java/com/agendaia/scheduling/application/port/in/AgendaEntry.java",
-                                    "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+                                    "src/main/java/com/simboraagendar/scheduling/application/port/in/CompleteAppointmentUseCase.java",
+                                    "src/main/java/com/simboraagendar/scheduling/application/port/in/AgendaEntry.java",
+                                    "src/main/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandler.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: complete() grava e incrementa a metrica so quando ha transicao real (mesmo padrao de cancel())",
@@ -106,7 +106,7 @@
                                          "TASK-003"
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java"
+                                    "src/main/java/com/simboraagendar/scheduling/adapter/in/web/AgendaController.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: POST valido redireciona para /admin/agenda preservando professionalId/date",
@@ -132,9 +132,9 @@
 
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
-                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
-                                    "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java"
+                                    "src/main/java/com/simboraagendar/scheduling/application/port/out/AppointmentRepository.java",
+                                    "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
+                                    "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentJpaRepository.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: devolve todos os agendamentos do tenant no dia, de qualquer profissional e qualquer status",
@@ -158,11 +158,11 @@
                                          "TASK-001"
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/api/package-info.java",
-                                    "src/main/java/com/agendaia/scheduling/api/DailyScheduleDirectory.java",
-                                    "src/main/java/com/agendaia/scheduling/api/DailyScheduleSummary.java",
-                                    "src/main/java/com/agendaia/scheduling/api/NextClientRef.java",
-                                    "src/main/java/com/agendaia/scheduling/application/DailyScheduleSummaryHandler.java"
+                                    "src/main/java/com/simboraagendar/scheduling/api/package-info.java",
+                                    "src/main/java/com/simboraagendar/scheduling/api/DailyScheduleDirectory.java",
+                                    "src/main/java/com/simboraagendar/scheduling/api/DailyScheduleSummary.java",
+                                    "src/main/java/com/simboraagendar/scheduling/api/NextClientRef.java",
+                                    "src/main/java/com/simboraagendar/scheduling/application/DailyScheduleSummaryHandler.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: totalToday conta SCHEDULED/CONFIRMED/COMPLETED do dia, exclui CANCELLED/NO_SHOW",
@@ -193,9 +193,9 @@
                                          "TASK-006"
                                      ],
                       "files":  [
-                                    "src/main/java/com/agendaia/scheduling/adapter/in/web/DashboardKpiAdvice.java",
-                                    "src/main/java/com/agendaia/organization/application/port/in/DashboardView.java",
-                                    "src/main/java/com/agendaia/organization/application/ViewDashboardHandler.java"
+                                    "src/main/java/com/simboraagendar/scheduling/adapter/in/web/DashboardKpiAdvice.java",
+                                    "src/main/java/com/simboraagendar/organization/application/port/in/DashboardView.java",
+                                    "src/main/java/com/simboraagendar/organization/application/ViewDashboardHandler.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: os 4 KPIs aparecem no model quando GET /admin/dashboard, resolvidos por uma unica chamada a scheduling.api",
@@ -399,9 +399,9 @@
                                          "TASK-003"
                                      ],
                       "files":  [
-                                    "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
-                                    "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java",
-                                    "src/test/java/com/agendaia/scheduling/application/SchedulingMetricsTest.java"
+                                    "src/test/java/com/simboraagendar/scheduling/domain/AppointmentTest.java",
+                                    "src/test/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandlerTest.java",
+                                    "src/test/java/com/simboraagendar/scheduling/application/SchedulingMetricsTest.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: cobertura das transicoes de complete() descritas em BR-1/BR-2/BR-3",
@@ -425,7 +425,7 @@
                                          "TASK-006"
                                      ],
                       "files":  [
-                                    "src/test/java/com/agendaia/scheduling/application/DailyScheduleSummaryHandlerTest.java"
+                                    "src/test/java/com/simboraagendar/scheduling/application/DailyScheduleSummaryHandlerTest.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: os 5 criterios de aceite da US-3 (AC-1 a AC-5 da spec funcional) tem teste correspondente",
@@ -448,7 +448,7 @@
                                          "TASK-004"
                                      ],
                       "files":  [
-                                    "src/test/java/com/agendaia/scheduling/adapter/in/web/AgendaControllerTest.java"
+                                    "src/test/java/com/simboraagendar/scheduling/adapter/in/web/AgendaControllerTest.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: os 3 cenarios (sucesso, 404, CSRF) cobertos para a rota concluir"
@@ -478,8 +478,8 @@
                                          "TASK-017"
                                      ],
                       "files":  [
-                                    "src/test/java/com/agendaia/scheduling/AgendaProfissionalIT.java",
-                                    "src/test/java/com/agendaia/organization/DashboardIT.java"
+                                    "src/test/java/com/simboraagendar/scheduling/AgendaProfissionalIT.java",
+                                    "src/test/java/com/simboraagendar/organization/DashboardIT.java"
                                 ],
                       "acceptance_criteria":  [
                                                   "AC-1: E2E-4 e E2E-5 da spec funcional passam contra Postgres real",

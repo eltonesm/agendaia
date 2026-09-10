@@ -46,16 +46,16 @@ Nós vamos usar **os dois, com escopos distintos e sem sobreposição**.
 
 ### A convenção `api` precisa de uma anotação
 
-O Modulith trata cada **subpacote direto** de `com.agendaia` como um módulo, e
+O Modulith trata cada **subpacote direto** de `com.simboraagendar` como um módulo, e
 por padrão considera público apenas o que está na **raiz** do módulo —
 subpacotes são internos. Nossa convenção põe o contrato em
-`com.agendaia.<contexto>.api`, que pelo padrão seria interno.
+`com.simboraagendar.<contexto>.api`, que pelo padrão seria interno.
 
 A correção é declarar o pacote como interface nomeada, no `package-info.java`:
 
 ```java
 @org.springframework.modulith.NamedInterface("api")
-package com.agendaia.catalog.api;
+package com.simboraagendar.catalog.api;
 ```
 
 E cada contexto declara de quem depende:
@@ -63,7 +63,7 @@ E cada contexto declara de quem depende:
 ```java
 @org.springframework.modulith.ApplicationModule(
     allowedDependencies = { "catalog :: api", "organization :: api", "customer :: api" })
-package com.agendaia.scheduling;
+package com.simboraagendar.scheduling;
 ```
 
 ### A API entre contextos é grossa, não conversadeira

@@ -45,7 +45,7 @@ branch estava publicado. Os outros três achados eram reais e foram corrigidos:
 
 1. **`tasks.json` sub-declarava os arquivos de cada task.** 66 arquivos
    declarados agora, contra 37 antes. Todos conferidos como existentes; os
-   únicos de produção que continuam fora são o `AgendaIaApplication` e os seis
+   únicos de produção que continuam fora são o `SimboraAgendarApplication` e os seis
    `package-info`, do andaime da Fase 0, que por regra não passa pelo ciclo SDD.
 2. **A spec técnica listava `organization/config/OrganizationConfig.java`**, que
    nunca foi criado e não faz falta. Linha removida; o diagrama ganhou os

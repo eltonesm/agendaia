@@ -12,7 +12,7 @@
     "RequestIdFilter e MetricsSecurityConfig vivem em platform, sem cruzar para nenhum contexto de negocio.",
     "MetricsSecurityConfig segue exatamente o padrao ja estabelecido por OperatorSecurityConfig (conta unica via InMemoryUserDetailsManager, hash BCrypt vindo de configuracao, nunca senha crua) — 3a ocorrencia do mesmo padrao de multiplas SecurityFilterChain por @Order.",
     "GlobalExceptionHandler.erroInesperado nao tem regressao de comportamento visivel: mesma tela error/500, mesmo status, so a origem do requestId mudou (do MDC, nao mais gerado ali).",
-    "Achado corrigido durante o proprio build (nao um achado desta revisao, ja resolvido antes do gate): nome de metrica agendaia.appointments.created colidia com a convencao reservada do OpenMetrics para timestamp de criacao de contador — renomeado para agendaia.appointments.booked, documentado na spec tecnica e no codigo.",
+    "Achado corrigido durante o proprio build (nao um achado desta revisao, ja resolvido antes do gate): nome de metrica simboraagendar.appointments.created colidia com a convencao reservada do OpenMetrics para timestamp de criacao de contador — renomeado para simboraagendar.appointments.booked, documentado na spec tecnica e no codigo.",
     "ModuleStructureTest (ArchUnit) passa sem violacao apos todas as mudancas desta feature."
   ],
   "files_reviewed": 15,

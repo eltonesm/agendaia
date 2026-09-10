@@ -13,7 +13,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/shared/TimeRange.java", "src/test/java/com/agendaia/shared/TimeRangeTest.java"],
+      "files": ["src/main/java/com/simboraagendar/shared/TimeRange.java", "src/test/java/com/simboraagendar/shared/TimeRangeTest.java"],
       "acceptance_criteria": [
         "AC-1: overlaps() usa intervalo meio-aberto [) - faixas encostadas nao se sobrepoem",
         "AC-2: intersect() retorna Optional vazio quando nao ha sobreposicao",
@@ -30,7 +30,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-001"],
-      "files": ["src/main/java/com/agendaia/organization/domain/WorkSchedule.java"],
+      "files": ["src/main/java/com/simboraagendar/organization/domain/WorkSchedule.java"],
       "acceptance_criteria": [
         "AC-1: WorkSchedule.overlaps() delega a TimeRange, sem duplicar a formula",
         "AC-2: WorkScheduleTest existente passa sem nenhuma alteracao no arquivo de teste",
@@ -47,12 +47,12 @@
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/package-info.java",
-        "src/main/java/com/agendaia/scheduling/domain/AvailableSlot.java",
-        "src/main/java/com/agendaia/scheduling/domain/SlotCalculator.java",
-        "src/main/java/com/agendaia/scheduling/domain/exception/AvailabilityQueryOutOfRangeException.java",
-        "src/main/java/com/agendaia/scheduling/domain/exception/ServiceOfferingNotFoundException.java",
-        "src/test/java/com/agendaia/scheduling/domain/SlotCalculatorTest.java"
+        "src/main/java/com/simboraagendar/scheduling/package-info.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/AvailableSlot.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/SlotCalculator.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/exception/AvailabilityQueryOutOfRangeException.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/exception/ServiceOfferingNotFoundException.java",
+        "src/test/java/com/simboraagendar/scheduling/domain/SlotCalculatorTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: nenhuma classe em scheduling.domain importa org.springframework ou jakarta.persistence",
@@ -73,12 +73,12 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/catalog/package-info.java",
-        "src/main/java/com/agendaia/catalog/api/package-info.java",
-        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
-        "src/main/java/com/agendaia/catalog/api/ServiceOfferingRef.java",
-        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java",
-        "src/main/java/com/agendaia/catalog/application/port/out/ServiceOfferingRepository.java"
+        "src/main/java/com/simboraagendar/catalog/package-info.java",
+        "src/main/java/com/simboraagendar/catalog/api/package-info.java",
+        "src/main/java/com/simboraagendar/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/simboraagendar/catalog/api/ServiceOfferingRef.java",
+        "src/main/java/com/simboraagendar/catalog/application/ServiceOfferingDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/out/ServiceOfferingRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: find() retorna vazio para id inexistente ou de outro tenant, nunca lanca excecao",
@@ -96,10 +96,10 @@
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/organization/api/AvailabilityDirectory.java",
-        "src/main/java/com/agendaia/organization/application/AvailabilityDirectoryHandler.java",
-        "src/main/java/com/agendaia/organization/application/port/out/BusinessOperatingHoursRepository.java",
-        "src/main/java/com/agendaia/organization/application/port/out/TimeOffRepository.java"
+        "src/main/java/com/simboraagendar/organization/api/AvailabilityDirectory.java",
+        "src/main/java/com/simboraagendar/organization/application/AvailabilityDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/BusinessOperatingHoursRepository.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/TimeOffRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: blocksFor recorta um TimeOff que comeca antes ou termina depois da data consultada para as bordas [00:00, 24:00) do dia",
@@ -118,9 +118,9 @@
       "layer": 1,
       "depends_on": ["TASK-003", "TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/port/in/GetAvailableSlotsUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/GetAvailableSlotsQuery.java",
-        "src/main/java/com/agendaia/scheduling/application/GetAvailableSlotsHandler.java"
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/GetAvailableSlotsUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/GetAvailableSlotsQuery.java",
+        "src/main/java/com/simboraagendar/scheduling/application/GetAvailableSlotsHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: data fora de [hoje, hoje+30 dias] lanca AvailabilityQueryOutOfRangeException, nunca lista vazia",
@@ -138,7 +138,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
-      "files": ["src/test/java/com/agendaia/scheduling/application/GetAvailableSlotsHandlerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/application/GetAvailableSlotsHandlerTest.java"],
       "acceptance_criteria": [
         "AC-1: casos de borda do horizonte (hoje, hoje+30, hoje+31, ontem) cobertos",
         "AC-2: ServiceOfferingNotFoundException coberto quando catalog.api retorna Optional vazio",
@@ -154,7 +154,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-005"],
-      "files": ["src/test/java/com/agendaia/organization/application/AvailabilityDirectoryHandlerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/organization/application/AvailabilityDirectoryHandlerTest.java"],
       "acceptance_criteria": [
         "AC-1: TimeOff que cruza a meia-noite e recortado corretamente para as bordas do dia consultado",
         "AC-2: bloqueio geral (professionalId nulo) aparece junto com o bloqueio do profissional especifico na mesma lista",
@@ -170,7 +170,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
-      "files": ["src/test/java/com/agendaia/scheduling/ConsultarDisponibilidadeIT.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/ConsultarDisponibilidadeIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 - grade de 10 min respeitando o intervalo de almoco (duas faixas de WorkSchedule)",
         "AC-2: E2E-2 - bloqueio do profissional remove so a janela bloqueada",

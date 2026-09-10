@@ -14,8 +14,8 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/organization/api/BusinessDirectory.java",
-        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java"
+        "src/main/java/com/simboraagendar/organization/api/BusinessDirectory.java",
+        "src/main/java/com/simboraagendar/organization/application/BusinessDirectoryHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: findBySlug retorna vazio para slug inexistente, sem lancar excecao",
@@ -34,11 +34,11 @@
       "depends_on": [],
       "files": [
         "src/main/resources/db/migration/V7__customer_create_customer.sql",
-        "src/main/java/com/agendaia/customer/package-info.java",
-        "src/main/java/com/agendaia/customer/domain/Customer.java",
-        "src/main/java/com/agendaia/customer/application/port/out/CustomerRepository.java",
-        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
-        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java"
+        "src/main/java/com/simboraagendar/customer/package-info.java",
+        "src/main/java/com/simboraagendar/customer/domain/Customer.java",
+        "src/main/java/com/simboraagendar/customer/application/port/out/CustomerRepository.java",
+        "src/main/java/com/simboraagendar/customer/application/CustomerDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/customer/api/CustomerDirectory.java"
       ],
       "acceptance_criteria": [
         "AC-1: findOrCreate com telefone ja existente no tenant devolve o MESMO id, sem duplicar (BR-3)",
@@ -58,12 +58,12 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/catalog/api/ServiceDirectory.java",
-        "src/main/java/com/agendaia/catalog/api/PublicServiceRef.java",
-        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
-        "src/main/java/com/agendaia/catalog/api/PublicOfferingRef.java",
-        "src/main/java/com/agendaia/catalog/application/ServiceDirectoryHandler.java",
-        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java"
+        "src/main/java/com/simboraagendar/catalog/api/ServiceDirectory.java",
+        "src/main/java/com/simboraagendar/catalog/api/PublicServiceRef.java",
+        "src/main/java/com/simboraagendar/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/simboraagendar/catalog/api/PublicOfferingRef.java",
+        "src/main/java/com/simboraagendar/catalog/application/ServiceDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/catalog/application/ServiceOfferingDirectoryHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: listActiveByService cruza ProfessionalDirectory.listActive() EXATAMENTE uma vez, nao em loop por oferta",
@@ -82,10 +82,10 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/scheduling/domain/Appointment.java",
-        "src/main/java/com/agendaia/scheduling/domain/AppointmentStatus.java",
-        "src/main/java/com/agendaia/scheduling/domain/exception/SlotUnavailableException.java",
-        "src/main/java/com/agendaia/scheduling/domain/exception/PhoneAppointmentLimitExceededException.java"
+        "src/main/java/com/simboraagendar/scheduling/domain/Appointment.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/AppointmentStatus.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/exception/SlotUnavailableException.java",
+        "src/main/java/com/simboraagendar/scheduling/domain/exception/PhoneAppointmentLimitExceededException.java"
       ],
       "acceptance_criteria": [
         "AC-1: schedule() nasce sempre com status SCHEDULED (BR-1)",
@@ -105,10 +105,10 @@
       "depends_on": ["TASK-004"],
       "files": [
         "src/main/resources/db/migration/V8__scheduling_create_appointment.sql",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaEntity.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentMapper.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
-        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java"
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentJpaEntity.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentMapper.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/out/AppointmentRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: EXCLUDE USING gist copiado literalmente do ADR 0005 (tenant_id, professional_id, tstzrange '[)', WHERE status IN SCHEDULED/CONFIRMED)",
@@ -127,10 +127,10 @@
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/port/in/BookAppointmentUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/BookAppointmentCommand.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/BookedAppointment.java",
-        "src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/BookAppointmentUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/BookAppointmentCommand.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/BookedAppointment.java",
+        "src/main/java/com/simboraagendar/scheduling/application/BookAppointmentHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: telefone com 3 agendamentos futuros SCHEDULED recusa o 4o com PhoneAppointmentLimitExceededException (BR-9)",
@@ -150,8 +150,8 @@
       "layer": 1,
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java",
-        "src/main/java/com/agendaia/platform/web/LayoutAdvice.java"
+        "src/main/java/com/simboraagendar/platform/tenant/TenantContextFilter.java",
+        "src/main/java/com/simboraagendar/platform/web/LayoutAdvice.java"
       ],
       "acceptance_criteria": [
         "AC-1: requisicao autenticada continua resolvendo pela sessao, sem nenhuma mudanca de comportamento (regressao zero)",
@@ -171,7 +171,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/platform/security/SecurityConfig.java"],
+      "files": ["src/main/java/com/simboraagendar/platform/security/SecurityConfig.java"],
       "acceptance_criteria": [
         "AC-1: GET /b/{slug} sem sessao devolve 200, nao redireciona para /login",
         "AC-2: POST /b/{slug}/... sem token CSRF continua sendo recusado (403) — permitAll nao desliga CSRF",
@@ -188,7 +188,7 @@
       "layer": 1,
       "depends_on": ["TASK-003", "TASK-007", "TASK-008"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/PublicBookingController.java",
         "src/main/resources/templates/public/catalogo.html",
         "src/main/resources/templates/public/profissionais.html",
         "src/main/resources/templates/public/horarios.html"
@@ -211,9 +211,9 @@
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-008", "TASK-009"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java",
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/BookingRateLimiter.java",
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/request/PublicBookingRequest.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/PublicBookingController.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/BookingRateLimiter.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/request/PublicBookingRequest.java",
         "src/main/resources/templates/public/sucesso.html"
       ],
       "acceptance_criteria": [
@@ -233,7 +233,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-004"],
-      "files": ["src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/domain/AppointmentTest.java"],
       "acceptance_criteria": [
         "AC-1: status sempre SCHEDULED apos schedule()",
         "AC-2: cada campo nulo tem um caso de teste recusando",
@@ -249,7 +249,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006"],
-      "files": ["src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/application/BookAppointmentHandlerTest.java"],
       "acceptance_criteria": [
         "AC-1: teto de 3 agendamentos futuros recusa o 4o sem chamar save()",
         "AC-2: oferta nao encontrada recusa sem chamar CustomerDirectory nem save()",
@@ -265,7 +265,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-003"],
-      "files": ["src/test/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandlerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/catalog/application/ServiceOfferingDirectoryHandlerTest.java"],
       "acceptance_criteria": [
         "AC-1: verify(professionalDirectory, times(1)).listActive() com 3+ ofertas retornadas",
         "AC-2: lista vazia para servico sem oferta ativa, sem erro",
@@ -281,7 +281,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010"],
-      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/PublicBookingControllerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/adapter/in/web/PublicBookingControllerTest.java"],
       "acceptance_criteria": [
         "AC-1: sem csrf(), POST devolve 403",
         "AC-2: honeypot preenchido nao chama BookAppointmentUseCase",
@@ -298,7 +298,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010"],
-      "files": ["src/test/java/com/agendaia/scheduling/PaginaPublicaAgendamentoIT.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/PaginaPublicaAgendamentoIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 a E2E-7 da spec funcional cobertos, cada um com asercao direta (nao so ausencia de erro)",
         "AC-2: E2E-2 dispara duas requisicoes de fato concorrentes (ExecutorService/CountDownLatch) para o mesmo profissional+horario, exatamente uma grava",

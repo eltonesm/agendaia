@@ -30,10 +30,10 @@
       "depends_on": [],
       "files": [
         "src/main/resources/db/migration/V6__billing_create_billing_account.sql",
-        "src/main/java/com/agendaia/billing/package-info.java",
-        "src/main/java/com/agendaia/billing/domain/BillingAccount.java",
-        "src/main/java/com/agendaia/billing/domain/AccessStatus.java",
-        "src/main/java/com/agendaia/billing/application/port/out/BillingAccountRepository.java"
+        "src/main/java/com/simboraagendar/billing/package-info.java",
+        "src/main/java/com/simboraagendar/billing/domain/BillingAccount.java",
+        "src/main/java/com/simboraagendar/billing/domain/AccessStatus.java",
+        "src/main/java/com/simboraagendar/billing/application/port/out/BillingAccountRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: startTrial() grava trialEndsAt = accessValidUntil = registeredOn + 30 dias corridos (BR-1)",
@@ -53,10 +53,10 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/organization/api/BusinessDirectory.java",
-        "src/main/java/com/agendaia/organization/api/BusinessRef.java",
-        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java",
-        "src/main/java/com/agendaia/organization/application/port/out/BusinessRepository.java"
+        "src/main/java/com/simboraagendar/organization/api/BusinessDirectory.java",
+        "src/main/java/com/simboraagendar/organization/api/BusinessRef.java",
+        "src/main/java/com/simboraagendar/organization/application/BusinessDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/BusinessRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: BusinessDirectory.listAll() nao chama TenantContext.require() em nenhum lugar (excecao documentada, DD-5)",
@@ -74,8 +74,8 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/platform/security/OperatorSecurityConfig.java",
-        "src/main/java/com/agendaia/platform/security/SecurityConfig.java",
+        "src/main/java/com/simboraagendar/platform/security/OperatorSecurityConfig.java",
+        "src/main/java/com/simboraagendar/platform/security/SecurityConfig.java",
         "src/main/resources/application.yaml"
       ],
       "acceptance_criteria": [
@@ -95,8 +95,8 @@
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-003"],
       "files": [
-        "src/main/java/com/agendaia/billing/application/BillingAccountService.java",
-        "src/main/java/com/agendaia/billing/application/EstablishmentView.java"
+        "src/main/java/com/simboraagendar/billing/application/BillingAccountService.java",
+        "src/main/java/com/simboraagendar/billing/application/EstablishmentView.java"
       ],
       "acceptance_criteria": [
         "AC-1: get-or-create nunca duplica BillingAccount para o mesmo tenantId em chamadas concorrentes/repetidas",
@@ -115,8 +115,8 @@
       "layer": 1,
       "depends_on": ["TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/billing/adapter/in/web/AccessGuardFilter.java",
-        "src/main/java/com/agendaia/billing/adapter/in/web/BillingBannerAdvice.java"
+        "src/main/java/com/simboraagendar/billing/adapter/in/web/AccessGuardFilter.java",
+        "src/main/java/com/simboraagendar/billing/adapter/in/web/BillingBannerAdvice.java"
       ],
       "acceptance_criteria": [
         "AC-1: BLOCKED redireciona para /admin/conta-suspensa; a propria rota /admin/conta-suspensa nunca entra em loop de redirecionamento",
@@ -136,8 +136,8 @@
       "layer": 1,
       "depends_on": ["TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/billing/adapter/in/web/OperatorPanelController.java",
-        "src/main/java/com/agendaia/billing/adapter/in/web/SuspendedAccountController.java",
+        "src/main/java/com/simboraagendar/billing/adapter/in/web/OperatorPanelController.java",
+        "src/main/java/com/simboraagendar/billing/adapter/in/web/SuspendedAccountController.java",
         "src/main/resources/templates/operador/login.html",
         "src/main/resources/templates/operador/painel.html",
         "src/main/resources/templates/admin/conta-suspensa.html"
@@ -174,7 +174,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-002"],
-      "files": ["src/test/java/com/agendaia/billing/domain/BillingAccountTest.java"],
+      "files": ["src/test/java/com/simboraagendar/billing/domain/BillingAccountTest.java"],
       "acceptance_criteria": [
         "AC-1: limites exatos de GRACE_PERIOD e BLOCKED cobertos (accessValidUntil, accessValidUntil+5, accessValidUntil+6)",
         "AC-2: TRIAL vs PAID distinguidos corretamente conforme accessValidUntil > trialEndsAt ou nao",
@@ -190,7 +190,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-005"],
-      "files": ["src/test/java/com/agendaia/billing/application/BillingAccountServiceTest.java"],
+      "files": ["src/test/java/com/simboraagendar/billing/application/BillingAccountServiceTest.java"],
       "acceptance_criteria": [
         "AC-1: get-or-create nao grava duas vezes para o mesmo tenantId numa mesma chamada",
         "AC-2: listForOperator chama o repositorio em lote (verify de metodo unico, nao um por estabelecimento)",
@@ -207,8 +207,8 @@
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-007", "TASK-008"],
       "files": [
-        "src/test/java/com/agendaia/billing/adapter/in/web/OperatorPanelControllerTest.java",
-        "src/test/java/com/agendaia/billing/adapter/in/web/AccessGuardFilterTest.java"
+        "src/test/java/com/simboraagendar/billing/adapter/in/web/OperatorPanelControllerTest.java",
+        "src/test/java/com/simboraagendar/billing/adapter/in/web/AccessGuardFilterTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: sem csrf(), POST de marcar prazo devolve 403",
@@ -225,7 +225,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-007", "TASK-008"],
-      "files": ["src/test/java/com/agendaia/billing/OperadorBackofficeIT.java"],
+      "files": ["src/test/java/com/simboraagendar/billing/OperadorBackofficeIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 a E2E-5 da spec funcional cobertos, cada um com asserção direta (nao só ausência de erro)",
         "GATE: ./mvnw verify -Dtest=OperadorBackofficeIT passa"

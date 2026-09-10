@@ -13,7 +13,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/scheduling/domain/Appointment.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/domain/Appointment.java"],
       "acceptance_criteria": [
         "AC-1: cancelByOwner() muda SCHEDULED ou CONFIRMED para CANCELLED, independente de startsAt ja ter passado",
         "AC-2: cancelByOwner() e no-op (devolve this) quando ja CANCELLED",
@@ -30,10 +30,10 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/catalog/api/ActiveOfferingRef.java",
-        "src/main/java/com/agendaia/catalog/api/ServiceOfferingDirectory.java",
-        "src/main/java/com/agendaia/catalog/application/ServiceOfferingDirectoryHandler.java",
-        "src/main/java/com/agendaia/catalog/application/port/out/ServiceOfferingRepository.java"
+        "src/main/java/com/simboraagendar/catalog/api/ActiveOfferingRef.java",
+        "src/main/java/com/simboraagendar/catalog/api/ServiceOfferingDirectory.java",
+        "src/main/java/com/simboraagendar/catalog/application/ServiceOfferingDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/catalog/application/port/out/ServiceOfferingRepository.java"
       ],
       "acceptance_criteria": [
         "AC-1: listActive() devolve todas as ofertas ativas do tenant, com nome de profissional e de servico resolvidos",
@@ -51,12 +51,12 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/customer/api/CustomerRef.java",
-        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java",
-        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java",
-        "src/main/java/com/agendaia/customer/application/port/out/CustomerRepository.java",
-        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
-        "src/test/java/com/agendaia/scheduling/adapter/in/web/AppointmentControllerTest.java"
+        "src/main/java/com/simboraagendar/customer/api/CustomerRef.java",
+        "src/main/java/com/simboraagendar/customer/api/CustomerDirectory.java",
+        "src/main/java/com/simboraagendar/customer/application/CustomerDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/customer/application/port/out/CustomerRepository.java",
+        "src/test/java/com/simboraagendar/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/simboraagendar/scheduling/adapter/in/web/AppointmentControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: findByIds([]) devolve lista vazia sem consultar o banco",
@@ -74,9 +74,9 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
+        "src/main/java/com/simboraagendar/scheduling/application/port/out/AppointmentRepository.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
       ],
       "acceptance_criteria": [
         "AC-1: devolve agendamentos de todos os status do profissional naquele dia, ordenados por startsAt",
@@ -93,8 +93,8 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/AppointmentFactory.java",
-        "src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"
+        "src/main/java/com/simboraagendar/scheduling/application/AppointmentFactory.java",
+        "src/main/java/com/simboraagendar/scheduling/application/BookAppointmentHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: BookAppointmentHandlerTest (TODO-006, ja existente) continua 100% verde sem nenhuma mudanca no proprio arquivo de teste",
@@ -111,13 +111,13 @@
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/port/in/ViewAgendaUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/AgendaEntry.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/CreateAppointmentManuallyUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/CancelAppointmentByOwnerUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/RescheduleAppointmentUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/RescheduleAppointmentCommand.java",
-        "src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/ViewAgendaUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/AgendaEntry.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/CreateAppointmentManuallyUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/CancelAppointmentByOwnerUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/RescheduleAppointmentUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/RescheduleAppointmentCommand.java",
+        "src/main/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: create() nao chama countFutureActive (BR-4 — teto por telefone nao se aplica a criacao manual)",
@@ -136,7 +136,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-002"],
-      "files": ["src/main/java/com/agendaia/scheduling/adapter/in/web/AgendaController.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/adapter/in/web/AgendaController.java"],
       "acceptance_criteria": [
         "AC-1: as 7 rotas exigem sessao OWNER (herdado de SecurityConfig, sem configuracao nova)",
         "AC-2: dropdown de oferta em criar/reagendar vem de ServiceOfferingDirectory.listActive() (DD-10, sem cascata JS)",
@@ -172,8 +172,8 @@
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-005", "TASK-006"],
       "files": [
-        "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
-        "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java"
+        "src/test/java/com/simboraagendar/scheduling/domain/AppointmentTest.java",
+        "src/test/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: cancelByOwner() sobre agendamento com startsAt no passado ainda transiciona (diferente de cancel(Instant))",
@@ -191,7 +191,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-007", "TASK-008"],
-      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/AgendaControllerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/adapter/in/web/AgendaControllerTest.java"],
       "acceptance_criteria": [
         "AC-1: sem sessao OWNER, qualquer rota de /admin/agenda/** e recusada",
         "AC-2: id de outro tenant (mock) devolve 404 nas rotas de acao",
@@ -207,7 +207,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010"],
-      "files": ["src/test/java/com/agendaia/scheduling/AgendaProfissionalIT.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/AgendaProfissionalIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 a E2E-7 da spec funcional, um teste por cenario, nomeados por @DisplayName",
         "AC-2: E2E-2 usa duas threads reais (uma via painel, uma via link publico) disputando o mesmo horario",

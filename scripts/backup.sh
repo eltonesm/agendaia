@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Backup do banco do AgendaIA.
+# Backup do banco do SimboraAgendar.
 #
 #   ./scripts/backup.sh
 #
@@ -14,8 +14,8 @@
 set -euo pipefail
 
 SERVICO="${POSTGRES_SERVICE:-postgres}"
-BANCO="${POSTGRES_DB:-agendaia}"
-USUARIO="${POSTGRES_USER:-agendaia}"
+BANCO="${POSTGRES_DB:-simboraagendar}"
+USUARIO="${POSTGRES_USER:-simboraagendar}"
 DESTINO="${BACKUP_DIR:-backups}"
 RETENCAO_DIAS="${RETENCAO_DIAS:-30}"
 

@@ -296,7 +296,7 @@ Sem REST (`CLAUDE.md`). Um contrato novo, in-process, em `customer.api`
 `customer.api`, só com um método a mais):
 
 ```java
-package com.agendaia.customer.api;
+package com.simboraagendar.customer.api;
 
 public interface CustomerDirectory {
     // ... métodos já existentes (findOrCreate, find, findByIds) ...

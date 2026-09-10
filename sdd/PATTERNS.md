@@ -47,7 +47,7 @@ nunca em `domain`** (revisto em 2026-09-02, ver ADR 0002):
   `jakarta.persistence` (anotação da entidade), nunca `org.springframework`.
 
 **Fronteira entre contextos**:
-- Um contexto só importa o pacote `api` de outro: `com.agendaia.catalog.api`.
+- Um contexto só importa o pacote `api` de outro: `com.simboraagendar.catalog.api`.
 - O que sai por `api` é `record` imutável. Tipo de domínio interno nunca
   atravessa a fronteira.
 - Não importe `domain`, `application` ou `adapter` de outro contexto.
@@ -99,7 +99,7 @@ List<OfferingView> findOfferings(TenantId tenant, Set<UUID> professionalIds);
 **Estrutura de pacote dentro de um contexto**:
 
 ```
-com.agendaia.<contexto>
+com.simboraagendar.<contexto>
 ├── api/          contrato público — o único pacote visível de fora
 ├── domain/       model, service, policy, event, repository (interfaces)
 ├── application/  usecase, command, query, port/out
@@ -575,7 +575,7 @@ adotar Tailwind):
 - `noClasses().beAnnotatedWith(...)` olha **anotação de classe**. Para cobrir
   método, é preciso a regra irmã com `noMethods()`.
 - Escope todo predicado por nome ao pacote do projeto:
-  `resideInAPackage("com.agendaia..")`. Sem isso, `SecurityContextRepository`
+  `resideInAPackage("com.simboraagendar..")`. Sem isso, `SecurityContextRepository`
   do Spring casa com uma regra sobre "repositório".
 - Why: falso positivo treina o time a ignorar a ferramenta, e cobertura parcial
   dá a sensação de garantia sem a garantia.

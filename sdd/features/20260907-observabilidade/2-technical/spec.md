@@ -26,7 +26,7 @@ Feature transversal, sem agregado nem tela nova. Três frentes independentes:
    `micrometer-registry-prometheus` (configurado no `application.yaml`,
    mas nunca funcionou de fato); protegido por HTTP Basic Auth dedicado,
    independente da sessão do dono — mesmo padrão de conta única já usado
-   para o operador (`AGENDAIA_OPERADOR_*`).
+   para o operador (`SIMBORAAGENDAR_OPERADOR_*`).
 
 Nenhuma migration, nenhum agregado, nenhuma tabela nova.
 
@@ -97,7 +97,7 @@ framework já resolve nativamente.
 
 ### DD-2: `RequestIdFilter` novo — e ele substitui o identificador ad-hoc do `GlobalExceptionHandler`
 
-**Selected**: Filtro `com.agendaia.platform.web.RequestIdFilter`,
+**Selected**: Filtro `com.simboraagendar.platform.web.RequestIdFilter`,
 `@Order(Ordered.HIGHEST_PRECEDENCE)` (roda antes de tudo, inclusive do
 Spring Security) — gera um id novo (`UUID.randomUUID().toString().substring(0,
 8)`, mesmo formato já em uso), põe em `MDC.put("requestId", id)`, adiciona
@@ -140,16 +140,16 @@ mostram o mesmo id.
 `scheduling.application` (mesmo pacote de `BookAppointmentHandler`,
 `ManageAppointmentHandler`, `ProfessionalAgendaHandler` — não precisa ser
 pública), injetada nos três. Nomes Micrometer:
-`agendaia.appointments.booked`, `agendaia.appointments.cancelled`,
-`agendaia.appointments.slot_conflict` — o `PrometheusMeterRegistry` já
-traduz para `agendaia_appointments_booked_total` etc. no formato de
+`simboraagendar.appointments.booked`, `simboraagendar.appointments.cancelled`,
+`simboraagendar.appointments.slot_conflict` — o `PrometheusMeterRegistry` já
+traduz para `simboraagendar_appointments_booked_total` etc. no formato de
 scrape, sem configuração extra.
 
 > **Achado durante a implementação**: o nome óbvio seria
-> `agendaia.appointments.created`, não `booked` — mas o Prometheus/
+> `simboraagendar.appointments.created`, não `booked` — mas o Prometheus/
 > Micrometer trata o sufixo `.created` como a convenção reservada do
 > OpenMetrics para timestamp de criação de um contador, e a métrica saía
-> como `agendaia_appointments_total` (sem "created" nenhum no nome,
+> como `simboraagendar_appointments_total` (sem "created" nenhum no nome,
 > indistinguível de qualquer outro contador). `booked` evita a colisão e
 > continua na linguagem do domínio (glossário: "reservar, agendar").
 
@@ -203,7 +203,7 @@ escondendo o número real de clientes novos e de desistências reais.
 (`@Order(2)`) — `securityMatcher("/actuator/prometheus")`,
 `.httpBasic(Customizer.withDefaults())`, `anyRequest().hasRole("METRICS")`.
 Usuário único em `InMemoryUserDetailsManager`, mesmo padrão de
-`AGENDAIA_OPERADOR_PASSWORD_HASH` (hash BCrypt pré-computado em variável
+`SIMBORAAGENDAR_OPERADOR_PASSWORD_HASH` (hash BCrypt pré-computado em variável
 de ambiente, nunca senha crua).
 
 **Options Considered**:
@@ -285,11 +285,11 @@ configuração, mudando de comportamento:
 
 ## Security
 
-- **Segredo novo**: `AGENDAIA_METRICS_USERNAME` (padrão de
-  desenvolvimento: `metrics`) e `AGENDAIA_METRICS_PASSWORD_HASH` (hash
+- **Segredo novo**: `SIMBORAAGENDAR_METRICS_USERNAME` (padrão de
+  desenvolvimento: `metrics`) e `SIMBORAAGENDAR_METRICS_PASSWORD_HASH` (hash
   BCrypt, padrão de desenvolvimento gerado uma vez para uso local —
   qualquer implantação real PRECISA sobrescrever as duas variáveis,
-  mesmo aviso já presente para `AGENDAIA_OPERADOR_*`). Nunca em texto
+  mesmo aviso já presente para `SIMBORAAGENDAR_OPERADOR_*`). Nunca em texto
   puro no código nem em log.
 - **`requestId` não é segredo** — é seguro expor em cabeçalho de resposta
   (`X-Request-Id`) e na tela de erro (já acontecia antes desta feature,

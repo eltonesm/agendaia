@@ -50,10 +50,10 @@ GET /actuator/prometheus → exige HTTP Basic Auth dedicado; expõe 3
   sonda de container — mantido assim, de propósito, na entrevista com o
   usuário.
 - **Achado real durante a implementação**: o nome de métrica
-  `agendaia.appointments.created` colide com a convenção reservada do
+  `simboraagendar.appointments.created` colide com a convenção reservada do
   OpenMetrics para timestamp de criação de contador — o Prometheus
-  descartava o "created" e expunha só `agendaia_appointments_total`.
-  Renomeado para `agendaia.appointments.booked`.
+  descartava o "created" e expunha só `simboraagendar_appointments_total`.
+  Renomeado para `simboraagendar.appointments.booked`.
 - **Segundo achado**: o suporte de teste do Spring Boot desliga a
   exportação de métricas por padrão
   (`management.defaults.metrics.export.enabled=false`) — sem

@@ -32,11 +32,11 @@ delimitado você **decide** ao modelar. Módulo você **escolhe** ao empacotar.
 
 | Subdomínio | Tipo | Contexto | Módulo |
 |---|---|---|---|
-| Agendamento | **Core** | `scheduling` | `com.agendaia.scheduling` |
-| Cadastro do estabelecimento | Suporte | `organization` | `com.agendaia.organization` |
+| Agendamento | **Core** | `scheduling` | `com.simboraagendar.scheduling` |
+| Cadastro do estabelecimento | Suporte | `organization` | `com.simboraagendar.organization` |
 | Identidade e acesso | Genérico | `organization` — **o mesmo** | idem |
-| Catálogo de serviços | Suporte | `catalog` | `com.agendaia.catalog` |
-| Cliente atendido | Suporte | `customer` | `com.agendaia.customer` |
+| Catálogo de serviços | Suporte | `catalog` | `com.simboraagendar.catalog` |
+| Cliente atendido | Suporte | `customer` | `com.simboraagendar.customer` |
 
 **O mapeamento não é 1:1:1.** Dois subdomínios — cadastro e identidade — moram
 num contexto só, por decisão registrada no
@@ -115,7 +115,7 @@ para não voltarem.
 
 ### 1. "Cliente" é ambíguo em português — e perigosamente
 
-- O **cliente do AgendaIA** é o barbeiro: quem paga a mensalidade. No código: `Business`.
+- O **cliente do SimboraAgendar** é o barbeiro: quem paga a mensalidade. No código: `Business`.
 - O **cliente do barbeiro** é quem senta na cadeira. No código: `Customer`.
 
 Na UI e nas conversas, chame o primeiro de **estabelecimento** e reserve
@@ -187,7 +187,7 @@ sem gateway de pagamento nenhum. `Assinatura` recorrente de verdade
 | Fim do teste gratuito | `trialEndsAt` | Campo de `BillingAccount` | Gravado uma vez, no cadastro (`createdAt` + 30 dias corridos). Nunca muda depois. |
 | Validade do acesso | `accessValidUntil` | Campo de `BillingAccount` | Data até quando o painel administrativo funciona sem restrição. Começa igual a `trialEndsAt`; o operador substitui por uma data nova ao marcar pagamento ou estender prazo — é a mesma ação para os dois casos. |
 | Status de acesso | `AccessStatus` | Calculado, nunca persistido | `TRIAL` (nunca foi estendido), `PAID` (`accessValidUntil` já foi estendido além de `trialEndsAt`), `GRACE_PERIOD` (venceu, dentro dos 5 dias corridos de carência), `BLOCKED` (venceu a carência). |
-| Operador | — | Sessão sem tenant | Quem opera o AgendaIA (não é dono de nenhum estabelecimento). Login isolado do login de dono; conta única, criada por configuração, nunca por formulário. |
+| Operador | — | Sessão sem tenant | Quem opera o SimboraAgendar (não é dono de nenhum estabelecimento). Login isolado do login de dono; conta única, criada por configuração, nunca por formulário. |
 
 **Gateway de pagamento, planos com preço/recorrência automática e múltiplos
 operadores continuam fora de escopo** — ver

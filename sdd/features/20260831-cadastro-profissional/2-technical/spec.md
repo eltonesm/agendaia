@@ -255,7 +255,7 @@ pequena (dezenas, não milhares) — uma consulta simples com índice em
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── domain/
 │   ├── Professional.java
 │   └── ProfessionalRepository.java
@@ -279,7 +279,7 @@ src/main/resources/
 
 src/main/resources/templates/admin/dashboard.html   (editado: link no "Próximo passo")
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── organization/
 │   ├── domain/ProfessionalTest.java
 │   ├── application/RegisterProfessionalHandlerTest.java

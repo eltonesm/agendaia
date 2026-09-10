@@ -8,7 +8,7 @@
     "minor": 0
   },
   "notes": [
-    "Credenciais de /actuator/prometheus nunca hardcoded em texto puro: AGENDAIA_METRICS_USERNAME e AGENDAIA_METRICS_PASSWORD_HASH vêm de variavel de ambiente, com valor padrao de desenvolvimento (hash BCrypt, nao senha crua) — mesmo padrao ja auditado para AGENDAIA_OPERADOR_*.",
+    "Credenciais de /actuator/prometheus nunca hardcoded em texto puro: SIMBORAAGENDAR_METRICS_USERNAME e SIMBORAAGENDAR_METRICS_PASSWORD_HASH vêm de variavel de ambiente, com valor padrao de desenvolvimento (hash BCrypt, nao senha crua) — mesmo padrao ja auditado para SIMBORAAGENDAR_OPERADOR_*.",
     "/actuator/prometheus exige autenticacao de verdade: confirmado por teste automatizado (401 sem credencial, 200 com credencial correta) e por verificacao manual contra a aplicacao rodando de fato — nao cai no anyRequest().hasRole('OWNER') por omissao nem fica exposto sem protecao.",
     "/actuator/health continua publico de proposito (BR-1 da spec funcional) — expõe so {'status':'UP'}, nenhum dado sensivel de negocio ou de infraestrutura.",
     "LGPD (BR-4): auditoria do codigo-fonte confirma que nenhuma linha de log desta feature (nem das ja existentes tocadas por ela) referencia telefone ou nome de cliente — validado tambem pelo teste automatizado E2E-4, que verifica um fluxo real de agendamento ponta a ponta.",

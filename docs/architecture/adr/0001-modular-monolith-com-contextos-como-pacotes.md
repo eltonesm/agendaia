@@ -7,7 +7,7 @@
 
 ## Contexto
 
-O AgendaIA é um SaaS de agendamento construído por uma pessoa, validando o
+O SimboraAgendar é um SaaS de agendamento construído por uma pessoa, validando o
 produto com um único estabelecimento piloto, rodando numa VPS.
 
 O domínio tem fronteiras conceituais reais: jornada de profissional, catálogo de
@@ -40,11 +40,11 @@ refeita sem ele.
 ## Decisão
 
 Nós vamos construir um **Modular Monolith num único módulo Maven**. Os contextos
-delimitados são **pacotes** sob `com.agendaia`, e as fronteiras são garantidas
+delimitados são **pacotes** sob `com.simboraagendar`, e as fronteiras são garantidas
 por **ArchUnit**, não pelo build.
 
 ```
-com.agendaia
+com.simboraagendar
 ├── shared        tipos puros compartilhados
 ├── platform      infraestrutura transversal
 ├── organization  empresa (tenant), usuário, profissional, jornada

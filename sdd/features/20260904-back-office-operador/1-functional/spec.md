@@ -10,12 +10,12 @@
 
 ## Problem Statement
 
-Depois da TODO-001 a TODO-005, o AgendaIA sabe cadastrar estabelecimentos e
+Depois da TODO-001 a TODO-005, o SimboraAgendar sabe cadastrar estabelecimentos e
 calcular disponibilidade — mas ninguém, além de uma consulta direta ao
 banco, sabe **quantos estabelecimentos existem, desde quando, e se estão
 em dia**. Todo o produto até aqui foi construído do ponto de vista de quem
-usa o AgendaIA (dono de estabelecimento, cliente). Esta feature constrói a
-primeira tela do ponto de vista de quem **opera** o AgendaIA.
+usa o SimboraAgendar (dono de estabelecimento, cliente). Esta feature constrói a
+primeira tela do ponto de vista de quem **opera** o SimboraAgendar.
 
 Sem isso, o dono da plataforma não tem como oferecer um período de teste
 gratuito de forma confiável (não há onde ele vença automaticamente), nem
@@ -162,7 +162,7 @@ sem precisar de integração com nenhum gateway.
 ### US-6: Dono fala com o operador pelo WhatsApp
 
 **Como** dono de estabelecimento,
-**Eu quero** um jeito direto de falar com quem opera o AgendaIA,
+**Eu quero** um jeito direto de falar com quem opera o SimboraAgendar,
 **Para que** eu tire dúvidas ou dê sugestões sem precisar procurar um
 contato em outro lugar.
 

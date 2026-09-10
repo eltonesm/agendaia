@@ -9,7 +9,7 @@
   "details": [
     {
       "severity": "warning",
-      "file": "src/main/java/com/agendaia/scheduling/adapter/in/web/BookingRateLimiter.java",
+      "file": "src/main/java/com/simboraagendar/scheduling/adapter/in/web/BookingRateLimiter.java",
       "description": "attemptsByIp (ConcurrentHashMap) expurga as tentativas antigas de dentro do Deque de cada IP, mas nunca remove a entrada do IP no mapa quando o Deque fica vazio — o mapa cresce um registro por IP distinto observado desde o boot da aplicação e nunca encolhe. Para o piloto (um estabelecimento, tráfego baixo) o risco é teórico; se o produto crescer para múltiplos estabelecimentos com tráfego público relevante, isso vira crescimento de memória sem limite ao longo do uptime. Sugestão futura: em expurgarAntigas, se o Deque ficar vazio, remover a chave do mapa (computeIfPresent ou similar)."
     },
     {

@@ -77,12 +77,12 @@
       "complexity": "Medium",
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
-        "src/main/java/com/agendaia/organization/domain/ReservedSlugs.java",
-        "src/test/java/com/agendaia/organization/domain/SlugGeneratorTest.java",
-        "src/test/java/com/agendaia/organization/domain/ReservedSlugsTest.java",
-        "src/main/java/com/agendaia/shared/UuidV7.java",
-        "src/test/java/com/agendaia/shared/UuidV7Test.java"
+        "src/main/java/com/simboraagendar/organization/domain/SlugGenerator.java",
+        "src/main/java/com/simboraagendar/organization/domain/ReservedSlugs.java",
+        "src/test/java/com/simboraagendar/organization/domain/SlugGeneratorTest.java",
+        "src/test/java/com/simboraagendar/organization/domain/ReservedSlugsTest.java",
+        "src/main/java/com/simboraagendar/shared/UuidV7.java",
+        "src/test/java/com/simboraagendar/shared/UuidV7Test.java"
       ],
       "acceptance_criteria": [
         "AC-1: cobre a tabela de casos da spec, incluindo entrada que gera slug vazio",
@@ -102,14 +102,14 @@
       "complexity": "Medium",
       "depends_on": ["TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/Business.java",
-        "src/main/java/com/agendaia/organization/domain/User.java",
-        "src/main/java/com/agendaia/organization/domain/UserRole.java",
-        "src/main/java/com/agendaia/organization/domain/BusinessRepository.java",
-        "src/main/java/com/agendaia/organization/domain/UserRepository.java",
-        "src/main/java/com/agendaia/shared/TenantId.java",
-        "src/test/java/com/agendaia/organization/domain/BusinessTest.java",
-        "src/test/java/com/agendaia/organization/domain/UserTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/Business.java",
+        "src/main/java/com/simboraagendar/organization/domain/User.java",
+        "src/main/java/com/simboraagendar/organization/domain/UserRole.java",
+        "src/main/java/com/simboraagendar/organization/domain/BusinessRepository.java",
+        "src/main/java/com/simboraagendar/organization/domain/UserRepository.java",
+        "src/main/java/com/simboraagendar/shared/TenantId.java",
+        "src/test/java/com/simboraagendar/organization/domain/BusinessTest.java",
+        "src/test/java/com/simboraagendar/organization/domain/UserTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por Business.register(...) e User.owner(...), com construtor privado",
@@ -131,12 +131,12 @@
       "complexity": "High",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
-        "src/main/java/com/agendaia/platform/tenant/TenantContext.java",
-        "src/main/java/com/agendaia/platform/tenant/TenantContextFilter.java",
-        "src/test/java/com/agendaia/platform/tenant/TenantContextTest.java",
-        "src/test/java/com/agendaia/ArchitectureTest.java",
-        "src/test/java/com/agendaia/ModuleStructureTest.java"
+        "src/main/java/com/simboraagendar/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/simboraagendar/platform/tenant/TenantContext.java",
+        "src/main/java/com/simboraagendar/platform/tenant/TenantContextFilter.java",
+        "src/test/java/com/simboraagendar/platform/tenant/TenantContextTest.java",
+        "src/test/java/com/simboraagendar/ArchitectureTest.java",
+        "src/test/java/com/simboraagendar/ModuleStructureTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: AuthenticatedUser implementa UserDetails e nao importa nada de organization",
@@ -156,8 +156,8 @@
       "complexity": "Medium",
       "depends_on": ["TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java",
-        "src/test/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsServiceTest.java"
+        "src/main/java/com/simboraagendar/organization/adapter/out/security/BusinessUserDetailsService.java",
+        "src/test/java/com/simboraagendar/organization/adapter/out/security/BusinessUserDetailsServiceTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: usuario ou estabelecimento inativo resulta em conta desabilitada, nao em excecao distinta",
@@ -177,8 +177,8 @@
       "complexity": "High",
       "depends_on": ["TASK-006"],
       "files": [
-        "src/main/java/com/agendaia/platform/security/SecurityConfig.java",
-        "src/test/java/com/agendaia/platform/security/SecurityRoutesIT.java"
+        "src/main/java/com/simboraagendar/platform/security/SecurityConfig.java",
+        "src/test/java/com/simboraagendar/platform/security/SecurityRoutesIT.java"
       ],
       "acceptance_criteria": [
         "AC-1: /admin/** exige sessao e guarda o destino pretendido no redirecionamento",
@@ -199,14 +199,14 @@
       "complexity": "High",
       "depends_on": ["TASK-003", "TASK-004", "TASK-007"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/RegisterBusinessUseCase.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessCommand.java",
-        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
-        "src/main/java/com/agendaia/organization/domain/exception/EmailAlreadyUsedException.java",
-        "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
-        "src/test/java/com/agendaia/organization/application/RegisterBusinessHandlerTest.java",
-        "src/main/java/com/agendaia/shared/DomainException.java",
-        "src/main/java/com/agendaia/organization/application/port/in/RegisteredBusiness.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisterBusinessUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterBusinessCommand.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterBusinessHandler.java",
+        "src/main/java/com/simboraagendar/organization/domain/exception/EmailAlreadyUsedException.java",
+        "src/main/java/com/simboraagendar/organization/domain/exception/SlugUnavailableException.java",
+        "src/test/java/com/simboraagendar/organization/application/RegisterBusinessHandlerTest.java",
+        "src/main/java/com/simboraagendar/shared/DomainException.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisteredBusiness.java"
       ],
       "acceptance_criteria": [
         "AC-1: interface com sufixo UseCase, implementacao com sufixo Handler; nunca Impl",
@@ -228,13 +228,13 @@
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/platform/web/GlobalExceptionHandler.java",
+        "src/main/java/com/simboraagendar/platform/web/GlobalExceptionHandler.java",
         "src/main/resources/templates/fragments/layout.html",
         "src/main/resources/templates/error/404.html",
         "src/main/resources/templates/error/500.html",
-        "src/main/java/com/agendaia/platform/web/LayoutAdvice.java",
-        "src/main/java/com/agendaia/platform/web/WebConfig.java",
-        "src/test/java/com/agendaia/platform/web/GlobalExceptionHandlerTest.java"
+        "src/main/java/com/simboraagendar/platform/web/LayoutAdvice.java",
+        "src/main/java/com/simboraagendar/platform/web/WebConfig.java",
+        "src/test/java/com/simboraagendar/platform/web/GlobalExceptionHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: Bootstrap por CDN com integrity e crossorigin, versao fixada",
@@ -254,11 +254,11 @@
       "complexity": "Medium",
       "depends_on": ["TASK-008", "TASK-009"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/RegistrationController.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegistrationRequest.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/RegistrationController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegistrationRequest.java",
         "src/main/resources/templates/auth/cadastro.html",
         "src/main/resources/static/js/slug.js",
-        "src/test/java/com/agendaia/organization/adapter/in/web/RegistrationControllerTest.java"
+        "src/test/java/com/simboraagendar/organization/adapter/in/web/RegistrationControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: erro de validacao devolve 200 com a mesma tela e erro por campo, preservando o preenchimento",
@@ -280,13 +280,13 @@
       "complexity": "Medium",
       "depends_on": ["TASK-007", "TASK-009"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/DashboardController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/DashboardController.java",
         "src/main/resources/templates/auth/login.html",
         "src/main/resources/templates/admin/dashboard.html",
-        "src/main/java/com/agendaia/organization/application/ViewDashboardHandler.java",
-        "src/main/java/com/agendaia/organization/application/port/in/ViewDashboardUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/DashboardView.java",
-        "src/test/java/com/agendaia/organization/application/ViewDashboardHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/ViewDashboardHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/ViewDashboardUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/DashboardView.java",
+        "src/test/java/com/simboraagendar/organization/application/ViewDashboardHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: credencial incorreta mostra mensagem unica e generica",
@@ -306,9 +306,9 @@
       "complexity": "High",
       "depends_on": ["TASK-010", "TASK-011"],
       "files": [
-        "src/test/java/com/agendaia/organization/RegistrationIT.java",
-        "src/test/java/com/agendaia/organization/LoginIT.java",
-        "src/test/java/com/agendaia/organization/SlugUnavailableIT.java"
+        "src/test/java/com/simboraagendar/organization/RegistrationIT.java",
+        "src/test/java/com/simboraagendar/organization/LoginIT.java",
+        "src/test/java/com/simboraagendar/organization/SlugUnavailableIT.java"
       ],
       "acceptance_criteria": [
         "AC-1: E2E-1 segue o redirecionamento e confirma que o painel abre AUTENTICADO — cobre o DD-5",
@@ -329,7 +329,7 @@
       "complexity": "Medium",
       "depends_on": ["TASK-012"],
       "files": [
-        "src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"
+        "src/test/java/com/simboraagendar/platform/CrossTenantIsolationIT.java"
       ],
       "acceptance_criteria": [
         "AC-1: dois tenants criados, com dado distinguivel em cada",
@@ -349,8 +349,8 @@
       "complexity": "Low",
       "depends_on": ["TASK-013"],
       "files": [
-        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
-        "src/main/java/com/agendaia/organization/adapter/out/security/BusinessUserDetailsService.java"
+        "src/main/java/com/simboraagendar/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/simboraagendar/organization/adapter/out/security/BusinessUserDetailsService.java"
       ],
       "acceptance_criteria": [
         "AC-1: nenhum achado de corretude em aberto",
@@ -388,8 +388,8 @@
       "complexity": "Low",
       "depends_on": ["TASK-013"],
       "files": [
-        "src/main/java/com/agendaia/platform/security/AuthenticatedUser.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/RegistrationController.java"
+        "src/main/java/com/simboraagendar/platform/security/AuthenticatedUser.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/RegistrationController.java"
       ],
       "acceptance_criteria": [
         "AC-1: senha nunca em log, mensagem de erro ou resposta",
@@ -409,10 +409,10 @@
       "complexity": "Low",
       "depends_on": ["TASK-008"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/SlugGenerator.java",
-        "src/main/java/com/agendaia/organization/domain/exception/SlugUnavailableException.java",
-        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
-        "src/test/java/com/agendaia/organization/domain/SlugGeneratorTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/SlugGenerator.java",
+        "src/main/java/com/simboraagendar/organization/domain/exception/SlugUnavailableException.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterBusinessHandler.java",
+        "src/test/java/com/simboraagendar/organization/domain/SlugGeneratorTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: link tomado por outro estabelecimento devolve a primeira variacao livre na mensagem do campo",

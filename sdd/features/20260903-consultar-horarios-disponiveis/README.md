@@ -3,7 +3,7 @@
 ## O que foi construído
 
 Primeira feature a implementar código real em `scheduling` — o core domain
-do AgendaIA, com regime completo de Clean Architecture (ADR 0002): domínio
+do SimboraAgendar, com regime completo de Clean Architecture (ADR 0002): domínio
 Java puro, sem `org.springframework` nem `jakarta.persistence`.
 
 A feature **só calcula** — não persiste nada, não tem tela, não tem

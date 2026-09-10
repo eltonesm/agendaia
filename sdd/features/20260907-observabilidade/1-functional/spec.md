@@ -295,7 +295,7 @@ fluxo.
   spec técnica).
 - **Segurança**: a credencial de `/actuator/prometheus` nunca fica
   hardcoded no código-fonte — vem de variável de ambiente, mesmo padrão
-  já usado para a conta do operador (`AGENDAIA_OPERADOR_*`).
+  já usado para a conta do operador (`SIMBORAAGENDAR_OPERADOR_*`).
 - **LGPD**: ver BR-4 — requisito não-funcional transversal a todo log
   gerado pela aplicação, não só o desta feature.
 

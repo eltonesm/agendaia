@@ -8,7 +8,7 @@
   },
   "minor_findings": [
     {
-      "file": "src/main/java/com/agendaia/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
+      "file": "src/main/java/com/simboraagendar/catalog/adapter/in/web/request/RegisterServiceOfferingRequest.java",
       "issue": "durationMinutes era int primitivo com padrao 0 no construtor vazio; zero nao e duracao valida, entao a primeira visita ao formulario pre-preenchia '0' em vez de mostrar o campo vazio com o placeholder '30'.",
       "status": "fixed",
       "fix": "Campo trocado para Integer (null por padrao) com @NotNull + @Positive. bufferMinutes ficou como int (zero e valor legitimo e comum ali, UX correta com o padrao atual)."

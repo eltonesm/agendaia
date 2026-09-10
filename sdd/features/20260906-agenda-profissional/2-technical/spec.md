@@ -463,7 +463,7 @@ de dois campos da TODO-007, não um `save()` completo).
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/scheduling/
+src/main/java/com/simboraagendar/scheduling/
 ├── domain/Appointment.java                                [EDITADO — cancelByOwner(), DD-6]
 ├── application/
 │   ├── port/in/
@@ -483,14 +483,14 @@ src/main/java/com/agendaia/scheduling/
     │   └── AppointmentPersistenceAdapter.java               [EDITADO]
     └── in/web/AgendaController.java                         [NOVO]
 
-src/main/java/com/agendaia/catalog/
+src/main/java/com/simboraagendar/catalog/
 ├── api/
 │   ├── ServiceOfferingDirectory.java                       [EDITADO — listActive(), DD-2]
 │   └── ActiveOfferingRef.java                               [NOVO]
 ├── application/ServiceOfferingDirectoryHandler.java          [EDITADO]
 └── application/port/out/ServiceOfferingRepository.java       [EDITADO — findByTenantIdAndActiveTrueOrderByCreatedAtAsc]
 
-src/main/java/com/agendaia/customer/
+src/main/java/com/simboraagendar/customer/
 ├── api/CustomerDirectory.java                                [EDITADO — findByIds, DD-4]
 ├── api/CustomerRef.java                                      [EDITADO — + phone]
 ├── application/CustomerDirectoryHandler.java                  [EDITADO]
@@ -501,7 +501,7 @@ src/main/resources/templates/admin/
 ├── agenda-novo.html                                           [NOVO]
 └── agenda-reagendar.html                                      [NOVO]
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── scheduling/domain/AppointmentTest.java                      [EDITADO]
 ├── scheduling/application/ProfessionalAgendaHandlerTest.java   [NOVO]
 ├── scheduling/application/BookAppointmentHandlerTest.java      [EDITADO — so revalida apos extracao]

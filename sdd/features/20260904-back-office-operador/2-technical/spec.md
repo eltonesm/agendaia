@@ -160,7 +160,7 @@ existe.
 e `@Order(1)` (avaliada antes da cadeia existente, que fica `@Order(2)`).
 Backend de autenticação: `InMemoryUserDetailsManager` com um único usuário,
 username e hash de senha vindos de `application.yaml`/variável de
-ambiente (`agendaia.operador.username`, `agendaia.operador.password-hash`
+ambiente (`simboraagendar.operador.username`, `simboraagendar.operador.password-hash`
 — já em BCrypt, gerado uma vez pelo operador). Principal é o `User` padrão
 do Spring Security — não `AuthenticatedUser` (que carrega `tenantId`) —
 então `TenantContextFilter` (checagem `instanceof AuthenticatedUser`) não
@@ -413,7 +413,7 @@ estabelecimento, mesmo padrão "grosso, em lote" de `ProfessionalDirectory`.
 src/main/resources/db/migration/
 └── V6__billing_create_billing_account.sql                [NOVO]
 
-src/main/java/com/agendaia/billing/
+src/main/java/com/simboraagendar/billing/
 ├── package-info.java                                      [NOVO] allowedDependencies: organization::api, shared, platform
 ├── domain/
 │   ├── BillingAccount.java                                [NOVO]
@@ -428,7 +428,7 @@ src/main/java/com/agendaia/billing/
     ├── BillingBannerAdvice.java                              [NOVO]
     └── SuspendedAccountController.java                       [NOVO] (GET /admin/conta-suspensa)
 
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── api/
 │   ├── BusinessDirectory.java                              [NOVO]
 │   └── BusinessRef.java                                    [NOVO]
@@ -436,7 +436,7 @@ src/main/java/com/agendaia/organization/
     ├── BusinessDirectoryHandler.java                       [NOVO]
     └── port/out/BusinessRepository.java                    [EDITADO — novo método]
 
-src/main/java/com/agendaia/platform/security/
+src/main/java/com/simboraagendar/platform/security/
 └── OperatorSecurityConfig.java                              [NOVO]
 
 src/main/resources/templates/
@@ -444,7 +444,7 @@ src/main/resources/templates/
 ├── operador/painel.html                                    [NOVO]
 └── admin/conta-suspensa.html                                [NOVO]
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── billing/domain/BillingAccountTest.java                  [NOVO]
 ├── billing/application/BillingAccountServiceTest.java      [NOVO]
 ├── billing/adapter/in/web/{OperatorPanelControllerTest,AccessGuardFilterTest}.java [NOVO]

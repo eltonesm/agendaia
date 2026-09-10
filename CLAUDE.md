@@ -1,4 +1,4 @@
-# AgendaIA
+# SimboraAgendar
 
 SaaS de agendamento online para barbearias, salões e profissionais que atendem
 por horário. Cada estabelecimento tem sua conta, seus dados e um link público
@@ -21,7 +21,7 @@ seleciona um JDK 21 sozinho.
 
 ## Contextos
 
-Um único módulo Maven. Os contextos delimitados são pacotes sob `com.agendaia`:
+Um único módulo Maven. Os contextos delimitados são pacotes sob `com.simboraagendar`:
 
 | Pacote | Responsabilidade |
 |---|---|

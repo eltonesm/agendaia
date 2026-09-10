@@ -21,7 +21,7 @@ se tem uma crença.
 ./scripts/backup.sh
 ```
 
-Gera `backups/agendaia-AAAAMMDD-HHMMSS.dump` no formato custom do Postgres
+Gera `backups/simboraagendar-AAAAMMDD-HHMMSS.dump` no formato custom do Postgres
 (`-Fc`): comprimido, e permite restauração seletiva e paralela. Remove
 automaticamente os dumps com mais de 30 dias (`RETENCAO_DIAS`).
 
@@ -33,16 +33,16 @@ precisar dele.
 ## Ensaio de restauração
 
 ```bash
-./scripts/restore.sh backups/agendaia-20260830-154935.dump
+./scripts/restore.sh backups/simboraagendar-20260830-154935.dump
 ```
 
-Restaura para um banco **descartável** (`agendaia_restore_test`), sem tocar no
+Restaura para um banco **descartável** (`simboraagendar_restore_test`), sem tocar no
 banco real. Prova que o dump é válido sem arriscar nada.
 
 Saída do ensaio de 2026-08-30:
 
 ```
-Recriando agendaia_restore_test...
+Recriando simboraagendar_restore_test...
 Restaurando...
 
 Conferindo o que chegou:
@@ -62,14 +62,14 @@ E os dados semeados voltaram intactos:
 Descartar o banco de ensaio depois:
 
 ```bash
-docker compose exec -T postgres psql -U agendaia -d postgres \
-  -c 'DROP DATABASE agendaia_restore_test;'
+docker compose exec -T postgres psql -U simboraagendar -d postgres \
+  -c 'DROP DATABASE simboraagendar_restore_test;'
 ```
 
 ## Restauração de verdade
 
 ```bash
-./scripts/restore.sh backups/agendaia-....dump --para agendaia
+./scripts/restore.sh backups/simboraagendar-....dump --para simboraagendar
 ```
 
 **O banco de destino é apagado e recriado.** O script exige que se digite o nome

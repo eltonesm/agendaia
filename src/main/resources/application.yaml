@@ -1,11 +1,11 @@
 spring:
   application:
-    name: AgendaIA
+    name: SimboraAgendar
 
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:agendaia}
-    username: ${POSTGRES_USER:agendaia}
-    password: ${POSTGRES_PASSWORD:agendaia}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:simboraagendar}
+    username: ${POSTGRES_USER:simboraagendar}
+    password: ${POSTGRES_PASSWORD:simboraagendar}
 
   jpa:
     hibernate:
@@ -60,11 +60,11 @@ logging:
       # para "logstash"/"gelf" é uma linha só, se um dia fizer sentido.
       console: ecs
 
-agendaia:
+simboraagendar:
   # Base do link que o estabelecimento compartilha com os clientes.
   # Em produção vira o domínio real; a variável de ambiente sobrescreve sem
   # precisar reempacotar.
-  public-base-url: ${AGENDAIA_PUBLIC_BASE_URL:http://localhost:8080}
+  public-base-url: ${SIMBORAAGENDAR_PUBLIC_BASE_URL:http://localhost:8080}
 
   # Conta única do operador da plataforma (BR-7, back-office-operador) --
   # nunca em banco, nunca por formulário. Os valores abaixo são um usuário
@@ -72,10 +72,10 @@ agendaia:
   # QUALQUER implantação real precisa sobrescrever as três variáveis de
   # ambiente com valores próprios, gerados uma vez pelo operador.
   operador:
-    username: ${AGENDAIA_OPERADOR_USERNAME:operador}
-    password-hash: ${AGENDAIA_OPERADOR_PASSWORD_HASH:$2a$10$zSFQowP01ztnCjjSs4LJMu3i5dvrHCRK/.Zm82i0EYIlciTHxaXz6}
-    whatsapp: ${AGENDAIA_OPERADOR_WHATSAPP:}
-    pix-chave: ${AGENDAIA_OPERADOR_PIX_CHAVE:}
+    username: ${SIMBORAAGENDAR_OPERADOR_USERNAME:operador}
+    password-hash: ${SIMBORAAGENDAR_OPERADOR_PASSWORD_HASH:$2a$10$zSFQowP01ztnCjjSs4LJMu3i5dvrHCRK/.Zm82i0EYIlciTHxaXz6}
+    whatsapp: ${SIMBORAAGENDAR_OPERADOR_WHATSAPP:}
+    pix-chave: ${SIMBORAAGENDAR_OPERADOR_PIX_CHAVE:}
 
   # Credencial dedicada de /actuator/prometheus (TODO-108, observabilidade,
   # DD-4) -- independente da sessão OWNER/OPERATOR: uma ferramenta de coleta
@@ -84,5 +84,5 @@ agendaia:
   # ("metrics-dev-only"); QUALQUER implantação real precisa sobrescrever as
   # duas variáveis com valores próprios.
   metrics:
-    username: ${AGENDAIA_METRICS_USERNAME:metrics}
-    password-hash: ${AGENDAIA_METRICS_PASSWORD_HASH:$2a$10$hzINeeDTPaNliIp9BlIc6OZvpXq0DRDtgs8JAKHywp7rYLZlhuJzq}
+    username: ${SIMBORAAGENDAR_METRICS_USERNAME:metrics}
+    password-hash: ${SIMBORAAGENDAR_METRICS_PASSWORD_HASH:$2a$10$hzINeeDTPaNliIp9BlIc6OZvpXq0DRDtgs8JAKHywp7rYLZlhuJzq}

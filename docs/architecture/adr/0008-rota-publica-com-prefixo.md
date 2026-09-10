@@ -44,5 +44,5 @@ clientes — por isso a decisão é tomada agora, e não "quando incomodar".
 ## Gatilho de reavaliação
 
 Quando houver domínio próprio por estabelecimento
-(`barbeariadojoao.agendaia.com` ou domínio do cliente), o prefixo perde o
+(`barbeariadojoao.simboraagendar.com` ou domínio do cliente), o prefixo perde o
 sentido e a raiz volta a ficar disponível.

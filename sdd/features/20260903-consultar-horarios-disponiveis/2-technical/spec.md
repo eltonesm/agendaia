@@ -134,7 +134,7 @@ precisar de caso novo.
 em `shared` (ver tabela de contextos do `CLAUDE.md`) — esta é a primeira
 feature que genuinely precisa dele.
 
-**Contrato de `TimeRange`** (`com.agendaia.shared`):
+**Contrato de `TimeRange`** (`com.simboraagendar.shared`):
 ```java
 public record TimeRange(LocalTime start, LocalTime end) {
     public TimeRange { /* valida start != null, end != null, end.isAfter(start) */ }
@@ -415,10 +415,10 @@ memória sobre listas pequenas (poucas faixas por dia, nunca centenas).
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/shared/
+src/main/java/com/simboraagendar/shared/
 └── TimeRange.java                                          [NOVO]
 
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── domain/WorkSchedule.java                                [EDITADO — overlaps() delega a TimeRange]
 ├── api/
 │   ├── AvailabilityDirectory.java                          [NOVO]
@@ -429,7 +429,7 @@ src/main/java/com/agendaia/organization/
     ├── BusinessOperatingHoursRepository.java                [EDITADO — novo método]
     └── TimeOffRepository.java                               [EDITADO — @Query novo]
 
-src/main/java/com/agendaia/catalog/
+src/main/java/com/simboraagendar/catalog/
 ├── package-info.java                                        [EDITADO — allowedDependencies sem mudança, javadoc]
 ├── api/
 │   ├── ServiceOfferingDirectory.java                        [NOVO]
@@ -439,7 +439,7 @@ src/main/java/com/agendaia/catalog/
 │   └── ServiceOfferingDirectoryHandler.java                 [NOVO]
 └── application/port/out/ServiceOfferingRepository.java      [EDITADO — novo método]
 
-src/main/java/com/agendaia/scheduling/
+src/main/java/com/simboraagendar/scheduling/
 ├── package-info.java                                        [EDITADO — allowedDependencies novo, DD-1]
 ├── domain/
 │   ├── AvailableSlot.java                                   [NOVO]
@@ -452,7 +452,7 @@ src/main/java/com/agendaia/scheduling/
     ├── port/in/GetAvailableSlotsQuery.java                  [NOVO]
     └── GetAvailableSlotsHandler.java                        [NOVO]
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── shared/TimeRangeTest.java                                [NOVO]
 ├── scheduling/domain/SlotCalculatorTest.java                [NOVO]
 ├── scheduling/application/GetAvailableSlotsHandlerTest.java [NOVO]

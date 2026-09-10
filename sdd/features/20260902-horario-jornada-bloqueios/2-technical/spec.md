@@ -356,7 +356,7 @@ sobreposição (DD-2) não varrer a tabela inteira.
 > aceite (erro de campo, sem gravar, nunca 500) é cumprido do mesmo jeito.
 
 ```
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── domain/
 │   ├── BusinessOperatingHours.java
 │   ├── WorkSchedule.java
@@ -410,7 +410,7 @@ src/main/resources/
 
 src/main/resources/templates/admin/dashboard.html   (editado: três novos links)
 
-src/test/java/com/agendaia/organization/
+src/test/java/com/simboraagendar/organization/
 ├── domain/{BusinessOperatingHoursTest,WorkScheduleTest,TimeOffTest}.java
 ├── application/{RegisterBusinessOperatingHoursHandlerTest,ListBusinessOperatingHoursHandlerTest,
 │                RegisterWorkScheduleHandlerTest,ListWorkSchedulesHandlerTest,
@@ -418,7 +418,7 @@ src/test/java/com/agendaia/organization/
 ├── adapter/in/web/{BusinessOperatingHoursControllerTest,WorkScheduleControllerTest,TimeOffControllerTest}.java
 └── HorarioJornadaBloqueioRegistrationIT.java
 
-src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java   (estendido)
+src/test/java/com/simboraagendar/platform/CrossTenantIsolationIT.java   (estendido)
 ```
 
 ---

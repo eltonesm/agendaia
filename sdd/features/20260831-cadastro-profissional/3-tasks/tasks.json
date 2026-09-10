@@ -53,9 +53,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/Professional.java",
-        "src/main/java/com/agendaia/organization/domain/ProfessionalRepository.java",
-        "src/test/java/com/agendaia/organization/domain/ProfessionalTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/Professional.java",
+        "src/main/java/com/simboraagendar/organization/domain/ProfessionalRepository.java",
+        "src/test/java/com/simboraagendar/organization/domain/ProfessionalTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por Professional.register(tenantId, name), construtor privado",
@@ -77,11 +77,11 @@
       "complexity": "Medium",
       "depends_on": ["TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/RegisterProfessionalUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/RegisteredProfessional.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterProfessionalCommand.java",
-        "src/main/java/com/agendaia/organization/application/RegisterProfessionalHandler.java",
-        "src/test/java/com/agendaia/organization/application/RegisterProfessionalHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisterProfessionalUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisteredProfessional.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterProfessionalCommand.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterProfessionalHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/RegisterProfessionalHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: RegisterProfessionalCommand tem so o campo name -- nenhum campo de tenant",
@@ -102,10 +102,10 @@
       "complexity": "Low",
       "depends_on": ["TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/ListProfessionalsUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/ProfessionalView.java",
-        "src/main/java/com/agendaia/organization/application/ListProfessionalsHandler.java",
-        "src/test/java/com/agendaia/organization/application/ListProfessionalsHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/ListProfessionalsUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/ProfessionalView.java",
+        "src/main/java/com/simboraagendar/organization/application/ListProfessionalsHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/ListProfessionalsHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: list() nao aceita nenhum argumento",
@@ -125,10 +125,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-003", "TASK-004"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/ProfessionalController.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterProfessionalRequest.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/ProfessionalController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegisterProfessionalRequest.java",
         "src/main/resources/templates/admin/profissionais.html",
-        "src/test/java/com/agendaia/organization/adapter/in/web/ProfessionalControllerTest.java"
+        "src/test/java/com/simboraagendar/organization/adapter/in/web/ProfessionalControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: GET /admin/profissionais mostra a lista atual e o formulario de cadastro",
@@ -165,10 +165,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-005", "TASK-006"],
       "files": [
-        "src/test/java/com/agendaia/organization/ProfessionalRegistrationIT.java",
-        "src/test/java/com/agendaia/organization/LoginIT.java",
-        "src/test/java/com/agendaia/organization/RegistrationIT.java",
-        "src/test/java/com/agendaia/organization/SlugUnavailableIT.java"
+        "src/test/java/com/simboraagendar/organization/ProfessionalRegistrationIT.java",
+        "src/test/java/com/simboraagendar/organization/LoginIT.java",
+        "src/test/java/com/simboraagendar/organization/RegistrationIT.java",
+        "src/test/java/com/simboraagendar/organization/SlugUnavailableIT.java"
       ],
       "acceptance_criteria": [
         "AC-1: E2E-1 confirma que o profissional aparece na lista com o tenant_id da sessao",
@@ -188,7 +188,7 @@
       "layer": 1,
       "complexity": "Low",
       "depends_on": ["TASK-007"],
-      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "files": ["src/test/java/com/simboraagendar/platform/CrossTenantIsolationIT.java"],
       "acceptance_criteria": [
         "AC-1: sessao do tenant A nao ve profissional criado pelo tenant B na lista",
         "AC-2: nenhuma rota aceita tenant como parametro, entao nao ha o que forjar -- o teste confirma a ausencia de vazamento, nao a rejeicao de um parametro que nunca existiu",

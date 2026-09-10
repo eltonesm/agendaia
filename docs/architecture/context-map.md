@@ -3,7 +3,7 @@
 > Escrito em 2026-08-29. Documento de contexto. Os nomes são normativos e vêm
 > do [glossário](../domain/glossary.md).
 
-Seis contextos, todos pacotes sob `com.agendaia` num único módulo Maven
+Seis contextos, todos pacotes sob `com.simboraagendar` num único módulo Maven
 ([ADR 0001](adr/0001-modular-monolith-com-contextos-como-pacotes.md)).
 
 ```

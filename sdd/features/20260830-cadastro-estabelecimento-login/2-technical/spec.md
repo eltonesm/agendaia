@@ -518,7 +518,7 @@ Nenhuma.
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/
+src/main/java/com/simboraagendar/
 ├── organization/
 │   ├── domain/
 │   │   ├── Business.java                  @Entity

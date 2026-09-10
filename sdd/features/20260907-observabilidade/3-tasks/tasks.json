@@ -28,7 +28,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/platform/web/RequestIdFilter.java"],
+      "files": ["src/main/java/com/simboraagendar/platform/web/RequestIdFilter.java"],
       "acceptance_criteria": [
         "AC-1: toda requisicao HTTP, resolvendo tenant ou nao, tem requestId novo no MDC durante seu ciclo",
         "AC-2: cabecalho X-Request-Id presente em toda resposta, com o mesmo valor do MDC daquela requisicao",
@@ -40,11 +40,11 @@
     {
       "id": "TASK-003",
       "title": "SchedulingMetrics",
-      "description": "Classe pacote-privada em scheduling.application com 3 Counter do Micrometer: agendaia.appointments.booked, agendaia.appointments.cancelled, agendaia.appointments.slot_conflict (booked, nao created -- Prometheus trata .created como sufixo reservado de timestamp). Metodos appointmentCreated()/appointmentCancelled()/slotConflict() incrementam cada um.",
+      "description": "Classe pacote-privada em scheduling.application com 3 Counter do Micrometer: simboraagendar.appointments.booked, simboraagendar.appointments.cancelled, simboraagendar.appointments.slot_conflict (booked, nao created -- Prometheus trata .created como sufixo reservado de timestamp). Metodos appointmentCreated()/appointmentCancelled()/slotConflict() incrementam cada um.",
       "status": "done",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/scheduling/application/SchedulingMetrics.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/application/SchedulingMetrics.java"],
       "acceptance_criteria": [
         "AC-1: os 3 contadores existem desde a subida da aplicacao, comecando em zero",
         "AC-2: classe pacote-privada — nao precisa ser publica, so os 3 handlers do mesmo pacote a usam"
@@ -55,7 +55,7 @@
     {
       "id": "TASK-004",
       "title": "application.yaml: log estruturado + credenciais de metrics",
-      "description": "logging.structured.format.console: ecs (nativo do Spring Boot, sem dependencia nova). Novas variaveis AGENDAIA_METRICS_USERNAME (padrao dev: metrics) e AGENDAIA_METRICS_PASSWORD_HASH (hash BCrypt, padrao de desenvolvimento, mesmo aviso ja usado em AGENDAIA_OPERADOR_*).",
+      "description": "logging.structured.format.console: ecs (nativo do Spring Boot, sem dependencia nova). Novas variaveis SIMBORAAGENDAR_METRICS_USERNAME (padrao dev: metrics) e SIMBORAAGENDAR_METRICS_PASSWORD_HASH (hash BCrypt, padrao de desenvolvimento, mesmo aviso ja usado em SIMBORAAGENDAR_OPERADOR_*).",
       "status": "done",
       "layer": 1,
       "depends_on": [],
@@ -75,7 +75,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-002"],
-      "files": ["src/main/java/com/agendaia/platform/web/GlobalExceptionHandler.java"],
+      "files": ["src/main/java/com/simboraagendar/platform/web/GlobalExceptionHandler.java"],
       "acceptance_criteria": [
         "AC-1: o requestId mostrado na tela de erro 500 e exatamente o mesmo que aparece em toda outra linha de log da mesma requisicao",
         "AC-2: nenhuma mudanca de comportamento visivel ao usuario alem do valor do id (mesma tela error/500, mesmo status 500)"
@@ -86,11 +86,11 @@
     {
       "id": "TASK-006",
       "title": "MetricsSecurityConfig",
-      "description": "3a SecurityFilterChain, platform.security, @Order(0) — roda antes de OperatorSecurityConfig (@Order(1)) e SecurityConfig (@Order(2)). securityMatcher(\"/actuator/prometheus\"), httpBasic(), anyRequest().hasRole(\"METRICS\"). InMemoryUserDetailsManager com 1 usuario, senha vinda de AGENDAIA_METRICS_PASSWORD_HASH (ja BCrypt).",
+      "description": "3a SecurityFilterChain, platform.security, @Order(0) — roda antes de OperatorSecurityConfig (@Order(1)) e SecurityConfig (@Order(2)). securityMatcher(\"/actuator/prometheus\"), httpBasic(), anyRequest().hasRole(\"METRICS\"). InMemoryUserDetailsManager com 1 usuario, senha vinda de SIMBORAAGENDAR_METRICS_PASSWORD_HASH (ja BCrypt).",
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-004"],
-      "files": ["src/main/java/com/agendaia/platform/security/MetricsSecurityConfig.java"],
+      "files": ["src/main/java/com/simboraagendar/platform/security/MetricsSecurityConfig.java"],
       "acceptance_criteria": [
         "AC-1: GET /actuator/prometheus sem credencial devolve 401",
         "AC-2: GET /actuator/prometheus com credencial de METRICS devolve 200 com os contadores",
@@ -107,7 +107,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-003"],
-      "files": ["src/main/java/com/agendaia/scheduling/application/BookAppointmentHandler.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/application/BookAppointmentHandler.java"],
       "acceptance_criteria": [
         "AC-1: reserva publica com sucesso incrementa created, nunca slot_conflict",
         "AC-2: reserva publica que colide com outro agendamento incrementa slot_conflict, nunca created",
@@ -123,7 +123,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-003"],
-      "files": ["src/main/java/com/agendaia/scheduling/application/ManageAppointmentHandler.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/application/ManageAppointmentHandler.java"],
       "acceptance_criteria": [
         "AC-1: cancelamento pelo cliente com transicao real incrementa cancelled",
         "AC-2: cancelar um agendamento ja CANCELLED (idempotente) nao incrementa nada",
@@ -139,7 +139,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-003"],
-      "files": ["src/main/java/com/agendaia/scheduling/application/ProfessionalAgendaHandler.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandler.java"],
       "acceptance_criteria": [
         "AC-1: criacao manual com sucesso incrementa created; falha por conflito incrementa slot_conflict",
         "AC-2: cancelamento pelo dono com transicao real incrementa cancelled; no-op nao incrementa nada",
@@ -158,8 +158,8 @@
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-005"],
       "files": [
-        "src/test/java/com/agendaia/platform/web/RequestIdFilterTest.java",
-        "src/test/java/com/agendaia/platform/web/GlobalExceptionHandlerTest.java"
+        "src/test/java/com/simboraagendar/platform/web/RequestIdFilterTest.java",
+        "src/test/java/com/simboraagendar/platform/web/GlobalExceptionHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: teste confirma que o MDC tem requestId != null durante a requisicao e null depois (finally executado)",
@@ -176,7 +176,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-003"],
-      "files": ["src/test/java/com/agendaia/scheduling/application/SchedulingMetricsTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/application/SchedulingMetricsTest.java"],
       "acceptance_criteria": [
         "AC-1: appointmentCreated() incrementa so o contador de criado",
         "AC-2: appointmentCancelled() incrementa so o de cancelado",
@@ -194,9 +194,9 @@
       "layer": 1,
       "depends_on": ["TASK-007", "TASK-008", "TASK-009"],
       "files": [
-        "src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java",
-        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
-        "src/test/java/com/agendaia/scheduling/application/ProfessionalAgendaHandlerTest.java"
+        "src/test/java/com/simboraagendar/scheduling/application/BookAppointmentHandlerTest.java",
+        "src/test/java/com/simboraagendar/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/simboraagendar/scheduling/application/ProfessionalAgendaHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: cada handler tem pelo menos um teste por linha da tabela de contagem da DD-3 que ele participa",
@@ -212,7 +212,7 @@
       "status": "done",
       "layer": 1,
       "depends_on": ["TASK-006", "TASK-010", "TASK-011", "TASK-012"],
-      "files": ["src/test/java/com/agendaia/platform/ObservabilidadeIT.java"],
+      "files": ["src/test/java/com/simboraagendar/platform/ObservabilidadeIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 a E2E-4 da spec funcional, um teste por cenario, nomeados por @DisplayName",
         "AC-2: MDC de cada evento capturado por um ListAppender do Logback e verificado diretamente -- redirecionar System.out foi tentado e descartado (o ConsoleAppender fixa a referencia de System.out na inicializacao do contexto, entao a troca em tempo de teste nao e capturada)",

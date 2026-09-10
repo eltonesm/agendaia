@@ -1,4 +1,4 @@
-# Documentação do AgendaIA
+# Documentação do SimboraAgendar
 
 ## Cinco princípios
 

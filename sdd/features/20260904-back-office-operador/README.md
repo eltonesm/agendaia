@@ -3,7 +3,7 @@
 ## O que foi construído
 
 Sétimo contexto delimitado do projeto — `billing` — e um papel de usuário
-inédito: o **operador da plataforma** (o dono do AgendaIA), que não é
+inédito: o **operador da plataforma** (o dono do SimboraAgendar), que não é
 tenant de nenhum estabelecimento e enxerga todos eles. Cobre o pedido
 original: acompanhar quantos estabelecimentos existem, quem pagou, quem
 está em trial, e liberar isso já no MVP com 30 dias de teste grátis.

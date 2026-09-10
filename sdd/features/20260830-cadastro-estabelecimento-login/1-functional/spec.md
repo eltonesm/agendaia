@@ -10,7 +10,7 @@
 
 ## Problem Statement
 
-O AgendaIA não tem nenhuma porta de entrada. Não existe forma de um
+O SimboraAgendar não tem nenhuma porta de entrada. Não existe forma de um
 estabelecimento passar a existir no sistema, e sem estabelecimento não existe
 tenant — logo nada mais tem onde morar: nem profissional, nem serviço, nem
 agendamento.
@@ -87,7 +87,7 @@ todas as outras se apoiam.
 - [ ] O slug é derivado do nome enquanto ele é digitado: "Barbearia do João" resulta em `barbearia-do-joao`.
 - [ ] A derivação remove acentos, converte para minúsculas e troca espaços e pontuação por hífen.
 - [ ] O campo de slug é editável antes de confirmar.
-- [ ] O endereço completo é exibido ao lado do campo, como `agendaia.com/b/barbearia-do-joao`.
+- [ ] O endereço completo é exibido ao lado do campo, como `simboraagendar.com/b/barbearia-do-joao`.
 - [ ] O slug é único no sistema inteiro; se já estiver em uso, o cadastro é recusado com mensagem no campo.
 - [ ] Um slug que conste da lista de palavras reservadas é recusado.
 - [ ] O formato aceito é: minúsculas, números e hífen, entre 3 e 60 caracteres, sem hífen no início ou no fim.
@@ -219,7 +219,7 @@ Abre /cadastro
       ↓
 Digita o nome do estabelecimento
       ↓
-Vê o link aparecer sozinho: agendaia.com/b/barbearia-do-joao
+Vê o link aparecer sozinho: simboraagendar.com/b/barbearia-do-joao
       ↓
 Ajusta o link, se quiser
       ↓

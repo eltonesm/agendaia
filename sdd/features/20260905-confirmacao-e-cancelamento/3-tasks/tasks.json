@@ -13,7 +13,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/scheduling/domain/Appointment.java"],
+      "files": ["src/main/java/com/simboraagendar/scheduling/domain/Appointment.java"],
       "acceptance_criteria": [
         "AC-1: confirm() muda SCHEDULED para CONFIRMED quando agora esta antes de startsAt",
         "AC-2: confirm() e cancel() sao no-op (devolvem this) quando status ja e CANCELLED",
@@ -34,9 +34,9 @@
       "depends_on": [],
       "files": [
         "src/main/resources/db/migration/V9__organization_add_business_whatsapp.sql",
-        "src/main/java/com/agendaia/organization/domain/Business.java",
-        "src/main/java/com/agendaia/organization/api/BusinessRef.java",
-        "src/main/java/com/agendaia/organization/application/BusinessDirectoryHandler.java"
+        "src/main/java/com/simboraagendar/organization/domain/Business.java",
+        "src/main/java/com/simboraagendar/organization/api/BusinessRef.java",
+        "src/main/java/com/simboraagendar/organization/application/BusinessDirectoryHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: Business.register(name, slug) (2 params) continua funcionando, whatsapp fica null",
@@ -56,9 +56,9 @@
       "layer": 1,
       "depends_on": ["TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegistrationRequest.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessCommand.java",
-        "src/main/java/com/agendaia/organization/application/RegisterBusinessHandler.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegistrationRequest.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterBusinessCommand.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterBusinessHandler.java",
         "src/main/resources/templates/auth/cadastro.html"
       ],
       "acceptance_criteria": [
@@ -77,11 +77,11 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/organization/api/ProfessionalDirectory.java",
-        "src/main/java/com/agendaia/organization/application/ProfessionalDirectoryHandler.java",
-        "src/main/java/com/agendaia/customer/api/CustomerDirectory.java",
-        "src/main/java/com/agendaia/customer/api/CustomerRef.java",
-        "src/main/java/com/agendaia/customer/application/CustomerDirectoryHandler.java"
+        "src/main/java/com/simboraagendar/organization/api/ProfessionalDirectory.java",
+        "src/main/java/com/simboraagendar/organization/application/ProfessionalDirectoryHandler.java",
+        "src/main/java/com/simboraagendar/customer/api/CustomerDirectory.java",
+        "src/main/java/com/simboraagendar/customer/api/CustomerRef.java",
+        "src/main/java/com/simboraagendar/customer/application/CustomerDirectoryHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: ProfessionalDirectory.find(id) devolve vazio para id de outro tenant ou inexistente",
@@ -99,9 +99,9 @@
       "layer": 1,
       "depends_on": [],
       "files": [
-        "src/main/java/com/agendaia/scheduling/application/port/out/AppointmentRepository.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
-        "src/main/java/com/agendaia/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
+        "src/main/java/com/simboraagendar/scheduling/application/port/out/AppointmentRepository.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentJpaRepository.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/out/persistence/AppointmentPersistenceAdapter.java"
       ],
       "acceptance_criteria": [
         "AC-1: findByTenantIdAndId filtra sempre pelos dois campos juntos — id de outro tenant devolve vazio",
@@ -120,12 +120,12 @@
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-004", "TASK-005"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/domain/exception/AppointmentNotFoundException.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/AppointmentDetailsUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/ConfirmAppointmentUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/CancelAppointmentUseCase.java",
-        "src/main/java/com/agendaia/scheduling/application/port/in/AppointmentDetails.java",
-        "src/main/java/com/agendaia/scheduling/application/ManageAppointmentHandler.java"
+        "src/main/java/com/simboraagendar/scheduling/domain/exception/AppointmentNotFoundException.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/AppointmentDetailsUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/ConfirmAppointmentUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/CancelAppointmentUseCase.java",
+        "src/main/java/com/simboraagendar/scheduling/application/port/in/AppointmentDetails.java",
+        "src/main/java/com/simboraagendar/scheduling/application/ManageAppointmentHandler.java"
       ],
       "acceptance_criteria": [
         "AC-1: handle(id) de tenant errado ou inexistente lanca AppointmentNotFoundException",
@@ -144,9 +144,9 @@
       "layer": 1,
       "depends_on": ["TASK-002", "TASK-006"],
       "files": [
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/AppointmentController.java",
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/IcsWriter.java",
-        "src/main/java/com/agendaia/scheduling/adapter/in/web/PublicBookingController.java"
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/AppointmentController.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/IcsWriter.java",
+        "src/main/java/com/simboraagendar/scheduling/adapter/in/web/PublicBookingController.java"
       ],
       "acceptance_criteria": [
         "AC-1: GET .../agendamentos/{id} de id de outro tenant devolve 404",
@@ -182,9 +182,9 @@
       "layer": 1,
       "depends_on": ["TASK-001", "TASK-005", "TASK-006"],
       "files": [
-        "src/test/java/com/agendaia/scheduling/domain/AppointmentTest.java",
-        "src/test/java/com/agendaia/scheduling/application/ManageAppointmentHandlerTest.java",
-        "src/test/java/com/agendaia/scheduling/application/BookAppointmentHandlerTest.java"
+        "src/test/java/com/simboraagendar/scheduling/domain/AppointmentTest.java",
+        "src/test/java/com/simboraagendar/scheduling/application/ManageAppointmentHandlerTest.java",
+        "src/test/java/com/simboraagendar/scheduling/application/BookAppointmentHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: casos de AC-1 a AC-5 do TASK-001 cobertos por teste de dominio puro",
@@ -217,7 +217,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-007", "TASK-008"],
-      "files": ["src/test/java/com/agendaia/scheduling/adapter/in/web/AppointmentControllerTest.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/adapter/in/web/AppointmentControllerTest.java"],
       "acceptance_criteria": [
         "AC-1: GET de id de outro tenant (mock) devolve 404",
         "AC-2: POST confirmar/cancelar seguido de GET reflete o novo status",
@@ -234,7 +234,7 @@
       "status": "completed",
       "layer": 1,
       "depends_on": ["TASK-009", "TASK-010", "TASK-011"],
-      "files": ["src/test/java/com/agendaia/scheduling/ConfirmacaoECancelamentoIT.java"],
+      "files": ["src/test/java/com/simboraagendar/scheduling/ConfirmacaoECancelamentoIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 a E2E-7 da spec funcional, um teste por cenario, nomeados por @DisplayName",
         "AC-2: E2E-2 confirma via GetAvailableSlotsHandler que o horario cancelado volta a aparecer disponivel",

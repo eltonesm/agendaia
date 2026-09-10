@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### AgendaIA ###
+### SimboraAgendar ###
 .env
 !.env.example
 # SDD Kit

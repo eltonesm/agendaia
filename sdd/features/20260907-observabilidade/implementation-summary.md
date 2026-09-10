@@ -48,14 +48,14 @@ ef9a9cb chore(platform,scheduling): fecha camada 3 da TODO-108 - code review, pe
 ## Gotcha real #1: nome de métrica colide com convenção reservada do OpenMetrics
 
 O nome óbvio para o contador de agendamentos criados era
-`agendaia.appointments.created`. Ao testar contra a aplicação rodando de
+`simboraagendar.appointments.created`. Ao testar contra a aplicação rodando de
 verdade (`curl -u metrics:... http://localhost:8080/actuator/prometheus`),
-a métrica saía como `agendaia_appointments_total` — sem "created" nenhum
+a métrica saía como `simboraagendar_appointments_total` — sem "created" nenhum
 no nome, indistinguível de qualquer outro contador. O Prometheus/
 Micrometer trata o sufixo `.created` como a convenção reservada do
 OpenMetrics para o timestamp de criação de um contador, e descarta essa
 palavra ao gerar o nome de exposição. Renomeado para
-`agendaia.appointments.booked` — evita a colisão e continua na
+`simboraagendar.appointments.booked` — evita a colisão e continua na
 linguagem do domínio (glossário: "reservar, agendar").
 
 **Lição**: testar contra a aplicação de verdade (não só contra mocks ou

@@ -14,7 +14,7 @@ Depois da TODO-005, `scheduling` sabe **calcular** quais horários estão
 realmente livres para um profissional, uma oferta e uma data — mas nada no
 projeto ainda deixa um cliente **reservar** um desses horários. O
 estabelecimento continua dependendo de WhatsApp/telefone para marcar um
-atendimento, que é exatamente o problema que o AgendaIA existe para
+atendimento, que é exatamente o problema que o SimboraAgendar existe para
 resolver.
 
 Esta feature entrega a primeira escrita real de `scheduling`: a página

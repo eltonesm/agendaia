@@ -331,17 +331,17 @@ por requisição de tela de oferta (GET ou POST), nunca em laço. Índice em
 ## Implementation Locations
 
 ```
-src/main/java/com/agendaia/shared/
+src/main/java/com/simboraagendar/shared/
 └── Money.java
 
-src/main/java/com/agendaia/organization/
+src/main/java/com/simboraagendar/organization/
 ├── api/
 │   ├── ProfessionalDirectory.java
 │   └── ProfessionalRef.java
 └── application/
     └── ProfessionalDirectoryHandler.java   @Transactional(readOnly)
 
-src/main/java/com/agendaia/catalog/
+src/main/java/com/simboraagendar/catalog/
 ├── domain/
 │   ├── Service.java
 │   ├── ServiceRepository.java
@@ -379,7 +379,7 @@ src/main/resources/
 
 src/main/resources/templates/admin/dashboard.html   (editado: novo link)
 
-src/test/java/com/agendaia/
+src/test/java/com/simboraagendar/
 ├── shared/MoneyTest.java
 ├── organization/application/ProfessionalDirectoryHandlerTest.java
 ├── catalog/

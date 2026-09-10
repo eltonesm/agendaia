@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Restauração do banco do AgendaIA.
+# Restauração do banco do SimboraAgendar.
 #
-#   ./scripts/restore.sh backups/agendaia-20260830-153000.dump              # ensaio
-#   ./scripts/restore.sh backups/agendaia-....dump --para agendaia          # de verdade
+#   ./scripts/restore.sh backups/simboraagendar-20260830-153000.dump              # ensaio
+#   ./scripts/restore.sh backups/simboraagendar-....dump --para simboraagendar          # de verdade
 #
-# Por padrão restaura para um banco DESCARTÁVEL (agendaia_restore_test), sem
+# Por padrão restaura para um banco DESCARTÁVEL (simboraagendar_restore_test), sem
 # tocar no banco real. É assim que se faz o ensaio de restauração: prova que o
 # dump é válido sem arriscar o que está em produção.
 #
@@ -21,8 +21,8 @@ fi
 
 ARQUIVO="$1"; shift
 SERVICO="${POSTGRES_SERVICE:-postgres}"
-USUARIO="${POSTGRES_USER:-agendaia}"
-DESTINO="agendaia_restore_test"
+USUARIO="${POSTGRES_USER:-simboraagendar}"
+DESTINO="simboraagendar_restore_test"
 ENSAIO=true
 
 while [[ $# -gt 0 ]]; do

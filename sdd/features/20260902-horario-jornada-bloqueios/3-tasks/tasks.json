@@ -52,7 +52,7 @@
       "layer": 1,
       "complexity": "Low",
       "depends_on": [],
-      "files": ["src/main/java/com/agendaia/organization/application/port/out/ProfessionalRepository.java"],
+      "files": ["src/main/java/com/simboraagendar/organization/application/port/out/ProfessionalRepository.java"],
       "acceptance_criteria": [
         "AC-1: novo metodo derived query, sem implementacao manual",
         "GATE: ./mvnw compile verde"
@@ -69,9 +69,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/BusinessOperatingHours.java",
-        "src/main/java/com/agendaia/organization/application/port/out/BusinessOperatingHoursRepository.java",
-        "src/test/java/com/agendaia/organization/domain/BusinessOperatingHoursTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/BusinessOperatingHours.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/BusinessOperatingHoursRepository.java",
+        "src/test/java/com/simboraagendar/organization/domain/BusinessOperatingHoursTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por BusinessOperatingHours.register(tenantId, dayOfWeek, opensAt, closesAt), construtor privado",
@@ -91,9 +91,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/WorkSchedule.java",
-        "src/main/java/com/agendaia/organization/application/port/out/WorkScheduleRepository.java",
-        "src/test/java/com/agendaia/organization/domain/WorkScheduleTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/WorkSchedule.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/WorkScheduleRepository.java",
+        "src/test/java/com/simboraagendar/organization/domain/WorkScheduleTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por WorkSchedule.register(tenantId, professionalId, dayOfWeek, startsAt, endsAt), construtor privado",
@@ -113,9 +113,9 @@
       "complexity": "Medium",
       "depends_on": ["TASK-001"],
       "files": [
-        "src/main/java/com/agendaia/organization/domain/TimeOff.java",
-        "src/main/java/com/agendaia/organization/application/port/out/TimeOffRepository.java",
-        "src/test/java/com/agendaia/organization/domain/TimeOffTest.java"
+        "src/main/java/com/simboraagendar/organization/domain/TimeOff.java",
+        "src/main/java/com/simboraagendar/organization/application/port/out/TimeOffRepository.java",
+        "src/test/java/com/simboraagendar/organization/domain/TimeOffTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: criacao por TimeOff.register(tenantId, professionalId (nullable), startsAt, endsAt, reason)",
@@ -135,15 +135,15 @@
       "complexity": "Low",
       "depends_on": ["TASK-003"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/RegisterBusinessOperatingHoursUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/RegisteredBusinessOperatingHours.java",
-        "src/main/java/com/agendaia/organization/application/port/in/ListBusinessOperatingHoursUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/BusinessOperatingHoursView.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterBusinessOperatingHoursCommand.java",
-        "src/main/java/com/agendaia/organization/application/RegisterBusinessOperatingHoursHandler.java",
-        "src/main/java/com/agendaia/organization/application/ListBusinessOperatingHoursHandler.java",
-        "src/test/java/com/agendaia/organization/application/RegisterBusinessOperatingHoursHandlerTest.java",
-        "src/test/java/com/agendaia/organization/application/ListBusinessOperatingHoursHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisterBusinessOperatingHoursUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisteredBusinessOperatingHours.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/ListBusinessOperatingHoursUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/BusinessOperatingHoursView.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterBusinessOperatingHoursCommand.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterBusinessOperatingHoursHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/ListBusinessOperatingHoursHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/RegisterBusinessOperatingHoursHandlerTest.java",
+        "src/test/java/com/simboraagendar/organization/application/ListBusinessOperatingHoursHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: nenhum dos dois casos de uso aceita tenant como parametro",
@@ -162,17 +162,17 @@
       "complexity": "High",
       "depends_on": ["TASK-004", "TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/RegisterWorkScheduleUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/RegisteredWorkSchedule.java",
-        "src/main/java/com/agendaia/organization/application/port/in/ListWorkSchedulesUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/WorkScheduleView.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterWorkScheduleCommand.java",
-        "src/main/java/com/agendaia/organization/domain/exception/WorkScheduleOverlapException.java",
-        "src/main/java/com/agendaia/organization/domain/exception/ProfessionalNotFoundException.java",
-        "src/main/java/com/agendaia/organization/application/RegisterWorkScheduleHandler.java",
-        "src/main/java/com/agendaia/organization/application/ListWorkSchedulesHandler.java",
-        "src/test/java/com/agendaia/organization/application/RegisterWorkScheduleHandlerTest.java",
-        "src/test/java/com/agendaia/organization/application/ListWorkSchedulesHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisterWorkScheduleUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisteredWorkSchedule.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/ListWorkSchedulesUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/WorkScheduleView.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterWorkScheduleCommand.java",
+        "src/main/java/com/simboraagendar/organization/domain/exception/WorkScheduleOverlapException.java",
+        "src/main/java/com/simboraagendar/organization/domain/exception/ProfessionalNotFoundException.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterWorkScheduleHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/ListWorkSchedulesHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/RegisterWorkScheduleHandlerTest.java",
+        "src/test/java/com/simboraagendar/organization/application/ListWorkSchedulesHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: professionalId que nao existe ou e de outro tenant recusa com erro de campo, mesma mensagem generica para os dois casos",
@@ -193,15 +193,15 @@
       "complexity": "Medium",
       "depends_on": ["TASK-005", "TASK-002"],
       "files": [
-        "src/main/java/com/agendaia/organization/application/port/in/RegisterTimeOffUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/RegisteredTimeOff.java",
-        "src/main/java/com/agendaia/organization/application/port/in/ListTimeOffUseCase.java",
-        "src/main/java/com/agendaia/organization/application/port/in/TimeOffView.java",
-        "src/main/java/com/agendaia/organization/application/command/RegisterTimeOffCommand.java",
-        "src/main/java/com/agendaia/organization/application/RegisterTimeOffHandler.java",
-        "src/main/java/com/agendaia/organization/application/ListTimeOffHandler.java",
-        "src/test/java/com/agendaia/organization/application/RegisterTimeOffHandlerTest.java",
-        "src/test/java/com/agendaia/organization/application/ListTimeOffHandlerTest.java"
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisterTimeOffUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/RegisteredTimeOff.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/ListTimeOffUseCase.java",
+        "src/main/java/com/simboraagendar/organization/application/port/in/TimeOffView.java",
+        "src/main/java/com/simboraagendar/organization/application/command/RegisterTimeOffCommand.java",
+        "src/main/java/com/simboraagendar/organization/application/RegisterTimeOffHandler.java",
+        "src/main/java/com/simboraagendar/organization/application/ListTimeOffHandler.java",
+        "src/test/java/com/simboraagendar/organization/application/RegisterTimeOffHandlerTest.java",
+        "src/test/java/com/simboraagendar/organization/application/ListTimeOffHandlerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: professionalId nulo grava sem validacao de profissional (vale para o estabelecimento inteiro)",
@@ -221,10 +221,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-006"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/BusinessOperatingHoursController.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterBusinessOperatingHoursRequest.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/BusinessOperatingHoursController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegisterBusinessOperatingHoursRequest.java",
         "src/main/resources/templates/admin/horario-funcionamento.html",
-        "src/test/java/com/agendaia/organization/adapter/in/web/BusinessOperatingHoursControllerTest.java"
+        "src/test/java/com/simboraagendar/organization/adapter/in/web/BusinessOperatingHoursControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: GET mostra lista + formulario; POST valido redireciona (PRG)",
@@ -244,10 +244,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-007"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/WorkScheduleController.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterWorkScheduleRequest.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/WorkScheduleController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegisterWorkScheduleRequest.java",
         "src/main/resources/templates/admin/jornadas.html",
-        "src/test/java/com/agendaia/organization/adapter/in/web/WorkScheduleControllerTest.java"
+        "src/test/java/com/simboraagendar/organization/adapter/in/web/WorkScheduleControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: sem profissional cadastrado, a tela linka para /admin/profissionais em vez de dropdown vazio",
@@ -267,10 +267,10 @@
       "complexity": "Medium",
       "depends_on": ["TASK-008"],
       "files": [
-        "src/main/java/com/agendaia/organization/adapter/in/web/TimeOffController.java",
-        "src/main/java/com/agendaia/organization/adapter/in/web/request/RegisterTimeOffRequest.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/TimeOffController.java",
+        "src/main/java/com/simboraagendar/organization/adapter/in/web/request/RegisterTimeOffRequest.java",
         "src/main/resources/templates/admin/bloqueios.html",
-        "src/test/java/com/agendaia/organization/adapter/in/web/TimeOffControllerTest.java"
+        "src/test/java/com/simboraagendar/organization/adapter/in/web/TimeOffControllerTest.java"
       ],
       "acceptance_criteria": [
         "AC-1: dropdown de profissional inclui a opcao 'Todos os profissionais' (valor vazio)",
@@ -305,7 +305,7 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-012"],
-      "files": ["src/test/java/com/agendaia/organization/HorarioJornadaBloqueioRegistrationIT.java"],
+      "files": ["src/test/java/com/simboraagendar/organization/HorarioJornadaBloqueioRegistrationIT.java"],
       "acceptance_criteria": [
         "AC-1: E2E-1 confirma horario de funcionamento, jornada (com almoco -- duas faixas) e dois bloqueios (um de profissional, um do estabelecimento) cadastrados",
         "AC-2: E2E-2 confirma que a segunda faixa sobreposta e recusada, nenhuma segunda linha gravada",
@@ -323,7 +323,7 @@
       "layer": 1,
       "complexity": "Medium",
       "depends_on": ["TASK-013"],
-      "files": ["src/test/java/com/agendaia/platform/CrossTenantIsolationIT.java"],
+      "files": ["src/test/java/com/simboraagendar/platform/CrossTenantIsolationIT.java"],
       "acceptance_criteria": [
         "AC-1: dado cadastrado pelo tenant A nao aparece nas listas do tenant B",
         "AC-2: nenhum registro gravado com tenant_id diferente do dono da sessao",
