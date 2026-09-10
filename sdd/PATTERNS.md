@@ -507,13 +507,14 @@ token único abaixo é a mesma):
   texto forte" do guia.
 
 **Campo de senha mostra/oculta** (2026-09-09, pedido do dono: usuário
-querer conferir se digitou certo antes de enviar):
+querer conferir se digitou certo antes de enviar; ícone trocado de emoji
+para SVG em 2026-09-10 — "fica com cara mais profissional"):
 
 ```html
 <div class="input-group">
   <input type="password" id="password" name="password" class="form-control" ...>
   <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
-          aria-label="Mostrar senha">👁️</button>
+          aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg></button>
 </div>
 ```
 
@@ -526,9 +527,17 @@ querer conferir se digitou certo antes de enviar):
 - Se o campo tiver validação de erro (`is-invalid`/`invalid-feedback`), o
   `input-group` precisa também da classe `has-validation` (regra do próprio
   Bootstrap) — ver `auth/cadastro.html` para o exemplo com erro de campo.
+- Ícone é SVG inline com `stroke="currentColor"` (herda a cor do botão
+  sozinho, claro e escuro, sem variante por tema) — o script troca entre
+  olho aberto (senha oculta, convida a revelar) e olho cortado (senha
+  visível, convida a ocultar) via `botao.innerHTML`, não mais
+  `textContent`. Mesmo princípio do logo (`fragments/layout :: logo`):
+  SVG inline, sem biblioteca de ícones nova.
 - Why: mesmo padrão já usado por `temaToggle` (IIFE guardado por
-  `querySelector`, sem framework de ícone — emoji simples com `aria-label`),
-  em vez de inventar um segundo mecanismo só para senha.
+  `querySelector`), agora com SVG em vez de emoji — emoji renderiza
+  diferente por sistema operacional/navegador e lê como menos
+  profissional; SVG com `currentColor` é consistente em qualquer
+  ambiente e já é o padrão do projeto desde a logo.
 
 **Card de métrica (KPI) só entra com dado real atrás**:
 - Grid de cards no topo de uma tela administrativa (agendamentos de hoje,
@@ -820,3 +829,6 @@ logo(tamanho)`) documentado na tabela de componentes traduzidos, e novo
 padrão de teste em "Testes que realmente garantem": invariante sobre
 arquivo de template vira teste lendo o classpath, não renderizando a
 tela.
+2026-09-10 — ícone do "campo de senha mostra/oculta" trocado de emoji
+(👁️/🙈) para SVG inline com `stroke="currentColor"`, a pedido do dono
+("fica com cara mais profissional").
