@@ -84,11 +84,15 @@
       <!--/* th:field não é usado aqui de propósito: ele devolveria a senha
              digitada de volta ao navegador quando o formulário fosse
              reexibido com erro. */-->
-      <input type="password" id="password" name="password"
-             class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-             autocomplete="new-password">
-      <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
-           th:errors="*{password}">erro</div>
+      <div class="input-group" th:classappend="${#fields.hasErrors('password')} ? 'has-validation'">
+        <input type="password" id="password" name="password"
+               class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+               autocomplete="new-password">
+        <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
+                aria-label="Mostrar senha">👁️</button>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+             th:errors="*{password}">erro</div>
+      </div>
       <div class="form-text">Pelo menos 8 caracteres.</div>
     </div>
 

@@ -368,6 +368,25 @@
       atualizarIcone();
     })();
   </script>
+  <!--/* Botão de mostrar/ocultar senha (auth/login, operador/login,
+         auth/cadastro) — genérico por data-alvo, para servir qualquer
+         campo de senha da página, inclusive mais de um (ex.: nova senha +
+         confirmação, TODO-109). Sem elemento com a classe, sem listener,
+         sem erro. */-->
+  <script>
+    (function () {
+      document.querySelectorAll('.js-alternar-senha').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+          var alvo = document.getElementById(botao.dataset.alvo);
+          if (!alvo) return;
+          var vaiMostrar = alvo.type === 'password';
+          alvo.type = vaiMostrar ? 'text' : 'password';
+          botao.textContent = vaiMostrar ? '🙈' : '👁️';
+          botao.setAttribute('aria-label', vaiMostrar ? 'Ocultar senha' : 'Mostrar senha');
+        });
+      });
+    })();
+  </script>
 </footer>
 
 </body>

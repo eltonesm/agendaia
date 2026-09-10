@@ -494,11 +494,36 @@ adotar Tailwind):
 | Botão secundário | `btn btn-outline-secondary` |
 | Input | `form-control rounded-3` (o *focus ring* já segue `--bs-primary`) |
 | Sidebar | largura fixa (~16rem), `border-end`, item ativo com `bg-primary-subtle text-primary` — ver `templates/operador/painel.html` |
+| Campo de senha | `input-group` com `.js-alternar-senha` — ver "Campo de senha mostra/oculta", abaixo |
 
 - Why: mesma forma visual do protótipo (cantos de 1rem, sombra leve, pílula de
   status) sem adotar Tailwind — o Bootstrap 5.3 já tem par `-subtle`/
   `-emphasis` por cor semântica, que é exatamente o "badge com fundo suave e
   texto forte" do guia.
+
+**Campo de senha mostra/oculta** (2026-09-09, pedido do dono: usuário
+querer conferir se digitou certo antes de enviar):
+
+```html
+<div class="input-group">
+  <input type="password" id="password" name="password" class="form-control" ...>
+  <button type="button" class="btn btn-outline-secondary js-alternar-senha" data-alvo="password"
+          aria-label="Mostrar senha">👁️</button>
+</div>
+```
+
+- O botão referencia o campo por `data-alvo="<id-do-input>"` — o script
+  compartilhado (`fragments/layout.html`, fragmento `scripts`) é genérico por
+  `querySelectorAll('.js-alternar-senha')`, então **qualquer** campo de senha
+  de qualquer tela ganha o botão só adicionando o HTML acima, sem tocar em
+  nenhum script novo — inclusive se uma tela tiver mais de um campo (ex.:
+  "nova senha" + "confirmar senha", quando TODO-109 existir).
+- Se o campo tiver validação de erro (`is-invalid`/`invalid-feedback`), o
+  `input-group` precisa também da classe `has-validation` (regra do próprio
+  Bootstrap) — ver `auth/cadastro.html` para o exemplo com erro de campo.
+- Why: mesmo padrão já usado por `temaToggle` (IIFE guardado por
+  `querySelector`, sem framework de ícone — emoji simples com `aria-label`),
+  em vez de inventar um segundo mecanismo só para senha.
 
 **Card de métrica (KPI) só entra com dado real atrás**:
 - Grid de cards no topo de uma tela administrativa (agendamentos de hoje,
@@ -767,3 +792,6 @@ antes de escrever código, não depois); `@RequestParam` de enum precisa de
 `@ExceptionHandler(MethodArgumentTypeMismatchException.class)` dedicado,
 senão um valor inválido vira "defeito" (500) em vez de uso incorreto
 (400).
+2026-09-09 — documentado o componente "campo de senha mostra/oculta"
+(`.js-alternar-senha`), aplicado em `auth/login.html`, `operador/login.html`
+e `auth/cadastro.html` a pedido do dono.
