@@ -3,27 +3,55 @@
   Landing institucional (pagina-institucional, 2026-09-10).
 
   Primeiro contato de quem nunca ouviu falar do SimboraAgendar — "/" deixou
-  de redirecionar direto para /cadastro (ver WebConfig.java). Conteúdo
-  traduzido do protótipo Tailwind trazido pelo dono para Bootstrap 5 (ADR
-  0012): mesma estrutura (hero, segmentos, como funciona, preço), sem
-  adotar Tailwind.
+  de redirecionar direto para /cadastro (ver WebConfig.java). Traduzido do
+  protótipo Tailwind trazido pelo dono (2ª versão, mais fiel à estrutura
+  original) para Bootstrap 5 (ADR 0012) — sem adotar Tailwind.
 
-  Sem sessão, sem tenantId, sem consulta a banco — puramente apresentação
-  (DD-1/DD-2 da spec técnica). Evita navbar/card padrão "que denunciam
-  Bootstrap" (PATTERNS.md): cabeçalho é um flex container customizado, não
-  <nav class="navbar">.
+  Duas diferenças deliberadas em relação ao protótipo, ambas da spec técnica:
+  - BR-4: a URL do mockup do hero é o roteamento real (/b/{slug}), não o
+    subdomínio fake do protótipo (salaodamaria.simboraagendar.com.br).
+  - BR-1: o preço menciona R$49,90/mês pós-trial — decisão de negócio
+    tomada nesta conversa, que não existia no protótipo original.
+
+  ".painel-escuro" é um estilo só desta página: os 3 blocos que no
+  protótipo ficam sempre escuros (bg-navy dark:bg-slate-950),
+  independente do tema claro/escuro do restante do site — por isso não
+  usa var(--bs-body-color) (que inverteria com o tema) nem vira token
+  novo em fragments/layout.html (DD-4 da spec técnica restringe o rebrand
+  a --bs-primary e derivadas; isto é decoração local, não marca de
+  sistema).
+
+  Sem sessão, sem tenantId, sem consulta a banco — puramente apresentação.
 */-->
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
 <head th:replace="~{fragments/layout :: head('SimboraAgendar — agendamento online')}"></head>
+<style>
+  .painel-escuro {
+    background: #1e1b4b;
+    color: #f8fafc;
+  }
+  [data-bs-theme="dark"] .painel-escuro {
+    background: #0b0a1f;
+  }
+  .painel-escuro .text-body-secondary,
+  .painel-escuro .text-secondary {
+    color: #94a3b8 !important;
+  }
+</style>
 <body>
 
-<header class="border-bottom">
-  <div class="container d-flex justify-content-between align-items-center py-3">
-    <span th:replace="~{fragments/layout :: logo(32)}"></span>
-    <div class="d-flex align-items-center gap-2">
+<header class="sticky-top border-bottom" style="background: color-mix(in srgb, var(--bs-body-bg) 90%, transparent); backdrop-filter: blur(8px);">
+  <div class="container d-flex align-items-center justify-content-between" style="height: 4rem;">
+    <span th:replace="~{fragments/layout :: logo(34)}"></span>
+    <nav class="d-none d-md-flex align-items-center gap-4 small fw-semibold">
+      <a href="#como-funciona" class="link-body-emphasis text-decoration-none">Como funciona</a>
+      <a href="#para-quem" class="link-body-emphasis text-decoration-none">Para quem é</a>
+      <a href="#precos" class="link-body-emphasis text-decoration-none">Preços</a>
+    </nav>
+    <div class="d-flex align-items-center gap-3">
       <button type="button" th:replace="~{fragments/layout :: temaToggle}"></button>
-      <a th:href="@{/login}" class="btn btn-outline-secondary rounded-3">Entrar</a>
-      <a th:href="@{/cadastro}" class="btn btn-primary rounded-3">Criar conta</a>
+      <a th:href="@{/login}" class="link-secondary text-decoration-none small d-none d-sm-inline">Entrar</a>
+      <a th:href="@{/cadastro}" class="btn btn-primary rounded-3 btn-sm">Criar minha agenda</a>
     </div>
   </div>
 </header>
@@ -32,25 +60,57 @@
 
   <!-- Hero -->
   <section class="container py-5 my-4">
-    <div class="row align-items-center g-5">
+    <div class="row g-5 align-items-center">
       <div class="col-lg-6">
-        <h1 class="display-5 fw-bold mb-3">Cada cliente marca o próprio horário. Você só confirma.</h1>
-        <p class="fs-5 text-body-secondary mb-4">
-          Sem enrolação, simbora marcar. O SimboraAgendar dá ao seu
-          estabelecimento um link só seu, para os clientes escolherem dia e
-          horário sozinhos — sem trocar mensagem, sem esquecer de responder.
+        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-semibold px-3 py-2 mb-3">
+          Feito para barbearia, salão e manicure
+        </span>
+        <h1 class="display-5 fw-bold mb-3" style="letter-spacing: -0.02em;">Cada cliente marca o próprio horário. Você só confirma.</h1>
+        <p class="fs-5 text-body-secondary mb-4" style="max-width: 32rem;">
+          Sem enrolação, simbora marcar. Seu negócio ganha um link só seu, onde
+          os clientes veem os horários livres e agendam sozinhos — sem trocar
+          mensagem no WhatsApp.
         </p>
-        <a th:href="@{/cadastro}" class="btn btn-primary btn-lg rounded-3">Criar conta grátis</a>
-        <p class="text-body-secondary small mt-2 mb-0">30 dias grátis, sem cartão de crédito.</p>
+        <div class="d-flex flex-wrap gap-3 mb-2">
+          <a th:href="@{/cadastro}" class="btn btn-primary btn-lg rounded-3">Criar minha agenda grátis</a>
+          <a href="#como-funciona" class="btn btn-outline-secondary btn-lg rounded-3">Ver como funciona</a>
+        </div>
+        <p class="text-body-secondary small mb-0">Sem cartão de crédito para começar · pronto em menos de 5 minutos</p>
       </div>
+
       <div class="col-lg-6">
-        <div class="card rounded-4 shadow-sm border-0 p-4">
-          <p class="text-body-secondary small mb-1">Seu link para clientes:</p>
-          <p class="fw-semibold mb-4">simboraagendar.com/b/sua-barbearia</p>
-          <p class="text-body-secondary small mb-2">Escolha um horário:</p>
-          <div class="row row-cols-4 g-2">
-            <div class="col" th:each="horario : ${ {'09:00','10:00','11:00','14:00','15:00','16:00','17:00','18:00'} }">
-              <span class="btn btn-outline-secondary btn-sm w-100 disabled" th:text="${horario}">09:00</span>
+        <div class="painel-escuro rounded-4 shadow-lg p-3">
+          <div class="bg-white rounded-3 overflow-hidden">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom" style="background: #f8fafc;">
+              <span class="rounded-circle" style="width: .6rem; height: .6rem; background: #cbd5e1;"></span>
+              <span class="rounded-circle" style="width: .6rem; height: .6rem; background: #cbd5e1;"></span>
+              <span class="rounded-circle" style="width: .6rem; height: .6rem; background: #cbd5e1;"></span>
+              <span class="small text-secondary ms-2">
+                simboraagendar.com/<strong style="color: #ff6b4a;">b/salao-da-maria</strong>
+              </span>
+            </div>
+            <div class="p-4" style="color: #0f172a;">
+              <h3 class="h6 fw-bold mb-0">Salão da Maria</h3>
+              <p class="small text-secondary mb-3">Corte, coloração e escova</p>
+
+              <div class="row row-cols-5 g-1 mb-3 text-center small">
+                <div class="col"><span class="d-block py-2 rounded-3 border text-secondary">Seg</span></div>
+                <div class="col"><span class="d-block py-2 rounded-3 border text-secondary">Ter</span></div>
+                <div class="col"><span class="d-block py-2 rounded-3 fw-semibold text-white" style="background: #ff6b4a;">Qua</span></div>
+                <div class="col"><span class="d-block py-2 rounded-3 border text-secondary">Qui</span></div>
+                <div class="col"><span class="d-block py-2 rounded-3 border text-secondary">Sex</span></div>
+              </div>
+
+              <div class="row row-cols-2 g-2 mb-3 small">
+                <div class="col"><span class="d-block py-2 text-center rounded-3 border text-decoration-line-through text-secondary">09:00</span></div>
+                <div class="col"><span class="d-block py-2 text-center rounded-3 border">10:00</span></div>
+                <div class="col"><span class="d-block py-2 text-center rounded-3 fw-semibold text-white" style="background: #1e1b4b;">11:30</span></div>
+                <div class="col"><span class="d-block py-2 text-center rounded-3 border">14:00</span></div>
+              </div>
+
+              <span class="d-block text-center fw-semibold text-white rounded-3 py-2 small" style="background: #1e1b4b;">
+                Confirmar horário das 11:30
+              </span>
             </div>
           </div>
         </div>
@@ -59,52 +119,81 @@
   </section>
 
   <!-- Para quem é -->
-  <section class="container py-5">
-    <h2 class="h3 fw-bold text-center mb-5">Para quem é o SimboraAgendar</h2>
+  <section id="para-quem" class="container py-5">
+    <span class="text-primary fw-bold small text-uppercase">Para quem é</span>
+    <h2 class="h3 fw-bold mt-2 mb-5" style="max-width: 32rem;">Se o seu trabalho depende de horário marcado, é pra você.</h2>
     <div class="row g-4">
-      <div class="col-md-3 col-sm-6" th:each="segmento : ${ {'Barbearia','Salão de beleza','Manicure e estética','Outros serviços'} }">
-        <div class="card rounded-4 shadow-sm border-0 h-100 text-center p-4">
-          <p class="fw-semibold mb-0" th:text="${segmento}">Segmento</p>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+          <h3 class="h6 fw-bold mb-1">Barbearia</h3>
+          <p class="small text-body-secondary mb-0">Corte, barba e combo — sem precisar ligar.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+          <h3 class="h6 fw-bold mb-1">Salão de beleza</h3>
+          <p class="small text-body-secondary mb-0">Vários serviços, uma agenda só, sem overbooking.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+          <h3 class="h6 fw-bold mb-1">Manicure e estética</h3>
+          <p class="small text-body-secondary mb-0">Horário fixo, com lembrete automático.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card rounded-4 shadow-sm border-0 h-100 p-4">
+          <h3 class="h6 fw-bold mb-1">Outros serviços</h3>
+          <p class="small text-body-secondary mb-0">Qualquer negócio com hora marcada cabe aqui.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Como funciona -->
-  <section class="py-5" style="background: var(--bs-body-color); color: var(--bs-body-bg);">
-    <div class="container py-4">
-      <h2 class="h3 fw-bold text-center mb-5">Como funciona</h2>
-      <div class="row g-4 text-center">
+  <section id="como-funciona" class="container py-5">
+    <div class="painel-escuro rounded-4 p-4 p-md-5">
+      <span class="fw-bold small text-uppercase" style="color: #ff6b4a;">Como funciona</span>
+      <h2 class="h3 fw-bold mt-2 mb-4">Três passos até seu primeiro agendamento.</h2>
+      <div class="row g-4 pt-4" style="border-top: 1px solid rgba(255,255,255,.1);">
         <div class="col-md-4">
-          <div class="fs-1 fw-bold mb-2" style="color: var(--bs-primary);">1</div>
-          <h3 class="h6 fw-semibold">Você cria sua conta</h3>
-          <p class="small opacity-75 mb-0">Cadastra seu estabelecimento, serviços e horários — leva menos de um minuto.</p>
+          <div class="fw-bold small mb-2" style="color: #ff6b4a;">Passo 1</div>
+          <h3 class="h6 fw-bold mb-2">Crie sua agenda</h3>
+          <p class="small text-body-secondary mb-0">Cadastre o nome do seu negócio, os serviços e seus horários de atendimento.</p>
         </div>
         <div class="col-md-4">
-          <div class="fs-1 fw-bold mb-2" style="color: var(--bs-primary);">2</div>
-          <h3 class="h6 fw-semibold">Compartilha seu link</h3>
-          <p class="small opacity-75 mb-0">Envia o link do seu estabelecimento para os clientes, do jeito que preferir.</p>
+          <div class="fw-bold small mb-2" style="color: #ff6b4a;">Passo 2</div>
+          <h3 class="h6 fw-bold mb-2">Compartilhe seu link</h3>
+          <p class="small text-body-secondary mb-0">Você ganha um endereço só seu pra colocar no Instagram e WhatsApp.</p>
         </div>
         <div class="col-md-4">
-          <div class="fs-1 fw-bold mb-2" style="color: var(--bs-primary);">3</div>
-          <h3 class="h6 fw-semibold">Cliente agenda sozinho</h3>
-          <p class="small opacity-75 mb-0">Ele escolhe serviço, profissional e horário. Você só confirma e atende.</p>
+          <div class="fw-bold small mb-2" style="color: #ff6b4a;">Passo 3</div>
+          <h3 class="h6 fw-bold mb-2">Receba os agendamentos</h3>
+          <p class="small text-body-secondary mb-0">Os clientes marcam sozinhos, você acompanha tudo num painel simples.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Preços -->
-  <section class="container py-5 my-4">
-    <h2 class="h3 fw-bold text-center mb-5">Preços</h2>
-    <div class="row justify-content-center">
-      <div class="col-md-5">
-        <div class="card rounded-4 shadow-sm border-0 text-center p-4">
-          <p class="text-body-secondary text-uppercase small fw-semibold mb-2">Comece grátis</p>
-          <p class="display-6 fw-bold mb-0">R$0</p>
-          <p class="text-body-secondary mb-4">primeiros 30 dias</p>
-          <p class="mb-4">Depois, <strong>R$49,90/mês</strong>. Sem multa, cancele quando quiser.</p>
-          <a th:href="@{/cadastro}" class="btn btn-primary rounded-3">Criar conta</a>
+  <section id="precos" class="container py-5 my-3">
+    <div class="rounded-4 p-4 p-md-5" style="background: var(--bs-tertiary-bg);">
+      <div class="row g-4 align-items-center">
+        <div class="col-md-6">
+          <h3 class="h4 fw-bold mb-3">Comece sem custo, pague quando fizer sentido</h3>
+          <p class="text-body-secondary mb-0">
+            Ideal pra quem quer testar com os próprios clientes antes de decidir.
+            Depois dos 30 dias, <strong>R$49,90/mês</strong> — sem multa, cancele
+            quando quiser.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <div class="painel-escuro rounded-4 p-4 text-center">
+            <div class="display-6 fw-bold mb-0">
+              R$0<span class="fs-6 fw-normal text-body-secondary">/primeiros 30 dias</span>
+            </div>
+            <a th:href="@{/cadastro}" class="btn btn-primary w-100 mt-3 rounded-3 fw-semibold">Criar minha agenda</a>
+          </div>
         </div>
       </div>
     </div>
@@ -113,9 +202,13 @@
 </main>
 
 <footer class="border-top py-4">
-  <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-    <span th:replace="~{fragments/layout :: logo(24)}"></span>
-    <p class="text-body-secondary small mb-0">Sem enrolação, simbora marcar.</p>
+  <div class="container d-flex flex-wrap justify-content-between gap-3 small text-body-secondary">
+    <span>© 2026 SimboraAgendar.</span>
+    <div class="d-flex gap-4">
+      <a href="#como-funciona" class="link-body-emphasis text-decoration-none">Como funciona</a>
+      <a href="#para-quem" class="link-body-emphasis text-decoration-none">Para quem é</a>
+      <a href="#precos" class="link-body-emphasis text-decoration-none">Preços</a>
+    </div>
   </div>
 </footer>
 
