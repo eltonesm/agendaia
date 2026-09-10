@@ -452,7 +452,11 @@ templates/
 **Sistema de design é token do Bootstrap, não classe solta** (2026-09-08,
 origem: protótipos Gemini/Tailwind trazidos pelo dono — tradução 1:1 para
 variável do Bootstrap, decisão de manter o framework da ADR 0012 em vez de
-adotar Tailwind):
+adotar Tailwind; cor de marca atualizada em 2026-09-10, feature
+`pagina-institucional` — rebrand de indigo `#4F46E5` para coral `#FF6B4A`,
+a partir da logo nova "simboraagendar". Troca total e simultânea: nenhuma
+tela ficou com a cor antiga — só o valor da variável mudou, a mecânica de
+token único abaixo é a mesma):
 
 | Papel | Variável Bootstrap | Claro | Escuro |
 |---|---|---|---|
@@ -461,7 +465,7 @@ adotar Tailwind):
 | Texto principal | `--bs-body-color` | `#0F172A` | `#F1F5F9` |
 | Texto secundário | `--bs-secondary-color` | `#64748B` | `#94A3B8` |
 | Borda | `--bs-border-color` | `#E2E8F0` | `#334155` |
-| Marca (primária) | `--bs-primary` | `#4F46E5` | `#4F46E5` |
+| Marca (primária) | `--bs-primary` | `#FF6B4A` | `#FF6B4A` |
 | Sucesso / Pago / Ativo | `--bs-success-bg-subtle` / `--bs-success-text-emphasis` | `#ECFDF5` / `#047857` | tom análogo, fundo com baixa opacidade |
 | Atenção / Pendente | `--bs-warning-bg-subtle` / `--bs-warning-text-emphasis` | `#FFFBEB` / `#D97706` | idem |
 | Erro / Cancelado | `--bs-danger-bg-subtle` / `--bs-danger-text-emphasis` | `#FFF1F2` / `#E11D48` | idem |
@@ -495,6 +499,7 @@ adotar Tailwind):
 | Input | `form-control rounded-3` (o *focus ring* já segue `--bs-primary`) |
 | Sidebar | largura fixa (~16rem), `border-end`, item ativo com `bg-primary-subtle text-primary` — ver `templates/operador/painel.html` |
 | Campo de senha | `input-group` com `.js-alternar-senha` — ver "Campo de senha mostra/oculta", abaixo |
+| Logo/marca | `fragments/layout :: logo(tamanho)` — SVG inline + wordmark, nunca duplicar o markup |
 
 - Why: mesma forma visual do protótipo (cantos de 1rem, sombra leve, pílula de
   status) sem adotar Tailwind — o Bootstrap 5.3 já tem par `-subtle`/
@@ -588,6 +593,19 @@ querer conferir se digitou certo antes de enviar):
 - Why: três portões desta base foram conferidos assim e os três estavam certos —
   mas dois outros, não conferidos, não pegavam nada. Portão que nunca falhou é
   portão que ninguém sabe se funciona.
+
+**Invariante sobre arquivo de template vira teste lendo o classpath, não
+renderizando a tela** (pagina-institucional, 2026-09-10):
+- Para garantir "nenhuma tela ficou com a cor antiga" (BR-3 do rebrand de
+  paleta), o teste (`PaletaDeMarcaTest`) lê `fragments/layout.html` direto
+  do `ClassPathResource`, sem `@SpringBootTest`/`MockMvc` — é uma asserção
+  de texto (`doesNotContain`/`contains`), não uma inspeção visual.
+- Why: o projeto não tem infraestrutura de teste visual (LTP/E2E
+  desabilitado) — um teste que sobe o Spring inteiro só para verificar o
+  valor de uma variável CSS seria lento e não provaria mais nada do que
+  ler o arquivo. Use este padrão sempre que a garantia for sobre o
+  *conteúdo de um arquivo compartilhado* (CSS, config, template base), não
+  sobre comportamento de requisição.
 
 **Teste que não roda é pior que teste ausente**:
 - Ao acrescentar a primeira classe `*IT`, confirme que o `maven-failsafe-plugin`
@@ -795,3 +813,10 @@ senão um valor inválido vira "defeito" (500) em vez de uso incorreto
 2026-09-09 — documentado o componente "campo de senha mostra/oculta"
 (`.js-alternar-senha`), aplicado em `auth/login.html`, `operador/login.html`
 e `auth/cadastro.html` a pedido do dono.
+2026-09-10 — rebrand da feature `pagina-institucional`: cor de marca
+trocada de indigo `#4F46E5` para coral `#FF6B4A` (logo nova
+"simboraagendar"), novo componente de logo (`fragments/layout ::
+logo(tamanho)`) documentado na tabela de componentes traduzidos, e novo
+padrão de teste em "Testes que realmente garantem": invariante sobre
+arquivo de template vira teste lendo o classpath, não renderizando a
+tela.

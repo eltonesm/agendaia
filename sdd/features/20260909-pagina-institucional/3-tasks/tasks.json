@@ -1,0 +1,133 @@
+{
+  "feature": "pagina-institucional",
+  "local_config": { "mysql": null, "kvs": null, "bigqueue": null },
+  "stats": { "total": 8, "done": 8, "by_layer": { "1": 5, "3": 3 } },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Fragmento de logo + rebrand de paleta em fragments/layout.html",
+      "description": "Adicionar th:fragment=\"logo(tamanho)\" (SVG inline: quadrado arredondado coral com \">>\" branco + wordmark \"simbora\"/\"agendar\" em coral/navy). Trocar valor de --bs-primary, --bs-primary-rgb, --bs-link-color(-rgb), --bs-link-hover-color(-rgb) e os quatro pares de .btn-primary de indigo (#4f46e5/#4338ca) para coral (#ff6b4a/#e85a3a), claro e escuro.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": [],
+      "files": ["src/main/resources/templates/fragments/layout.html"],
+      "acceptance_criteria": [
+        "AC-1: fragmento logo(tamanho) renderiza o ícone SVG e o wordmark",
+        "AC-2: nenhuma ocorrência de 4f46e5/4338ca (case-insensitive) permanece no arquivo",
+        "AC-3: --bs-primary é ff6b4a em :root (mesmo valor claro/escuro, mesmo padrão atual)",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-3", "DD-4"]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Template landing.html",
+      "description": "Novo template com hero (proposta de valor), seção \"para quem é\" (barbearia, salão, manicure e estética, outros), seção \"como funciona\" em passos, seção de preço (30 dias grátis + R$49,90/mês), rodapé, e botão CTA \"Criar conta\" apontando para /cadastro. Usa fragments/layout :: head/scripts/logo. Traduzido do protótipo Tailwind para Bootstrap 5 (sem adotar Tailwind).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": ["src/main/resources/templates/landing.html"],
+      "acceptance_criteria": [
+        "AC-1: página mostra proposta de valor, 4 segmentos, passos de funcionamento, preço",
+        "AC-2: preço exibido é '30 dias grátis' + 'R$49,90/mês' (BR-1), texto estático",
+        "AC-3: botão CTA tem th:href apontando para /cadastro (BR-2)",
+        "AC-4: nenhuma URL fake com subdomínio — se houver mockup de link, usa formato /b/{slug} (BR-4)",
+        "AC-5: usa fragments/layout :: logo — sem duplicar SVG"
+      ],
+      "references": ["US-1", "US-2"],
+      "design_decisions": ["DD-3", "DD-5"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "WebConfig: raiz renderiza landing em vez de redirecionar",
+      "description": "Trocar registry.addRedirectViewController(\"/\", \"/cadastro\") por registry.addViewController(\"/\", \"landing\"). Atualizar o Javadoc da classe (a frase que previa esta troca deixa de fazer sentido como está).",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-002"],
+      "files": ["src/main/java/com/simboraagendar/platform/web/WebConfig.java"],
+      "acceptance_criteria": [
+        "AC-1: GET / retorna 200 com a view landing, não mais redirect 3xx",
+        "GATE: ./mvnw compile passa"
+      ],
+      "references": ["US-1"],
+      "design_decisions": ["DD-1", "DD-2"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Atualizar sdd/PATTERNS.md com a paleta nova",
+      "description": "Na tabela \"Sistema de design é token do Bootstrap\", trocar a linha \"Marca (primária)\" de #4F46E5 para #FF6B4A (claro e escuro). Adicionar nota datada explicando a origem (rebrand pagina-institucional, 2026-09-10) e atualizar o changelog \"Last Updated\" no rodapé do arquivo.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-001"],
+      "files": ["sdd/PATTERNS.md"],
+      "acceptance_criteria": [
+        "AC-1: tabela reflete #FF6B4A como cor de marca vigente, sem menção a #4F46E5 como valor válido",
+        "AC-2: changelog do PATTERNS.md tem entrada datada desta mudança"
+      ],
+      "references": ["US-3"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-005",
+      "title": "Testes: rota da landing e regressão de paleta",
+      "description": "LandingRouteIT (MockMvc): GET / retorna 200 view landing (não redirect); corpo contém CTA com href para /cadastro; GET /cadastro continua 200 sem mudança. PaletaDeMarcaTest (unitário, lê fragments/layout.html do classpath): arquivo não contém 4f46e5/4338ca; contém ff6b4a em --bs-primary.",
+      "status": "completed",
+      "layer": 1,
+      "depends_on": ["TASK-003", "TASK-004"],
+      "files": [
+        "src/test/java/com/simboraagendar/platform/web/LandingRouteIT.java",
+        "src/test/java/com/simboraagendar/platform/web/PaletaDeMarcaTest.java"
+      ],
+      "acceptance_criteria": [
+        "AC-1: LandingRouteIT cobre E2E-1 e E2E-2",
+        "AC-2: PaletaDeMarcaTest cobre E2E-3/BR-3 de forma determinística",
+        "GATE: ./mvnw test -Dtest=LandingRouteIT,PaletaDeMarcaTest passa"
+      ],
+      "references": ["E2E-1", "E2E-2", "E2E-3"],
+      "design_decisions": ["DD-4"]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Code Review",
+      "description": "Revisão de qualidade de código das mudanças desta feature (WebConfig, landing.html, layout.html, PATTERNS.md, testes).",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED ou CAN_PROCEED_WITH_WARNINGS em verdicts/code_review.json"],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Performance Review",
+      "description": "Confirma que GET / não introduz consulta a banco, que o SVG inline não duplica payload desnecessário, e que nenhuma tela existente regrediu em custo.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED em verdicts/performance.json"],
+      "references": [],
+      "design_decisions": []
+    },
+    {
+      "id": "TASK-008",
+      "title": "Security Review",
+      "description": "Confirma que \"/\" segue permitAll() sem exceção nova, que nenhum dado de sessão/tenantId é lido pela landing, e que nenhum secret ou dependência nova foi introduzida.",
+      "status": "completed",
+      "layer": 3,
+      "depends_on": ["TASK-005"],
+      "files": [],
+      "acceptance_criteria": ["GATE: verdict APPROVED em verdicts/security.json"],
+      "references": [],
+      "design_decisions": ["DD-2"]
+    }
+  ],
+  "dependency_graph": {
+    "by_layer": {
+      "1": { "level_0": ["TASK-001"], "level_1": ["TASK-002", "TASK-004"], "level_2": ["TASK-003"], "level_3": ["TASK-005"] },
+      "3": { "level_0": ["TASK-006", "TASK-007", "TASK-008"] }
+    }
+  }
+}

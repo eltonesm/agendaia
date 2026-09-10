@@ -11,8 +11,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * GET só precisa devolver o template. Um {@code @Controller} de uma linha para
  * isso seria classe sem conteúdo.
  *
- * <p>A raiz leva ao cadastro por ora — é a única porta de entrada que existe.
- * Quando houver página institucional, esta linha muda.
+ * <p>A raiz renderiza a landing institucional (pagina-institucional,
+ * 2026-09-10) — sem dado de sessão nem de banco, mesmo perfil das demais
+ * rotas deste arquivo. Se um dia precisar de dado dinâmico, migra para um
+ * {@code @Controller} de verdade.
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -21,6 +23,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/login").setViewName("auth/login");
         registry.addViewController("/operador/login").setViewName("operador/login");
-        registry.addRedirectViewController("/", "/cadastro");
+        registry.addViewController("/").setViewName("landing");
     }
 }
