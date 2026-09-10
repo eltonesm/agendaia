@@ -89,12 +89,10 @@ class RegistrationControllerTest {
     }
 
     @Test
-    @DisplayName("painel de marca (redesenho-cadastro) renderiza com os ids que slug.js espera")
-    void painelDeMarcaRenderizaComOsIdsDaPreviaAoVivo() throws Exception {
+    @DisplayName("prévia de link (redesenho-cadastro) renderiza com o id que slug.js espera")
+    void previaDeLinkRenderizaComOIdEsperadoPorSlugJs() throws Exception {
         mockMvc.perform(get("/cadastro"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("id=\"preview-nome\"")))
-                .andExpect(content().string(containsString("id=\"preview-link\"")))
                 .andExpect(content().string(containsString("id=\"slug-previa\"")));
     }
 

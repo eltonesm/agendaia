@@ -498,7 +498,7 @@ token único abaixo é a mesma):
 | Botão secundário | `btn btn-outline-secondary` |
 | Input | `form-control rounded-3` (o *focus ring* já segue `--bs-primary`) |
 | Sidebar | largura fixa (~16rem), `border-end`, item ativo com `bg-primary-subtle text-primary` — ver `templates/operador/painel.html` |
-| Painel sempre escuro | `.painel-escuro` (compartilhado, `fragments/layout.html`) — bloco que fica navy/quase-preto independente do tema claro/escuro da página; usado em `landing.html` e `auth/cadastro.html` |
+| Painel sempre escuro | `.painel-escuro` (compartilhado, `fragments/layout.html`) — bloco que fica navy/quase-preto independente do tema claro/escuro da página; hoje usado em `landing.html` (o cadastro deixou de ter painel de marca lateral no layout revisado de 2026-09-10) |
 | Campo de senha | `input-group` com `.js-alternar-senha` — ver "Campo de senha mostra/oculta", abaixo |
 | Logo/marca | `fragments/layout :: logo(tamanho)` — SVG inline + wordmark, nunca duplicar o markup |
 
@@ -878,3 +878,8 @@ estilo local de `landing.html` para componente compartilhado em
 `fragments/layout.html` (segunda tela a usá-lo, `auth/cadastro.html`);
 `static/js/slug.js` estendido (não duplicado) para alimentar a prévia
 ao vivo do painel de marca do cadastro.
+2026-09-10 — layout do cadastro revisado no mesmo dia (segundo
+protótipo do dono): volta para coluna única centralizada, sem painel
+de marca lateral — `slug.js` revertido para a forma simples (só
+`#slug-previa`), `.painel-escuro` continua compartilhado mas hoje só é
+usado em `landing.html`.
