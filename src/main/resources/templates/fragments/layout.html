@@ -127,6 +127,25 @@
       --bs-card-bg: #1e293b;
     }
 
+    /* Painel sempre escuro (2026-09-10, redesenho-cadastro, DD-1): nasceu
+       local em landing.html (pagina-institucional) para os blocos que no
+       protótipo ficam navy/quase-preto independente do tema claro/escuro
+       do resto da página — não usa var(--bs-body-color) de propósito,
+       porque essa variável inverteria com o tema. Promovido para cá na
+       segunda tela que precisou dele (auth/cadastro.html), pela própria
+       regra do projeto: fragmento/token nasce na segunda repetição. */
+    .painel-escuro {
+      background: #1e1b4b;
+      color: #f8fafc;
+    }
+    [data-bs-theme="dark"] .painel-escuro {
+      background: #0b0a1f;
+    }
+    .painel-escuro .text-body-secondary,
+    .painel-escuro .text-secondary {
+      color: #94a3b8 !important;
+    }
+
     /* Sidebar (2026-09-08, sistema-de-design-admin): generalizada a partir
        do que só existia (com prefixo .operador-) em operador/painel.html —
        agora compartilhada com adminSidebar, abaixo. */
