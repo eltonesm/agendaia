@@ -214,3 +214,10 @@ tocar a "porta de entrada" do produto (depois da `pagina-institucional`)
 deixou deliberadamente intocado ("continua exatamente como está hoje").
 Puramente visual: reaproveita `slug.js` e o ícone de olho já corrigido,
 sem nenhuma mudança de campo, rota ou regra de negócio.
+
+**Pós-arquivamento (mesmo dia)**: três commits diretos de ajuste visual
+(`bc9c7ef`, `f58015a`, `08e96e6`) mudaram o layout de duas colunas
+(painel de marca) para coluna única centralizada, a partir de um
+segundo protótipo trazido pelo dono, mais fidelidade campo a campo.
+DD-1/DD-2/DD-3 da spec técnica ficaram superadas — ver nota no topo do
+`README.md` e o adendo em `implementation-summary.md`.

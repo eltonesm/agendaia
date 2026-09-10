@@ -43,3 +43,32 @@ segunda repetição"), a classe foi promovida para o `<style>`
 compartilhado de `fragments/layout.html`, e `landing.html` passou a
 herdar dali — sem nenhuma mudança visual perceptível, só uma fonte de
 verdade a menos para manter sincronizada no futuro.
+
+## Adendo: três rodadas de revisão no mesmo dia, após o arquivamento
+
+Pouco depois de arquivada, a feature passou por três correções diretas
+na `main` (fora do ciclo `/sdd.finish` — mudança puramente visual, sem
+reabrir Layer 3):
+
+1. **`bc9c7ef`** — o dono trouxe um segundo protótipo (coluna única
+   centralizada) e pediu para substituir o layout de duas colunas.
+   `.painel-escuro` ficou órfão em `auth/cadastro.html` (só
+   `landing.html` usa hoje); `slug.js` voltou à forma simples
+   (`#preview-nome`/`#preview-link` removidos, sem elemento
+   correspondente na página).
+2. **`f58015a`** — achado real: `th:replace` no mesmo elemento onde se
+   tentava adicionar `position-absolute` descartava a classe (o host
+   inteiro é substituído pelo conteúdo do fragmento). Corrigido
+   envolvendo o `th:replace` num `<div>` de posicionamento — promovido
+   a regra em `PATTERNS.md` ("Fragmento nasce na segunda repetição").
+   Título também ganhou cor navy e peso maior, alinhado à esquerda
+   (estava centralizado e com a cor genérica do corpo do texto).
+3. **`08e96e6`** — fidelidade campo a campo: placeholders que faltavam
+   em quatro dos cinco campos, cor do preview do link restrita ao
+   trecho do domínio/slug (não a frase inteira), texto de ajuda do
+   WhatsApp com a redação exata do protótipo, rótulos em navy.
+
+Nenhuma dessas três rodadas tocou `RegistrationController` ou qualquer
+regra de negócio — só `auth/cadastro.html`, `slug.js` e o teste que
+cobre os ids da página. `./mvnw clean verify` (628 testes) foi
+revalidado ao final de cada rodada.

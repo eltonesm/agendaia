@@ -1,68 +1,79 @@
 # redesenho-cadastro
 
-## O que foi construído
+> **Nota de revisão (2026-09-10, mesmo dia do arquivamento)**: a primeira
+> versão desta feature (descrita nas specs funcional/técnica abaixo, DD-1
+> a DD-3) usava um layout de duas colunas com painel de marca lateral e
+> prévia ao vivo em dois lugares (`#preview-nome`/`#preview-link`). Ainda
+> no mesmo dia, o dono trouxe um **segundo protótipo** — coluna única
+> centralizada, sem painel lateral — e pediu para seguir esse em vez do
+> primeiro. Este README descreve o que **está de fato no ar** hoje (a
+> versão revisada); as specs em `1-functional/` e `2-technical/`
+> continuam sendo o registro histórico de como a primeira versão foi
+> decidida, mas DD-1 a DD-3 (painel de marca, prévia em dois lugares,
+> breakpoint `lg` para o painel) foram **superadas**, não estão mais
+> implementadas. Ver commits `bc9c7ef`, `f58015a`, `08e96e6` (posteriores
+> ao arquivamento) para o histórico da revisão.
+
+## O que foi construído (versão atual)
 
 Segunda tela a receber a identidade visual da marca nova, depois da
-`pagina-institucional`: `/cadastro` ganhou um layout em duas colunas —
-painel de marca (escuro, com um mockup do link público que atualiza ao
-vivo) e o formulário, que continua com exatamente os mesmos 5 campos,
-mesma validação e mesmo fluxo de sempre.
+`pagina-institucional`: `/cadastro` em coluna única centralizada — logo
+acima do título, botão de tema no canto superior direito, formulário com
+os mesmos 5 campos de sempre. Título e rótulos em navy (claro) para
+reforçar a marca; nenhuma mudança de campo, validação ou fluxo.
 
 ```
 GET/POST /cadastro         → RegistrationController — SEM MUDANÇA
                               (mesmo RegistrationRequest, mesma
                               validação, mesmo fluxo de erro)
-auth/cadastro.html          → reescrito: painel de marca (col-lg-6,
-                              some abaixo de 992px) + formulário
-static/js/slug.js           → estendido (não recriado): agora também
-                              alimenta #preview-nome e #preview-link
-                              no painel de marca
+auth/cadastro.html          → coluna única centralizada: logo, título
+                              (navy, negrito), formulário, rodapé
+static/js/slug.js           → forma original (só #slug-previa) — a
+                              extensão para o painel de marca foi
+                              revertida junto com a remoção do painel
 ```
 
-## O que nasceu/mudou nesta feature
+## O que nasceu/mudou nesta feature (estado final)
 
 | Item | Onde | Por quê |
 |---|---|---|
-| `.painel-escuro` | `fragments/layout.html` (promovido) | Era local de `landing.html`; segunda tela a usar (`auth/cadastro.html`) — regra do projeto: fragmento/token nasce na segunda repetição |
-| `#preview-nome`, `#preview-link` | `auth/cadastro.html` (novo) + `slug.js` (estendido) | Prévia ao vivo do link público, sem duplicar a lógica de derivação já existente |
-| `painelDeMarcaRenderizaComOsIdsDaPreviaAoVivo` | `RegistrationControllerTest` (novo) | Regressão determinística de que os ids que `slug.js` procura existem no HTML |
-| `simboraagendar.com.br` (com `.br`) | `auth/cadastro.html`, `landing.html` | Pequena correção incidental — texto exibido usava `simboraagendar.com` (sem `.br`), inconsistente com o domínio real confirmado com o dono |
+| Layout coluna única | `auth/cadastro.html` (reescrito 2x no mesmo dia) | Segundo protótipo do dono — mais simples que o painel de marca da primeira versão |
+| Rótulos e título em navy | `auth/cadastro.html` (`<style>` local) | Igual ao protótipo, que fixa navy como cor de texto padrão da página; não vira token de sistema (DD-4 da pagina-institucional) |
+| Placeholders (`voce@email.com`, `barbearia-do-joao`, `55 11 99999-9999`, `Pelo menos 8 caracteres`) | `auth/cadastro.html` | Fidelidade campo a campo ao protótipo, corrigida após o dono comparar lado a lado |
+| Preview do link só parcialmente colorido | `auth/cadastro.html` | Só o trecho do domínio/slug fica coral (`<strong style="color:#ff6b4a">`), não a frase inteira |
+| `simboraagendar.com.br` (com `.br`) | `auth/cadastro.html`, `landing.html` | Correção incidental — texto usava `simboraagendar.com` (sem `.br`) |
+| **Achado real**: `th:replace` no mesmo elemento onde se tenta adicionar classe | `PATTERNS.md` | `th:replace` troca a tag host inteira — classes de posicionamento postas nela são descartadas. Corrigido envolvendo `th:replace` num `<div>` de posicionamento. Promovido a regra do projeto. |
 
-**Nenhuma mudança**: `RegistrationController.java`, `RegistrationRequest.java`, `RegisterBusinessUseCase` — confirmado na investigação antes de especificar e nos vereditos de qualidade.
+**Nenhuma mudança, do início ao fim**: `RegistrationController.java`,
+`RegistrationRequest.java`, `RegisterBusinessUseCase` — confirmado antes
+de especificar e revalidado a cada rodada de ajuste visual.
 
-## Decisões de design centrais
+## Decisões de design (histórico — ver nota de revisão no topo)
 
-- **`.painel-escuro` sobe para o fragmento compartilhado (DD-1)**: em vez
-  de duplicar a regra CSS numa segunda tela, ela vira componente
-  compartilhado — mesma convenção já usada para logo e ícones.
-- **Prévia estende `slug.js`, não recria (DD-2)**: `#preview-nome`/
-  `#preview-link` são só uma segunda exibição do valor que o script já
-  deriva — uma fonte de verdade, sem risco de as duas divergirem.
-- **Painel de marca só a partir de `lg` — 992px (DD-3)**: o protótipo
-  original sugeria `md` (768px), mas esse foi exatamente o breakpoint
-  que causou overflow horizontal na landing antes de ser corrigido —
-  reaproveitar `lg` evita reabrir o mesmo bug num tablet em pé.
-- **Zero mudança de backend (DD-4)**: confirmado antes de especificar
-  (mesmos campos, mesma validação) e depois na revisão de qualidade
-  (nenhum arquivo Java de produção mudou).
+As decisões DD-1 (`.painel-escuro` compartilhado), DD-2 (prévia
+estendendo `slug.js`) e DD-3 (breakpoint `lg` para o painel) valeram
+para a **primeira versão**, hoje superada. `.painel-escuro` continua
+compartilhado em `fragments/layout.html`, mas hoje só é usado por
+`landing.html`. DD-4 (zero mudança de backend) continua válida e foi
+reconfirmada em cada revisão.
 
 ## Testes
 
 - `RegistrationControllerTest`: 10 testes pré-existentes continuam
-  verdes sem edição (prova de que nenhum contrato mudou) + 1 caso novo
-  confirmando a presença dos ids da prévia ao vivo.
+  verdes sem edição (prova de que nenhum contrato mudou) + 1 caso
+  ajustado ao longo das revisões (hoje confirma só `#slug-previa`, não
+  mais os ids do painel removido).
 - 628 testes no projeto inteiro, 0 falhas, 0 erros (`./mvnw clean
-  verify`).
-- Prévia ao vivo em si (atualização ao digitar, respeito à edição
-  manual do link) não é testável via `MockMvc` — mesma limitação já
-  aceita para o `temaToggle`/dark mode na landing; verificação manual.
+  verify`), reconfirmado a cada rodada de ajuste.
+- Comportamento client-side (prévia do link, alternância de tema) não é
+  testável via `MockMvc` — mesma limitação já aceita para o `temaToggle`
+  na landing; verificação manual a cada mudança.
 
 ## Quality gates (Layer 3)
 
-Todos `APPROVED` — ver `verdicts/{code_review,performance,security}.json`.
-
-- **Code review**: nenhuma duplicação de lógica (slug.js estendido, não
-  recriado); `.painel-escuro` sem declaração residual em `landing.html`.
-- **Performance**: zero requisição HTTP nova — prévia 100% client-side.
-- **Security**: nenhuma mudança de rota/CSRF/validação; prévia não
-  envia dado nenhum ao servidor.
+Todos `APPROVED` no momento do arquivamento — ver
+`verdicts/{code_review,performance,security}.json`. As três rodadas de
+ajuste pós-arquivamento (layout, título/posição, campos) foram feitas
+como commits diretos de correção, com `./mvnw clean verify` revalidado
+em cada uma, sem reabrir o ciclo completo de quality gates (mudança
+puramente de apresentação, sem risco novo de segurança/performance).
